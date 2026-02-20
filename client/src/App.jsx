@@ -1,0 +1,47 @@
+import { useState, useEffect } from 'react'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import Sidebar from './components/Sidebar'
+import Login from './pages/Login'
+import Dashboard from './pages/Dashboard'
+import POS from './pages/POS'
+import Inventory from './pages/Inventory'
+import Reports from './pages/Reports'
+import Customers from './pages/Customers'
+import './components/Toast.css'
+import './App.css'
+
+export default function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    return localStorage.getItem('quickbill_auth') === 'true'
+  })
+
+  const handleLogin = () => {
+    localStorage.setItem('quickbill_auth', 'true')
+    setIsLoggedIn(true)
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('quickbill_auth')
+    setIsLoggedIn(false)
+  }
+
+  if (!isLoggedIn) {
+    return <Login onLogin={handleLogin} />
+  }
+
+  return (
+    <div className="app-layout">
+      <Sidebar onLogout={handleLogout} />
+      <main className="main-content">
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/pos" element={<POS />} />
+          <Route path="/inventory" element={<Inventory />} />
+          <Route path="/customers" element={<Customers />} />
+          <Route path="/reports" element={<Reports />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </main>
+    </div>
+  )
+}

@@ -17,21 +17,26 @@ connectDB();
 
 // Middleware
 app.use(cors({
-    origin: '*', // Allow all origins (Live Server, etc.)
+    origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Serve static files from the public folder (we'll move frontend there later)
-// For now, serve from root parent
-app.use(express.static(path.join(__dirname, '../')));
-
-// Routes
+// API Routes
 app.use('/api/products', productRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/auth', authRoutes);
+
+// Serve React build in production
+const clientDist = path.join(__dirname, '../client/dist');
+app.use(express.static(clientDist));
+
+// SPA catch-all — send all non-API requests to React
+app.get('*', (req, res) => {
+    res.sendFile(path.join(clientDist, 'index.html'));
+});
 
 // Error Handler
 app.use(errorHandler);

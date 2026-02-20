@@ -1,0 +1,19 @@
+.app-layout {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+}
+
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-2xl);
+  background: var(--bg-primary);
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: var(--space-lg);
+    padding-top: 60px;
+  }
+}

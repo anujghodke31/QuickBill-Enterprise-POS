@@ -1,0 +1,25 @@
+.customers {
+    max-width: 800px;
+}
+
+.placeholder-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: var(--space-3xl);
+    color: var(--text-muted);
+    gap: var(--space-md);
+}
+
+.placeholder-card h3 {
+    font-family: var(--font-display);
+    color: var(--text-secondary);
+}
+
+.placeholder-card p {
+    max-width: 400px;
+    font-size: 0.875rem;
+    line-height: 1.6;
+}
