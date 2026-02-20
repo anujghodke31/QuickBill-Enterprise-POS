@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="QuickBill — Enterprise Point of Sale System for retail management, inventory tracking, and transaction reporting.">
+    <title>QuickBill — Enterprise POS</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <!-- Mobile Menu Toggle -->
+    <button class="mobile-menu-btn" id="mobile-menu-toggle" aria-label="Toggle navigation menu">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+    </button>
+
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar" role="navigation" aria-label="Main navigation">
+            <div class="logo">
+                <h2>QuickBill</h2>
+                <p>Enterprise POS</p>
+            </div>
+            <nav>
+                <button class="nav-btn active" data-view="dashboard" aria-label="Dashboard">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="3" width="7" height="7" rx="1" />
+                        <rect x="14" y="3" width="7" height="7" rx="1" />
+                        <rect x="3" y="14" width="7" height="7" rx="1" />
+                        <rect x="14" y="14" width="7" height="7" rx="1" />
+                    </svg>
+                    Dashboard
+                </button>
+                <button class="nav-btn" data-view="pos" aria-label="POS Terminal">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="9" cy="21" r="1" />
+                        <circle cx="20" cy="21" r="1" />
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6" />
+                    </svg>
+                    POS Terminal
+                </button>
+                <button class="nav-btn" data-view="inventory" aria-label="Inventory Management">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path
+                            d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                        <line x1="12" y1="22.08" x2="12" y2="12" />
+                    </svg>
+                    Inventory
+                </button>
+                <button class="nav-btn" data-view="customers" aria-label="Customer Database">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                    Customers
+                </button>
+                <button class="nav-btn" data-view="reports" aria-label="Transaction Reports">
+                    <svg class="nav-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                        <polyline points="14 2 14 8 20 8" />
+                        <line x1="16" y1="13" x2="8" y2="13" />
+                        <line x1="16" y1="17" x2="8" y2="17" />
+                        <polyline points="10 9 9 9 8 9" />
+                    </svg>
+                    Reports
+                </button>
+            </nav>
+            <div class="server-status">
+                <span class="status-dot"></span> Server Online
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+
+            <!-- Dashboard View -->
+            <section id="view-dashboard" class="view active" role="region" aria-label="Dashboard">
+                <header>
+                    <h1>Dashboard</h1>
+                    <div class="date-display" id="current-date"></div>
+                </header>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Today's Sales</h3>
+                        <p class="stat-value" id="stat-today-sales">₹0.00</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Transactions</h3>
+                        <p class="stat-value" id="stat-transactions">0</p>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Low Stock Items</h3>
+                        <p class="stat-value warning" id="stat-low-stock">0</p>
+                    </div>
+                </div>
+                <div class="chart-container card">
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </section>
+
+            <!-- POS View -->
+            <section id="view-pos" class="view hidden" role="region" aria-label="Point of Sale Terminal">
+                <div class="pos-layout">
+                    <!-- Product Search & Grid -->
+                    <div class="pos-left">
+                        <div class="search-bar-large">
+                            <input type="text" id="pos-search" placeholder="Scan barcode (F2) or search products..."
+                                autocomplete="off" aria-label="Search products">
+                        </div>
+                        <div class="category-tabs" role="tablist" aria-label="Product categories">
+                            <button class="cat-btn active" role="tab" aria-selected="true">All</button>
+                            <button class="cat-btn" role="tab">Groceries</button>
+                            <button class="cat-btn" role="tab">Personal Care</button>
+                            <button class="cat-btn" role="tab">Household</button>
+                            <button class="cat-btn" role="tab">Baby Care</button>
+                        </div>
+                        <div class="product-grid" id="pos-product-list" role="list" aria-label="Products">
+                            <!-- Products rendered by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Cart & Checkout -->
+                    <div class="pos-right">
+                        <div class="customer-select">
+                            <select id="pos-customer" aria-label="Select customer">
+                                <option value="">Guest Customer</option>
+                            </select>
+                            <button id="add-customer-btn" aria-label="Add new customer">+</button>
+                        </div>
+                        <div class="cart-items" id="pos-cart-items">
+                            <div class="empty-state">Cart Empty <br> <small>Scan items to begin</small></div>
+                        </div>
+                        <div class="pos-footer">
+                            <div class="total-row">
+                                <span>Total</span>
+                                <span id="pos-total">₹0.00</span>
+                            </div>
+                            <button id="checkout-btn" class="primary-btn-large" aria-label="Proceed to checkout">Pay Now
+                                (F9)</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Inventory View -->
+            <section id="view-inventory" class="view hidden" role="region" aria-label="Inventory Management">
+                <header>
+                    <h1>Inventory Management</h1>
+                    <button class="primary-btn" id="inv-add-btn" aria-label="Add new product">+ Add Product</button>
+                </header>
+                <div class="card table-container">
+                    <table class="data-table" id="inventory-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Barcode</th>
+                                <th>Price</th>
+                                <th>Stock</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-body"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Customers View -->
+            <section id="view-customers" class="view hidden" role="region" aria-label="Customer Database">
+                <header>
+                    <h1>Customer Database</h1>
+                    <button class="primary-btn" id="cust-add-btn" aria-label="Add new customer">+ Add Customer</button>
+                </header>
+                <div class="card table-container">
+                    <table class="data-table" id="customer-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Phone</th>
+                                <th>Points</th>
+                                <th>Total Spent</th>
+                            </tr>
+                        </thead>
+                        <tbody id="customer-body"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Reports View -->
+            <section id="view-reports" class="view hidden" role="region" aria-label="Transaction Reports">
+                <header>
+                    <h1>Transaction Reports</h1>
+                </header>
+                <div class="card table-container">
+                    <table class="data-table" id="reports-table">
+                        <thead>
+                            <tr>
+                                <th>Invoice #</th>
+                                <th>Amount</th>
+                                <th>Payment</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reports-body"></tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Checkout Modal -->
+    <div id="modal-checkout" class="modal hidden" role="dialog" aria-label="Checkout" aria-modal="true">
+        <div class="modal-content">
+            <h2>Checkout</h2>
+            <div class="checkout-split">
+                <div class="payment-methods" role="radiogroup" aria-label="Payment method">
+                    <button class="pay-method active" data-method="Cash" role="radio" aria-checked="true">Cash</button>
+                    <button class="pay-method" data-method="Card" role="radio" aria-checked="false">Card</button>
+                    <button class="pay-method" data-method="UPI" role="radio" aria-checked="false">UPI</button>
+                </div>
+                <div class="payment-details">
+                    <h1 id="modal-total">₹0.00</h1>
+                    <div id="cash-input-group">
+                        <label for="modal-cash-given">Cash Received</label>
+                        <input type="number" id="modal-cash-given" placeholder="Enter amount"
+                            aria-label="Cash received">
+                    </div>
+                    <div id="change-display" class="hidden">
+                        Change: <span id="modal-change">₹0.00</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="secondary-btn close-modal-btn">Cancel</button>
+                <button class="primary-btn" id="modal-confirm-pay">Confirm Payment</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Product Modal -->
+    <div id="modal-product" class="modal hidden" role="dialog" aria-label="Add or edit product" aria-modal="true">
+        <div class="modal-content">
+            <h2>Add / Edit Product</h2>
+            <form id="form-product">
+                <input type="text" id="prod-name" placeholder="Product Name" required aria-label="Product name">
+                <input type="text" id="prod-barcode" placeholder="Barcode" required aria-label="Product barcode"
+                    style="margin-top: 12px;">
+                <div class="row" style="margin-top: 12px;">
+                    <input type="number" id="prod-price" placeholder="Price" required aria-label="Product price">
+                    <input type="number" id="prod-stock" placeholder="Stock" required aria-label="Product stock">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="secondary-btn close-modal-btn">Cancel</button>
+                    <button type="submit" class="primary-btn">Save Product</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="modal-login" class="modal" role="dialog" aria-label="Login" aria-modal="true">
+        <div class="modal-content">
+            <h2>QuickBill Login</h2>
+            <form id="form-login">
+                <input type="text" id="login-username" placeholder="Username" required aria-label="Username">
+                <input type="password" id="login-password" placeholder="Password" required aria-label="Password"
+                    style="margin-top: 12px;">
+                <button type="submit" class="primary-btn" style="margin-top: 16px;">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Receipt Container (Hidden except print) -->
+    <div id="receipt-area" class="hidden" aria-hidden="true"></div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
