@@ -6,6 +6,7 @@ const { errorHandler } = require('./middleware/errorMiddleware');
 const productRoutes = require('./routes/productRoutes');
 const invoiceRoutes = require('./routes/invoiceRoutes');
 const authRoutes = require('./routes/authRoutes');
+const customerRoutes = require('./routes/customerRoutes');
 
 require('dotenv').config();
 
@@ -28,6 +29,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use('/api/products', productRoutes);
 app.use('/api/invoices', invoiceRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/customers', customerRoutes);
 
 // Serve React build in production
 const clientDist = path.join(__dirname, '../client/dist');

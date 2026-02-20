@@ -23,4 +23,10 @@ export const api = {
     // Auth
     login: (body) => request('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
     register: (body) => request('/auth/register', { method: 'POST', body: JSON.stringify(body) }),
+
+    // Customers
+    getCustomers: () => request('/customers'),
+    createCustomer: (body) => request('/customers', { method: 'POST', body: JSON.stringify(body) }),
+    updateCustomer: (id, body) => request(`/customers/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+    deleteCustomer: (id) => request(`/customers/${id}`, { method: 'DELETE' }),
 };
