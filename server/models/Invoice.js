@@ -18,6 +18,11 @@ const invoiceSchema = new mongoose.Schema({
     price: Number
   }],
   subTotal: Number,
+  discount: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
   tax: {
     type: Number,
     default: 0

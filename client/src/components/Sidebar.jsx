@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, ShoppingCart, Package, FileText, Users, LogOut, Menu, X } from 'lucide-react'
+import { LayoutDashboard, ShoppingCart, Package, FileText, Users, UserCog, LogOut, Menu, X, Building2, RotateCcw } from 'lucide-react'
 import { useState } from 'react'
 import './Sidebar.css'
 
@@ -8,6 +8,9 @@ const navItems = [
     { to: '/pos', icon: ShoppingCart, label: 'POS Terminal' },
     { to: '/inventory', icon: Package, label: 'Inventory' },
     { to: '/customers', icon: Users, label: 'Customers' },
+    { to: '/employees', icon: UserCog, label: 'Employees' },
+    { to: '/suppliers', icon: Building2, label: 'Suppliers' },
+    { to: '/returns', icon: RotateCcw, label: 'Returns' },
     { to: '/reports', icon: FileText, label: 'Reports' },
 ]
 

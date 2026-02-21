@@ -7,6 +7,9 @@ import POS from './pages/POS'
 import Inventory from './pages/Inventory'
 import Reports from './pages/Reports'
 import Customers from './pages/Customers'
+import Employees from './pages/Employees'
+import Suppliers from './pages/Suppliers'
+import Returns from './pages/Returns'
 import './components/Toast.css'
 import './App.css'
 
@@ -38,6 +41,9 @@ export default function App() {
           <Route path="/pos" element={<POS />} />
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/customers" element={<Customers />} />
+          <Route path="/employees" element={<Employees />} />
+          <Route path="/suppliers" element={<Suppliers />} />
+          <Route path="/returns" element={<Returns />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Search, ShoppingCart, Trash2, CreditCard, Banknote, Smartphone, Receipt } from 'lucide-react'
+import { Search, ShoppingCart, Trash2, CreditCard, Banknote, Smartphone, Receipt, User } from 'lucide-react'
 import { api } from '../api/api'
 import { useToast } from '../hooks/useToast'
 import Modal from '../components/Modal'
@@ -11,63 +11,96 @@ const PAYMENT_METHODS = [
     { id: 'Card', icon: CreditCard, label: 'Card' },
     { id: 'UPI', icon: Smartphone, label: 'UPI' },
 ]
+const DEFAULT_LOYALTY = { eligible: false, purchaseCount: 0, discountPercent: 0 }
+const roundAmount = (value) => Math.round((value + Number.EPSILON) * 100) / 100
 
 export default function POS() {
     const [products, setProducts] = useState([])
+    const [customers, setCustomers] = useState([])
     const [cart, setCart] = useState([])
     const [search, setSearch] = useState('')
     const [activeCategory, setActiveCategory] = useState('All')
     const [checkoutOpen, setCheckoutOpen] = useState(false)
     const [paymentMethod, setPaymentMethod] = useState('Cash')
     const [cashGiven, setCashGiven] = useState('')
+    const [selectedCustomerId, setSelectedCustomerId] = useState('')
+    const [loyaltyStatus, setLoyaltyStatus] = useState(DEFAULT_LOYALTY)
     const [processing, setProcessing] = useState(false)
     const [receipt, setReceipt] = useState(null)
     const searchRef = useRef(null)
     const { addToast } = useToast()
 
     useEffect(() => {
-        loadProducts()
+        loadInitialData()
     }, [])
 
-    // Keyboard shortcut: F2 to focus search
     useEffect(() => {
-        const handleKey = (e) => {
-            if (e.key === 'F2') {
-                e.preventDefault()
+        if (!selectedCustomerId) {
+            setLoyaltyStatus(DEFAULT_LOYALTY)
+            return
+        }
+
+        checkLoyaltyEligibility(selectedCustomerId)
+    }, [selectedCustomerId])
+
+    useEffect(() => {
+        const handleKey = (event) => {
+            if (event.key === 'F2') {
+                event.preventDefault()
                 searchRef.current?.focus()
             }
-            if (e.key === 'F9' && cart.length > 0) {
-                e.preventDefault()
+            if (event.key === 'F9' && cart.length > 0) {
+                event.preventDefault()
                 setCheckoutOpen(true)
             }
         }
+
         window.addEventListener('keydown', handleKey)
         return () => window.removeEventListener('keydown', handleKey)
-    }, [cart])
+    }, [cart.length])
+
+    async function loadInitialData() {
+        await Promise.all([loadProducts(), loadCustomers()])
+    }
 
     async function loadProducts() {
         try {
-            const data = await api.getProducts()
-            setProducts(data)
-        } catch (err) {
+            setProducts(await api.getProducts())
+        } catch (_) {
             addToast('Failed to load products', 'error')
         }
     }
 
-    // Filter products by category + search
-    const filteredProducts = products.filter(p => {
-        const matchCat = activeCategory === 'All' || p.category === activeCategory
+    async function loadCustomers() {
+        try {
+            setCustomers(await api.getCustomers())
+        } catch (_) {
+            addToast('Failed to load customers', 'error')
+        }
+    }
+
+    async function checkLoyaltyEligibility(customerId) {
+        try {
+            setLoyaltyStatus(await api.getLoyaltyStatus(customerId))
+        } catch (err) {
+            setLoyaltyStatus(DEFAULT_LOYALTY)
+            addToast(err.message, 'error')
+        }
+    }
+
+    const filteredProducts = products.filter((product) => {
+        const matchCategory = activeCategory === 'All' || product.category === activeCategory
         const term = search.toLowerCase()
-        const matchSearch = !term ||
-            p.name.toLowerCase().includes(term) ||
-            (p.barcode && p.barcode.includes(term))
-        return matchCat && matchSearch
+        const matchSearch =
+            !term ||
+            product.name.toLowerCase().includes(term) ||
+            (product.barcode && product.barcode.includes(term))
+        return matchCategory && matchSearch
     })
 
-    // Barcode scan — auto-add on exact match
     const handleSearch = useCallback((value) => {
         setSearch(value)
-        const exact = products.find(p => p.barcode === value.trim())
+        const exact = products.find((product) => product.barcode === value.trim())
         if (exact) {
             addToCart(exact)
             setSearch('')
@@ -75,11 +108,14 @@ export default function POS() {
     }, [products])
 
     function addToCart(product) {
-        setCart(prev => {
-            const idx = prev.findIndex(item => item._id === product._id)
-            if (idx >= 0) {
+        setCart((prev) => {
+            const existingIndex = prev.findIndex((item) => item._id === product._id)
+            if (existingIndex >= 0) {
                 const updated = [...prev]
-                updated[idx] = { ...updated[idx], quantity: updated[idx].quantity + 1 }
+                updated[existingIndex] = {
+                    ...updated[existingIndex],
+                    quantity: updated[existingIndex].quantity + 1,
+                }
                 return updated
             }
             return [...prev, { ...product, quantity: 1 }]
@@ -87,21 +123,29 @@ export default function POS() {
     }
 
     function updateQty(id, delta) {
-        setCart(prev => {
-            return prev
-                .map(item => item._id === id ? { ...item, quantity: item.quantity + delta } : item)
-                .filter(item => item.quantity > 0)
-        })
+        setCart((prev) => prev
+            .map((item) => item._id === id ? { ...item, quantity: item.quantity + delta } : item)
+            .filter((item) => item.quantity > 0))
     }
 
     function clearCart() {
         setCart([])
     }
 
-    const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0)
+    const cartSubTotal = roundAmount(cart.reduce((sum, item) => sum + item.price * item.quantity, 0))
+    const loyaltyDiscount = loyaltyStatus.eligible
+        ? roundAmount(cartSubTotal * (Number(loyaltyStatus.discountPercent || 10) / 100))
+        : 0
+    const payableTotal = roundAmount(cartSubTotal - loyaltyDiscount)
 
     async function handleCheckout() {
-        if (paymentMethod === 'Cash' && (!cashGiven || parseFloat(cashGiven) < cartTotal)) {
+        if (cart.length === 0) {
+            addToast('Cart is empty', 'error')
+            return
+        }
+
+        const parsedCashGiven = Number(cashGiven)
+        if (paymentMethod === 'Cash' && (!Number.isFinite(parsedCashGiven) || parsedCashGiven < payableTotal)) {
             addToast('Insufficient cash amount', 'error')
             return
         }
@@ -109,27 +153,33 @@ export default function POS() {
         setProcessing(true)
         try {
             const body = {
-                cartItems: cart.map(item => ({
+                cartItems: cart.map((item) => ({
                     productId: item._id,
                     name: item.name,
                     quantity: item.quantity,
                     price: item.price,
                 })),
+                customerId: selectedCustomerId || null,
                 paymentMethod,
-                cashGiven: paymentMethod === 'Cash' ? parseFloat(cashGiven) : cartTotal,
+                cashGiven: paymentMethod === 'Cash' ? parsedCashGiven : payableTotal,
             }
 
             const result = await api.createInvoice(body)
-            addToast('Transaction completed!', 'success')
+            addToast('Transaction completed', 'success')
 
+            const selectedCustomer = customers.find((customer) => customer._id === selectedCustomerId) || null
             setReceipt({
                 ...result.invoice,
-                notesReturned: result.notesReturned,
-                cashGiven: parseFloat(cashGiven),
+                notesReturned: result.notesReturned || {},
+                cashGiven: paymentMethod === 'Cash' ? parsedCashGiven : null,
+                customer: selectedCustomer,
             })
+
             setCart([])
             setCashGiven('')
-            loadProducts() // Refresh stock
+            setSelectedCustomerId('')
+            setLoyaltyStatus(DEFAULT_LOYALTY)
+            await loadProducts()
         } catch (err) {
             addToast(err.message, 'error')
         } finally {
@@ -140,46 +190,44 @@ export default function POS() {
     return (
         <div className="pos">
             <div className="pos-left">
-                {/* Search & Categories */}
                 <div className="pos-search-bar">
                     <Search size={18} className="search-icon" />
                     <input
                         ref={searchRef}
                         type="text"
-                        placeholder="Search products or scan barcode… (F2)"
+                        placeholder="Search products or scan barcode... (F2)"
                         value={search}
-                        onChange={(e) => handleSearch(e.target.value)}
+                        onChange={(event) => handleSearch(event.target.value)}
                     />
                 </div>
 
                 <div className="category-tabs">
-                    {CATEGORIES.map(cat => (
+                    {CATEGORIES.map((category) => (
                         <button
-                            key={cat}
-                            className={`cat-btn ${activeCategory === cat ? 'active' : ''}`}
-                            onClick={() => setActiveCategory(cat)}
+                            key={category}
+                            className={`cat-btn ${activeCategory === category ? 'active' : ''}`}
+                            onClick={() => setActiveCategory(category)}
                         >
-                            {cat}
+                            {category}
                         </button>
                     ))}
                 </div>
 
-                {/* Product Grid */}
                 <div className="product-grid">
                     {filteredProducts.length === 0 ? (
                         <div className="empty-state">No products found</div>
                     ) : (
-                        filteredProducts.map(p => (
+                        filteredProducts.map((product) => (
                             <button
-                                key={p._id}
+                                key={product._id}
                                 className="product-card"
-                                onClick={() => addToCart(p)}
-                                disabled={p.stock <= 0}
+                                onClick={() => addToCart(product)}
+                                disabled={product.stock <= 0}
                             >
-                                <div className="product-name">{p.name}</div>
-                                <div className="product-price">₹{p.price}</div>
-                                <span className={`product-stock ${p.stock < 5 ? 'low' : 'ok'}`}>
-                                    {p.stock > 0 ? `${p.stock} in stock` : 'Out of stock'}
+                                <div className="product-name">{product.name}</div>
+                                <div className="product-price">INR {product.price}</div>
+                                <span className={`product-stock ${product.stock < 5 ? 'low' : 'ok'}`}>
+                                    {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
                                 </span>
                             </button>
                         ))
@@ -187,7 +235,6 @@ export default function POS() {
                 </div>
             </div>
 
-            {/* Cart Panel */}
             <div className="pos-right">
                 <div className="cart-header">
                     <h2><ShoppingCart size={20} /> Cart</h2>
@@ -206,18 +253,18 @@ export default function POS() {
                             <small>Scan or click products to add</small>
                         </div>
                     ) : (
-                        cart.map(item => (
+                        cart.map((item) => (
                             <div key={item._id} className="cart-item">
                                 <div className="cart-item-info">
                                     <span className="cart-item-name">{item.name}</span>
-                                    <span className="cart-item-meta">₹{item.price} × {item.quantity}</span>
+                                    <span className="cart-item-meta">INR {item.price} x {item.quantity}</span>
                                 </div>
                                 <div className="cart-item-actions">
-                                    <button className="qty-btn" onClick={() => updateQty(item._id, -1)}>−</button>
+                                    <button className="qty-btn" onClick={() => updateQty(item._id, -1)}>-</button>
                                     <span className="qty-display">{item.quantity}</span>
                                     <button className="qty-btn" onClick={() => updateQty(item._id, 1)}>+</button>
                                 </div>
-                                <span className="cart-item-total">₹{item.price * item.quantity}</span>
+                                <span className="cart-item-total">INR {item.price * item.quantity}</span>
                             </div>
                         ))
                     )}
@@ -226,24 +273,66 @@ export default function POS() {
                 {cart.length > 0 && (
                     <div className="cart-footer">
                         <div className="cart-total-row">
-                            <span>Total</span>
-                            <span className="cart-total-value">₹{cartTotal.toLocaleString()}</span>
+                            <span>Subtotal</span>
+                            <span className="cart-total-value">INR {cartSubTotal.toLocaleString()}</span>
                         </div>
-                        <button
-                            className="btn btn-primary btn-lg checkout-btn"
-                            onClick={() => setCheckoutOpen(true)}
-                        >
+                        {loyaltyDiscount > 0 && (
+                            <div className="cart-total-row discount-row">
+                                <span>Loyalty Discount</span>
+                                <span className="discount-value">- INR {loyaltyDiscount.toLocaleString()}</span>
+                            </div>
+                        )}
+                        <div className="cart-total-row grand-total-row">
+                            <span>Total</span>
+                            <span className="cart-total-value">INR {payableTotal.toLocaleString()}</span>
+                        </div>
+                        <button className="btn btn-primary btn-lg checkout-btn" onClick={() => setCheckoutOpen(true)}>
                             <Receipt size={18} /> Checkout (F9)
                         </button>
                     </div>
                 )}
             </div>
 
-            {/* Checkout Modal */}
-            <Modal isOpen={checkoutOpen && !receipt} onClose={() => setCheckoutOpen(false)} title="Checkout" width={440}>
+            <Modal isOpen={checkoutOpen && !receipt} onClose={() => setCheckoutOpen(false)} title="Checkout" width={460}>
+                <div className="form-group">
+                    <label htmlFor="checkoutCustomer"><User size={14} /> Customer (optional)</label>
+                    <select
+                        id="checkoutCustomer"
+                        value={selectedCustomerId}
+                        onChange={(event) => setSelectedCustomerId(event.target.value)}
+                    >
+                        <option value="">Walk-in Customer</option>
+                        {customers.map((customer) => (
+                            <option key={customer._id} value={customer._id}>
+                                {customer.name} ({customer.phone})
+                            </option>
+                        ))}
+                    </select>
+                    {selectedCustomerId && loyaltyStatus.eligible && (
+                        <div className="loyalty-badge">
+                            Eligible for {loyaltyStatus.discountPercent}% discount ({loyaltyStatus.purchaseCount} purchases in last 30 days)
+                        </div>
+                    )}
+                    {selectedCustomerId && !loyaltyStatus.eligible && (
+                        <div className="loyalty-note">
+                            Not eligible yet: {loyaltyStatus.purchaseCount} purchases in last 30 days (minimum 3 required)
+                        </div>
+                    )}
+                </div>
+
                 <div className="checkout-total">
-                    <span>Total Amount</span>
-                    <span className="checkout-total-value">₹{cartTotal.toLocaleString()}</span>
+                    <span>Subtotal</span>
+                    <span className="checkout-total-value">INR {cartSubTotal.toLocaleString()}</span>
+                </div>
+                {loyaltyDiscount > 0 && (
+                    <div className="checkout-total discount">
+                        <span>Loyalty Discount</span>
+                        <span className="checkout-total-value">- INR {loyaltyDiscount.toLocaleString()}</span>
+                    </div>
+                )}
+                <div className="checkout-total final">
+                    <span>Payable Amount</span>
+                    <span className="checkout-total-value">INR {payableTotal.toLocaleString()}</span>
                 </div>
 
                 <div className="payment-methods">
@@ -261,19 +350,19 @@ export default function POS() {
 
                 {paymentMethod === 'Cash' && (
                     <div className="form-group">
-                        <label htmlFor="cashGiven">Cash Given (₹)</label>
+                        <label htmlFor="cashGiven">Cash Given (INR)</label>
                         <input
                             id="cashGiven"
                             type="number"
                             placeholder="Enter cash amount"
                             value={cashGiven}
-                            onChange={(e) => setCashGiven(e.target.value)}
-                            min={cartTotal}
+                            onChange={(event) => setCashGiven(event.target.value)}
+                            min={payableTotal}
                             autoFocus
                         />
-                        {cashGiven && parseFloat(cashGiven) >= cartTotal && (
+                        {cashGiven && Number(cashGiven) >= payableTotal && (
                             <div className="change-display">
-                                Change: <strong>₹{(parseFloat(cashGiven) - cartTotal).toFixed(2)}</strong>
+                                Change: <strong>INR {(Number(cashGiven) - payableTotal).toFixed(2)}</strong>
                             </div>
                         )}
                     </div>
@@ -281,41 +370,49 @@ export default function POS() {
 
                 <div className="form-actions">
                     <button className="btn btn-secondary" onClick={() => setCheckoutOpen(false)}>Cancel</button>
-                    <button
-                        className="btn btn-primary"
-                        onClick={handleCheckout}
-                        disabled={processing}
-                    >
-                        {processing ? 'Processing…' : 'Complete Sale'}
+                    <button className="btn btn-primary" onClick={handleCheckout} disabled={processing}>
+                        {processing ? 'Processing...' : 'Complete Sale'}
                     </button>
                 </div>
             </Modal>
 
-            {/* Receipt Modal */}
-            <Modal isOpen={!!receipt} onClose={() => { setReceipt(null); setCheckoutOpen(false) }} title="Receipt" width={400}>
+            <Modal isOpen={!!receipt} onClose={() => { setReceipt(null); setCheckoutOpen(false) }} title="Receipt" width={420}>
                 {receipt && (
                     <div className="receipt">
                         <div className="receipt-header">
                             <h3>QuickBill POS</h3>
-                            <p>Invoice #{receipt.invoiceNumber || '—'}</p>
+                            <p>Invoice #{receipt.invoiceNumber || '-'}</p>
                             <p>{new Date(receipt.timestamp || Date.now()).toLocaleString('en-IN')}</p>
+                            {receipt.customer?.name && <p>Customer: {receipt.customer.name}</p>}
                         </div>
                         <div className="receipt-items">
-                            {(receipt.items || []).map((item, i) => (
-                                <div key={i} className="receipt-item">
-                                    <span>{item.name} × {item.quantity}</span>
-                                    <span>₹{item.price * item.quantity}</span>
+                            {(receipt.items || []).map((item, index) => (
+                                <div key={`${item.productId || item.name}-${index}`} className="receipt-item">
+                                    <span>{item.name} x {item.quantity}</span>
+                                    <span>INR {(item.price * item.quantity).toFixed(2)}</span>
                                 </div>
                             ))}
                         </div>
-                        <div className="receipt-total">
-                            <span>Total</span>
-                            <span>₹{receipt.totalAmount?.toLocaleString()}</span>
+                        <div className="receipt-summary">
+                            <div className="receipt-row">
+                                <span>Subtotal</span>
+                                <span>INR {Number(receipt.subTotal || receipt.totalAmount || 0).toFixed(2)}</span>
+                            </div>
+                            {Number(receipt.discount || 0) > 0 && (
+                                <div className="receipt-row discount-value">
+                                    <span>Discount</span>
+                                    <span>- INR {Number(receipt.discount).toFixed(2)}</span>
+                                </div>
+                            )}
+                            <div className="receipt-total">
+                                <span>Total</span>
+                                <span>INR {Number(receipt.totalAmount || 0).toFixed(2)}</span>
+                            </div>
                         </div>
-                        {receipt.paymentMethod === 'Cash' && receipt.cashGiven > receipt.totalAmount && (
+                        {receipt.paymentMethod === 'Cash' && Number(receipt.cashGiven || 0) > 0 && (
                             <div className="receipt-change">
-                                <span>Cash Given</span><span>₹{receipt.cashGiven}</span>
-                                <span>Change</span><span>₹{(receipt.cashGiven - receipt.totalAmount).toFixed(2)}</span>
+                                <span>Cash Given</span><span>INR {Number(receipt.cashGiven).toFixed(2)}</span>
+                                <span>Change</span><span>INR {(Number(receipt.cashGiven) - Number(receipt.totalAmount || 0)).toFixed(2)}</span>
                             </div>
                         )}
                         <button

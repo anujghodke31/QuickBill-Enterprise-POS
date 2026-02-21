@@ -102,3 +102,69 @@
 .login-toggle-btn:hover {
     color: var(--accent-hover);
 }
+
+.login-divider {
+    margin: var(--space-lg) 0;
+    text-align: center;
+    position: relative;
+}
+
+.login-divider::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 1px;
+    background: var(--border);
+}
+
+.login-divider span {
+    position: relative;
+    z-index: 1;
+    padding: 0 var(--space-md);
+    background: var(--bg-secondary);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+}
+
+.google-login-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.google-button-slot {
+    min-height: 44px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.google-btn {
+    width: 100%;
+}
+
+.google-help {
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    text-align: center;
+}
+
+.register-box {
+    margin-top: var(--space-xl);
+    padding: var(--space-md);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    text-align: center;
+    background: rgba(99, 102, 241, 0.05);
+}
+
+.register-box p {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin-bottom: var(--space-xs);
+}

@@ -42,6 +42,18 @@
     font-weight: 700;
 }
 
+.download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+}
+
+.discount-badge {
+    color: var(--success);
+    font-weight: 700;
+    font-size: 0.8rem;
+}
+
 .text-mono {
     font-family: 'Menlo', 'Consolas', monospace;
     font-size: 0.8rem;

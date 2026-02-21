@@ -288,6 +288,20 @@
     margin-bottom: var(--space-md);
 }
 
+.discount-row {
+    margin-top: calc(var(--space-md) * -0.4);
+}
+
+.discount-value {
+    color: var(--success);
+    font-weight: 700;
+}
+
+.grand-total-row {
+    border-top: 1px dashed var(--border);
+    padding-top: var(--space-sm);
+}
+
 .cart-total-row span:first-child {
     font-size: 0.85rem;
     color: var(--text-secondary);
@@ -325,6 +339,36 @@
     font-family: var(--font-display);
     font-size: 1.5rem;
     font-weight: 800;
+}
+
+.checkout-total.discount {
+    margin-top: calc(var(--space-xl) * -0.6);
+    margin-bottom: var(--space-xl);
+}
+
+.checkout-total.discount .checkout-total-value {
+    color: var(--success);
+}
+
+.checkout-total.final {
+    margin-top: calc(var(--space-xl) * -0.6);
+    border: 1px solid var(--border-accent);
+}
+
+.loyalty-badge {
+    margin-top: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-sm);
+    background: var(--success-bg);
+    color: var(--success);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.loyalty-note {
+    margin-top: var(--space-sm);
+    color: var(--text-secondary);
+    font-size: 0.78rem;
 }
 
 .payment-methods {
@@ -406,6 +450,18 @@
     font-weight: 700;
     font-size: 1.1rem;
     padding: var(--space-md) 0;
+}
+
+.receipt-summary {
+    display: grid;
+    gap: var(--space-xs);
+}
+
+.receipt-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
 }
 
 .receipt-change {

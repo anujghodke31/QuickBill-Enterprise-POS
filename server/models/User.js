@@ -5,6 +5,13 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    email: {
+        type: String,
+        unique: true,
+        sparse: true,
+        trim: true,
+        lowercase: true
+    },
     username: {
         type: String,
         required: true,
@@ -18,6 +25,16 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ['admin', 'cashier'],
         default: 'cashier'
+    },
+    googleId: {
+        type: String,
+        unique: true,
+        sparse: true
+    },
+    authProvider: {
+        type: String,
+        enum: ['local', 'google'],
+        default: 'local'
     },
     createdAt: {
         type: Date,
