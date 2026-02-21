@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { TrendingUp, ShoppingCart, Package, AlertTriangle } from 'lucide-react'
+import { TrendingUp, ShoppingCart, Package, AlertTriangle, Clock, AlertCircle } from 'lucide-react'
 import { Line } from 'react-chartjs-2'
 import {
     Chart as ChartJS, CategoryScale, LinearScale, PointElement,
@@ -13,6 +13,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, 
 export default function Dashboard() {
     const [stats, setStats] = useState({ todaySales: 0, todayTx: 0, totalProducts: 0, lowStock: 0 })
     const [chartData, setChartData] = useState(null)
+    const [alerts, setAlerts] = useState({ expiringSoon: [], lowStock: [] })
 
     useEffect(() => {
         loadData()
@@ -20,9 +21,10 @@ export default function Dashboard() {
 
     async function loadData() {
         try {
-            const [products, invoices] = await Promise.all([
+            const [products, invoices, alertsData] = await Promise.all([
                 api.getProducts(),
-                api.getInvoices()
+                api.getInvoices(),
+                api.getAlerts()
             ])
 
             // Today's stats
@@ -37,6 +39,8 @@ export default function Dashboard() {
                 totalProducts: products.length,
                 lowStock
             })
+
+            setAlerts(alertsData)
 
             // 7-day chart
             const days = []
@@ -142,6 +146,91 @@ export default function Dashboard() {
                         <Line data={chartData} options={chartOptions} />
                     ) : (
                         <div className="chart-placeholder">Loading chart…</div>
+                    )}
+                </div>
+            </div>
+
+            {/* Alert Tables */}
+            <div className="alerts-grid">
+                {/* Expiring Soon */}
+                <div className="alert-card card">
+                    <div className="alert-card-header expiry">
+                        <Clock size={18} />
+                        <h3>Expiring Soon</h3>
+                        <span className="alert-count">{alerts.expiringSoon.length}</span>
+                    </div>
+                    {alerts.expiringSoon.length > 0 ? (
+                        <div className="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Expiry Date</th>
+                                        <th>Stock</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {alerts.expiringSoon.map(p => (
+                                        <tr key={p._id}>
+                                            <td><strong>{p.name}</strong></td>
+                                            <td>{new Date(p.expiryDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</td>
+                                            <td>{p.stock}</td>
+                                            <td>
+                                                {p.expired ? (
+                                                    <span className="badge badge-danger">Expired</span>
+                                                ) : (
+                                                    <span className="badge badge-warning">Expiring</span>
+                                                )}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    ) : (
+                        <div className="alert-empty">
+                            <Clock size={32} />
+                            <p>No products expiring soon</p>
+                        </div>
+                    )}
+                </div>
+
+                {/* Low Stock */}
+                <div className="alert-card card">
+                    <div className="alert-card-header low-stock">
+                        <AlertCircle size={18} />
+                        <h3>Low Stock Alert</h3>
+                        <span className="alert-count">{alerts.lowStock.length}</span>
+                    </div>
+                    {alerts.lowStock.length > 0 ? (
+                        <div className="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th>Current Stock</th>
+                                        <th>Threshold</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {alerts.lowStock.map(p => (
+                                        <tr key={p._id}>
+                                            <td><strong>{p.name}</strong></td>
+                                            <td>
+                                                <span className="stock-critical">{p.stock}</span>
+                                            </td>
+                                            <td>{p.lowStockThreshold}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    ) : (
+                        <div className="alert-empty">
+                            <Package size={32} />
+                            <p>All products well stocked</p>
+                        </div>
                     )}
                 </div>
             </div>

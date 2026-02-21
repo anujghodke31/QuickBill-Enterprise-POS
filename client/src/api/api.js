@@ -15,6 +15,7 @@ export const api = {
     getProducts: () => request('/products'),
     createProduct: (body) => request('/products', { method: 'POST', body: JSON.stringify(body) }),
     updateProduct: (id, body) => request(`/products/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
+    getAlerts: () => request('/products/alerts'),
 
     // Invoices
     getInvoices: () => request('/invoices'),

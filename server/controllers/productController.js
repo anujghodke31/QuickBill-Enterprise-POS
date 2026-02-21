@@ -33,7 +33,7 @@ const getProductByBarcode = async (req, res) => {
 // @route   POST /api/products
 // @access  Public (should be private)
 const createProduct = async (req, res) => {
-    const { name, price, stock, barcode, category } = req.body;
+    const { name, price, stock, barcode, category, manufacturingDate, expiryDate } = req.body;
 
     try {
         const product = new Product({
@@ -41,7 +41,9 @@ const createProduct = async (req, res) => {
             price,
             stock,
             barcode,
-            category
+            category,
+            manufacturingDate: manufacturingDate || null,
+            expiryDate: expiryDate || null,
         });
 
         const createdProduct = await product.save();
@@ -55,7 +57,7 @@ const createProduct = async (req, res) => {
 // @route   PUT /api/products/:id
 // @access  Public
 const updateProduct = async (req, res) => {
-    const { name, price, stock, barcode, category } = req.body;
+    const { name, price, stock, barcode, category, manufacturingDate, expiryDate } = req.body;
 
     try {
         const product = await Product.findById(req.params.id);
@@ -66,6 +68,8 @@ const updateProduct = async (req, res) => {
             product.stock = stock !== undefined ? stock : product.stock;
             product.barcode = barcode || product.barcode;
             product.category = category || product.category;
+            product.manufacturingDate = manufacturingDate !== undefined ? manufacturingDate : product.manufacturingDate;
+            product.expiryDate = expiryDate !== undefined ? expiryDate : product.expiryDate;
 
             const updatedProduct = await product.save();
             res.json(updatedProduct);
@@ -77,9 +81,48 @@ const updateProduct = async (req, res) => {
     }
 };
 
+// @desc    Get expiry alerts (expiring within 30 days) + low stock items
+// @route   GET /api/products/alerts
+const getAlerts = async (req, res) => {
+    try {
+        const now = new Date();
+        const thirtyDaysLater = new Date();
+        thirtyDaysLater.setDate(now.getDate() + 30);
+
+        // Products expiring within 30 days (that have an expiryDate set)
+        const expiringSoon = await Product.find({
+            expiryDate: { $ne: null, $lte: thirtyDaysLater }
+        }).sort({ expiryDate: 1 });
+
+        // Products with stock below threshold
+        const lowStock = await Product.find({
+            $expr: { $lt: ['$stock', '$lowStockThreshold'] }
+        }).sort({ stock: 1 });
+
+        res.json({
+            expiringSoon: expiringSoon.map(p => ({
+                _id: p._id,
+                name: p.name,
+                expiryDate: p.expiryDate,
+                stock: p.stock,
+                expired: p.expiryDate <= now,
+            })),
+            lowStock: lowStock.map(p => ({
+                _id: p._id,
+                name: p.name,
+                stock: p.stock,
+                lowStockThreshold: p.lowStockThreshold,
+            }))
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     getProducts,
     getProductByBarcode,
     createProduct,
-    updateProduct
+    updateProduct,
+    getAlerts
 };

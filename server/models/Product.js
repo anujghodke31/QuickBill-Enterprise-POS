@@ -29,6 +29,14 @@ const productSchema = new mongoose.Schema({
         type: Number,
         default: 10
     },
+    manufacturingDate: {
+        type: Date,
+        default: null
+    },
+    expiryDate: {
+        type: Date,
+        default: null
+    },
     createdAt: {
         type: Date,
         default: Date.now

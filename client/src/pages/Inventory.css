@@ -48,3 +48,28 @@
         width: 100%;
     }
 }
+
+/* Expiry date badge */
+.expiry-date {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.8rem;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+}
+
+.expiry-date.valid {
+    color: var(--success);
+}
+
+.expiry-date.expiring-soon {
+    color: var(--warning);
+    background: var(--warning-bg);
+}
+
+.expiry-date.expired {
+    color: var(--danger);
+    background: rgba(239, 68, 68, 0.1);
+}

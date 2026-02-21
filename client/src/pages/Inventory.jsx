@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Package, Plus, Search, Edit3 } from 'lucide-react'
+import { Package, Plus, Search, Edit3, Calendar } from 'lucide-react'
 import { api } from '../api/api'
 import { useToast } from '../hooks/useToast'
 import Modal from '../components/Modal'
@@ -10,7 +10,7 @@ export default function Inventory() {
     const [search, setSearch] = useState('')
     const [modalOpen, setModalOpen] = useState(false)
     const [editingProduct, setEditingProduct] = useState(null)
-    const [form, setForm] = useState({ name: '', price: '', stock: '', barcode: '', category: 'Groceries' })
+    const [form, setForm] = useState({ name: '', price: '', stock: '', barcode: '', category: 'Groceries', manufacturingDate: '', expiryDate: '' })
     const { addToast } = useToast()
 
     useEffect(() => { loadProducts() }, [])
@@ -25,7 +25,7 @@ export default function Inventory() {
 
     function openAdd() {
         setEditingProduct(null)
-        setForm({ name: '', price: '', stock: '', barcode: '', category: 'Groceries' })
+        setForm({ name: '', price: '', stock: '', barcode: '', category: 'Groceries', manufacturingDate: '', expiryDate: '' })
         setModalOpen(true)
     }
 
@@ -37,6 +37,8 @@ export default function Inventory() {
             stock: product.stock,
             barcode: product.barcode || '',
             category: product.category || 'Groceries',
+            manufacturingDate: product.manufacturingDate ? product.manufacturingDate.split('T')[0] : '',
+            expiryDate: product.expiryDate ? product.expiryDate.split('T')[0] : '',
         })
         setModalOpen(true)
     }
@@ -52,6 +54,8 @@ export default function Inventory() {
                 ...form,
                 price: parseFloat(form.price),
                 stock: parseInt(form.stock) || 0,
+                manufacturingDate: form.manufacturingDate || null,
+                expiryDate: form.expiryDate || null,
             }
 
             if (editingProduct) {
@@ -67,6 +71,16 @@ export default function Inventory() {
         } catch (err) {
             addToast(err.message, 'error')
         }
+    }
+
+    function getExpiryStatus(product) {
+        if (!product.expiryDate) return null
+        const now = new Date()
+        const expiry = new Date(product.expiryDate)
+        const daysUntilExpiry = Math.ceil((expiry - now) / (1000 * 60 * 60 * 24))
+        if (daysUntilExpiry <= 0) return 'expired'
+        if (daysUntilExpiry <= 30) return 'expiring-soon'
+        return 'valid'
     }
 
     const filtered = products.filter(p =>
@@ -103,35 +117,51 @@ export default function Inventory() {
                             <th>Barcode</th>
                             <th>Price</th>
                             <th>Stock</th>
+                            <th>Expiry</th>
                             <th>Status</th>
                             <th></th>
                         </tr>
                     </thead>
                     <tbody>
-                        {filtered.map(p => (
-                            <tr key={p._id}>
-                                <td><strong>{p.name}</strong></td>
-                                <td><span className="badge badge-info">{p.category || '—'}</span></td>
-                                <td className="text-mono">{p.barcode || '—'}</td>
-                                <td>₹{p.price}</td>
-                                <td>{p.stock}</td>
-                                <td>
-                                    {p.stock < (p.lowStockThreshold || 5) ? (
-                                        <span className="badge badge-danger">Low Stock</span>
-                                    ) : (
-                                        <span className="badge badge-success">In Stock</span>
-                                    )}
-                                </td>
-                                <td>
-                                    <button className="btn btn-sm btn-secondary" onClick={() => openEdit(p)}>
-                                        <Edit3 size={14} />
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
+                        {filtered.map(p => {
+                            const expiryStatus = getExpiryStatus(p)
+                            return (
+                                <tr key={p._id}>
+                                    <td><strong>{p.name}</strong></td>
+                                    <td><span className="badge badge-info">{p.category || '—'}</span></td>
+                                    <td className="text-mono">{p.barcode || '—'}</td>
+                                    <td>₹{p.price}</td>
+                                    <td>{p.stock}</td>
+                                    <td>
+                                        {p.expiryDate ? (
+                                            <span className={`expiry-date ${expiryStatus}`}>
+                                                <Calendar size={12} />
+                                                {new Date(p.expiryDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                            </span>
+                                        ) : '—'}
+                                    </td>
+                                    <td>
+                                        {expiryStatus === 'expired' ? (
+                                            <span className="badge badge-danger">Expired</span>
+                                        ) : expiryStatus === 'expiring-soon' ? (
+                                            <span className="badge badge-warning">Expiring Soon</span>
+                                        ) : p.stock < (p.lowStockThreshold || 5) ? (
+                                            <span className="badge badge-danger">Low Stock</span>
+                                        ) : (
+                                            <span className="badge badge-success">In Stock</span>
+                                        )}
+                                    </td>
+                                    <td>
+                                        <button className="btn btn-sm btn-secondary" onClick={() => openEdit(p)}>
+                                            <Edit3 size={14} />
+                                        </button>
+                                    </td>
+                                </tr>
+                            )
+                        })}
                         {filtered.length === 0 && (
                             <tr>
-                                <td colSpan="7" className="empty-state">No products found</td>
+                                <td colSpan="8" className="empty-state">No products found</td>
                             </tr>
                         )}
                     </tbody>
@@ -170,6 +200,16 @@ export default function Inventory() {
                         <option>Household</option>
                         <option>Baby Care</option>
                     </select>
+                </div>
+                <div className="form-row">
+                    <div className="form-group">
+                        <label>Manufacturing Date</label>
+                        <input type="date" value={form.manufacturingDate} onChange={(e) => setForm({ ...form, manufacturingDate: e.target.value })} />
+                    </div>
+                    <div className="form-group">
+                        <label>Expiry Date</label>
+                        <input type="date" value={form.expiryDate} onChange={(e) => setForm({ ...form, expiryDate: e.target.value })} />
+                    </div>
                 </div>
                 <div className="form-actions">
                     <button className="btn btn-secondary" onClick={() => setModalOpen(false)}>Cancel</button>
