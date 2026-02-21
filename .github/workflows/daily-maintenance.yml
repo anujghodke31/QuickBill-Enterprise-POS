@@ -1,0 +1,105 @@
+name: Daily Maintenance
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  maintenance:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Auto-fix (Linting & Formatting)
+        run: |
+          npm run lint:fix || true
+          npm run format || true
+
+      - name: Run Tests
+        run: npm test
+
+      - name: Run Code Analysis
+        run: node scripts/daily_analysis.js > analysis_report.md
+
+      - name: Check for Changes
+        id: git_status
+        run: |
+          if [[ -n $(git status -s) ]]; then
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Fix Branch & Push
+        if: steps.git_status.outputs.has_changes == 'true'
+        id: push_changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+          BRANCH_NAME="daily-fixes-$(date +'%Y-%m-%d')"
+          echo "branch_name=$BRANCH_NAME" >> $GITHUB_OUTPUT
+
+          git checkout -b "$BRANCH_NAME"
+          git add .
+          git commit -m "chore: automated fixes and formatting"
+          git push origin "$BRANCH_NAME" --force
+
+      - name: Create Pull Request with Report
+        if: steps.git_status.outputs.has_changes == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          BRANCH_NAME: ${{ steps.push_changes.outputs.branch_name }}
+        run: |
+          REPORT_CONTENT=$(cat analysis_report.md)
+
+          # Check if PR exists
+          EXISTING_PR=$(gh pr list --head "$BRANCH_NAME" --json url --jq '.[0].url')
+
+          if [ -z "$EXISTING_PR" ]; then
+            gh pr create \
+              --title "Daily Maintenance: Automated Fixes ($(date +'%Y-%m-%d'))" \
+              --body "This PR contains automated linting fixes and formatting changes.
+
+              $REPORT_CONTENT" \
+              --base main \
+              --head "$BRANCH_NAME"
+          else
+            echo "PR already exists: $EXISTING_PR"
+            gh pr comment "$EXISTING_PR" --body "$REPORT_CONTENT"
+          fi
+
+      - name: Create Issue with Report (No Changes)
+        if: steps.git_status.outputs.has_changes == 'false'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          REPORT_CONTENT=$(cat analysis_report.md)
+
+          TITLE="Daily Code Analysis Report ($(date +'%Y-%m-%d'))"
+          EXISTING_ISSUE=$(gh issue list --search "$TITLE in:title" --json url --jq '.[0].url')
+
+          if [ -z "$EXISTING_ISSUE" ]; then
+            gh issue create \
+              --title "$TITLE" \
+              --body "$REPORT_CONTENT"
+          else
+             echo "Issue already exists: $EXISTING_ISSUE"
+          fi

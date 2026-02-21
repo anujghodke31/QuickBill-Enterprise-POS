@@ -20,11 +20,13 @@ const PORT = process.env.PORT || 3000;
 connectDB();
 
 // Middleware
-app.use(cors({
+app.use(
+  cors({
     origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -43,12 +45,16 @@ app.use(express.static(clientDist));
 
 // SPA catch-all — send all non-API requests to React
 app.get('*', (req, res) => {
-    res.sendFile(path.join(clientDist, 'index.html'));
+  res.sendFile(path.join(clientDist, 'index.html'));
 });
 
 // Error Handler
 app.use(errorHandler);
 
-app.listen(PORT, () => {
+if (require.main === module) {
+  app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
-});
+  });
+}
+
+module.exports = app;

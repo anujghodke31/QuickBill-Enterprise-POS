@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const {
-    createInvoice,
-    getInvoices,
-    getLoyaltyStatus,
-    getInvoiceReceipt,
+  createInvoice,
+  getInvoices,
+  getLoyaltyStatus,
+  getInvoiceReceipt,
 } = require('../controllers/invoiceController');
 
 router.route('/').post(createInvoice).get(getInvoices);

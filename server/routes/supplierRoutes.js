@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const {
-    getSuppliers,
-    createSupplier,
-    updateSupplier,
-    deleteSupplier,
+  getSuppliers,
+  createSupplier,
+  updateSupplier,
+  deleteSupplier,
 } = require('../controllers/supplierController');
 
 router.route('/').get(getSuppliers).post(createSupplier);

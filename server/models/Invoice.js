@@ -4,41 +4,43 @@ const invoiceSchema = new mongoose.Schema({
   invoiceNumber: {
     type: String,
     unique: true,
-    default: () => 'INV-' + Date.now() // Simple generator, can be improved
+    default: () => 'INV-' + Date.now(), // Simple generator, can be improved
   },
   customer: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Customer',
-    default: null
+    default: null,
   },
-  items: [{
-    productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
-    name: String,
-    quantity: Number,
-    price: Number
-  }],
+  items: [
+    {
+      productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
+      name: String,
+      quantity: Number,
+      price: Number,
+    },
+  ],
   subTotal: Number,
   discount: {
     type: Number,
     default: 0,
-    min: 0
+    min: 0,
   },
   tax: {
     type: Number,
-    default: 0
+    default: 0,
   },
   totalAmount: {
     type: Number,
-    required: true
+    required: true,
   },
   paymentMethod: {
     type: String,
     enum: ['Cash', 'Card', 'UPI'],
-    default: 'Cash'
+    default: 'Cash',
   },
   paymentDetails: {
     cashGiven: Number,
-    changeReturned: Number
+    changeReturned: Number,
   },
   timestamp: {
     type: Date,
