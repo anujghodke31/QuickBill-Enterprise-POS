@@ -26,6 +26,20 @@ const supplierSchema = new mongoose.Schema({
         trim: true,
         default: '',
     },
+    gstNumber: {
+        type: String,
+        trim: true,
+        default: '',
+    },
+    category: {
+        type: String,
+        default: 'General',
+    },
+    status: {
+        type: String,
+        enum: ['active', 'inactive'],
+        default: 'active',
+    },
     createdAt: {
         type: Date,
         default: Date.now,

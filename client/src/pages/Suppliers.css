@@ -2,6 +2,120 @@
     max-width: 1200px;
 }
 
+/* Stats Row */
+.supplier-stats {
+    display: flex;
+    gap: var(--space-lg);
+    margin-bottom: var(--space-xl);
+    flex-wrap: wrap;
+}
+
+.supplier-stat-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg) var(--space-xl);
+    flex: 1;
+    min-width: 150px;
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+    color: var(--accent);
+}
+
+.supplier-stat-card div {
+    display: flex;
+    flex-direction: column;
+}
+
+.supplier-stat-value {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.supplier-stat-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+}
+
+.status-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.status-dot.active {
+    background: var(--success);
+    box-shadow: 0 0 6px rgba(34, 197, 94, 0.4);
+}
+
+.status-dot.inactive {
+    background: var(--text-muted);
+}
+
+/* Supplier name cell */
+.supplier-name-cell {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+}
+
+.supplier-name-cell>div {
+    display: flex;
+    flex-direction: column;
+}
+
+.supplier-address {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    max-width: 180px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.supplier-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f59e0b, #f97316);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+/* Contact cell */
+.contact-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 0.8rem;
+}
+
+.contact-cell span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-secondary);
+}
+
+/* Badge secondary variant */
+.badge-secondary {
+    background: var(--bg-hover);
+    color: var(--text-muted);
+}
+
 .page-actions {
     display: flex;
     gap: var(--space-md);
@@ -24,13 +138,6 @@
 
 .search-wrap input {
     padding-left: 36px;
-}
-
-.supplier-address-cell {
-    max-width: 220px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
 }
 
 .action-btns {
@@ -56,6 +163,10 @@
 }
 
 @media (max-width: 768px) {
+    .supplier-stats {
+        flex-direction: column;
+    }
+
     .search-wrap {
         min-width: 100%;
     }

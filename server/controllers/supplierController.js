@@ -14,7 +14,7 @@ const getSuppliers = async (req, res) => {
 // @desc    Create a supplier
 // @route   POST /api/suppliers
 const createSupplier = async (req, res) => {
-    const { name, phone, email, company, address } = req.body;
+    const { name, phone, email, company, address, gstNumber, category, status } = req.body;
 
     if (!name) {
         return res.status(400).json({ message: 'Supplier name is required' });
@@ -27,6 +27,9 @@ const createSupplier = async (req, res) => {
             email: email || '',
             company: company || '',
             address: address || '',
+            gstNumber: gstNumber || '',
+            category: category || 'General',
+            status: status || 'active',
         });
         res.status(201).json(supplier);
     } catch (error) {
@@ -37,7 +40,7 @@ const createSupplier = async (req, res) => {
 // @desc    Update a supplier
 // @route   PUT /api/suppliers/:id
 const updateSupplier = async (req, res) => {
-    const { name, phone, email, company, address } = req.body;
+    const { name, phone, email, company, address, gstNumber, category, status } = req.body;
 
     try {
         const supplier = await Supplier.findById(req.params.id);
@@ -50,6 +53,9 @@ const updateSupplier = async (req, res) => {
         supplier.email = email !== undefined ? email : supplier.email;
         supplier.company = company !== undefined ? company : supplier.company;
         supplier.address = address !== undefined ? address : supplier.address;
+        supplier.gstNumber = gstNumber !== undefined ? gstNumber : supplier.gstNumber;
+        supplier.category = category || supplier.category;
+        supplier.status = status || supplier.status;
 
         const updatedSupplier = await supplier.save();
         res.json(updatedSupplier);
