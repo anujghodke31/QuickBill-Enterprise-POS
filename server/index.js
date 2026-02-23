@@ -10,6 +10,7 @@ const customerRoutes = require('./routes/customerRoutes');
 const employeeRoutes = require('./routes/employeeRoutes');
 const supplierRoutes = require('./routes/supplierRoutes');
 const returnRoutes = require('./routes/returnRoutes');
+const orderRoutes = require('./routes/orderRoutes');
 
 require('dotenv').config();
 
@@ -36,6 +37,7 @@ app.use('/api/customers', customerRoutes);
 app.use('/api/employees', employeeRoutes);
 app.use('/api/suppliers', supplierRoutes);
 app.use('/api/returns', returnRoutes);
+app.use('/api/orders', orderRoutes);
 
 // Serve React build in production
 const clientDist = path.join(__dirname, '../client/dist');

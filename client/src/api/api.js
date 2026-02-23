@@ -72,4 +72,19 @@ export const api = {
     getReturns: () => request('/returns'),
     getReturnInvoice: (query) => request(`/returns/invoice/${encodeURIComponent(query)}`),
     createReturn: (body) => request('/returns', { method: 'POST', body: JSON.stringify(body) }),
+
+    // Storefront
+    getStorefrontProducts: (params = {}) => {
+        const q = new URLSearchParams(params).toString()
+        return request(`/products/storefront${q ? '?' + q : ''}`)
+    },
+    getCategories: () => request('/products/categories'),
+    getProductById: (id) => request(`/products/${id}`),
+
+    // Orders
+    createOrder: (body) => request('/orders', { method: 'POST', body: JSON.stringify(body) }),
+    getMyOrders: () => request('/orders/my'),
+    getOrderById: (id) => request(`/orders/${id}`),
+    getOrders: () => request('/orders'),
+    updateOrderStatus: (id, body) => request(`/orders/${id}/status`, { method: 'PUT', body: JSON.stringify(body) }),
 };
