@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import {
     TrendingUp, ShoppingCart, Package, AlertTriangle,
     Clock, AlertCircle, IndianRupee, ArrowUpRight, ArrowDownRight,
-    BarChart3, Activity
+    BarChart3, Activity, ClipboardList
 } from 'lucide-react'
 import { Line } from 'react-chartjs-2'
 import {
@@ -20,6 +20,7 @@ export default function Dashboard() {
     const [alerts, setAlerts] = useState({ expiringSoon: [], lowStock: [] })
     const [recentInvoices, setRecentInvoices] = useState([])
     const [salesTrend, setSalesTrend] = useState(0)
+    const [orderStats, setOrderStats] = useState({ totalOrders: 0, pendingOrders: 0, totalRevenue: 0 })
 
     useEffect(() => {
         loadData()
@@ -27,11 +28,14 @@ export default function Dashboard() {
 
     async function loadData() {
         try {
-            const [products, invoices, alertsData] = await Promise.all([
+            const [products, invoices, alertsData, oStats] = await Promise.all([
                 api.getProducts(),
                 api.getInvoices(),
-                api.getAlerts()
+                api.getAlerts(),
+                api.getOrderStats ? api.getOrderStats() : Promise.resolve({ totalOrders: 0, pendingOrders: 0, totalRevenue: 0 })
             ])
+
+            setOrderStats(oStats)
 
             const today = new Date().toDateString()
             const todayInvoices = invoices.filter(i => new Date(i.timestamp).toDateString() === today)
@@ -214,6 +218,17 @@ export default function Dashboard() {
                         <span className="stat-label">Low Stock</span>
                         <span className="stat-value">{stats.lowStock}</span>
                         <span className="stat-sub">need restock</span>
+                    </div>
+                </div>
+
+                <div className="stat-card stat-orders" style={{ animationDelay: '0.32s' }}>
+                    <div className="stat-icon-wrap">
+                        <ClipboardList size={22} />
+                    </div>
+                    <div className="stat-info">
+                        <span className="stat-label">Online Orders</span>
+                        <span className="stat-value">{orderStats.totalOrders}</span>
+                        <span className="stat-sub">{orderStats.pendingOrders} pending</span>
                     </div>
                 </div>
             </div>

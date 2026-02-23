@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { CartProvider } from './context/CartContext'
 
 // Admin
@@ -13,6 +13,7 @@ import Customers from './pages/Customers'
 import Employees from './pages/Employees'
 import Suppliers from './pages/Suppliers'
 import Returns from './pages/Returns'
+import Orders from './pages/Orders'
 
 // Storefront
 import StorefrontLayout from './components/StorefrontLayout'
@@ -40,6 +41,7 @@ function AdminLayout({ onLogout }) {
           <Route path="/employees" element={<Employees />} />
           <Route path="/suppliers" element={<Suppliers />} />
           <Route path="/returns" element={<Returns />} />
+          <Route path="/orders" element={<Orders />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="*" element={<Navigate to="/admin" replace />} />
         </Routes>

@@ -87,4 +87,5 @@ export const api = {
     getOrderById: (id) => request(`/orders/${id}`),
     getOrders: () => request('/orders'),
     updateOrderStatus: (id, body) => request(`/orders/${id}/status`, { method: 'PUT', body: JSON.stringify(body) }),
+    getOrderStats: () => request('/orders/stats'),
 };

@@ -1,17 +1,18 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, ShoppingCart, Package, FileText, Users, UserCog, LogOut, Menu, X, Building2, RotateCcw } from 'lucide-react'
+import { LayoutDashboard, ShoppingCart, Package, FileText, Users, UserCog, LogOut, Menu, X, Building2, RotateCcw, ClipboardList } from 'lucide-react'
 import { useState } from 'react'
 import './Sidebar.css'
 
 const navItems = [
-    { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
-    { to: '/pos', icon: ShoppingCart, label: 'POS Terminal' },
-    { to: '/inventory', icon: Package, label: 'Inventory' },
-    { to: '/customers', icon: Users, label: 'Customers' },
-    { to: '/employees', icon: UserCog, label: 'Employees' },
-    { to: '/suppliers', icon: Building2, label: 'Suppliers' },
-    { to: '/returns', icon: RotateCcw, label: 'Returns' },
-    { to: '/reports', icon: FileText, label: 'Reports' },
+    { to: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
+    { to: '/admin/pos', icon: ShoppingCart, label: 'POS Terminal' },
+    { to: '/admin/inventory', icon: Package, label: 'Inventory' },
+    { to: '/admin/customers', icon: Users, label: 'Customers' },
+    { to: '/admin/employees', icon: UserCog, label: 'Employees' },
+    { to: '/admin/suppliers', icon: Building2, label: 'Suppliers' },
+    { to: '/admin/returns', icon: RotateCcw, label: 'Returns' },
+    { to: '/admin/orders', icon: ClipboardList, label: 'Orders' },
+    { to: '/admin/reports', icon: FileText, label: 'Reports' },
 ]
 
 export default function Sidebar({ onLogout }) {
@@ -49,7 +50,7 @@ export default function Sidebar({ onLogout }) {
                         <NavLink
                             key={to}
                             to={to}
-                            end={to === '/'}
+                            end={to === '/admin'}
                             className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
                             onClick={() => setMobileOpen(false)}
                         >
