@@ -91,11 +91,13 @@ const updateOrderStatus = async (req, res) => {
             return res.status(404).json({ message: 'Order not found' });
         }
 
+        const previousStatus = order.status;
+
         if (status) order.status = status;
         if (paymentStatus) order.paymentStatus = paymentStatus;
 
         // If cancelled, restore stock
-        if (status === 'cancelled' && order.status !== 'cancelled') {
+        if (status === 'cancelled' && previousStatus !== 'cancelled') {
             for (const item of order.items) {
                 await Product.findByIdAndUpdate(item.product, {
                     $inc: { stock: item.quantity }

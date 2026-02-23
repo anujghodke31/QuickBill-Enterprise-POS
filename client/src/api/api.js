@@ -83,7 +83,7 @@ export const api = {
 
     // Orders
     createOrder: (body) => request('/orders', { method: 'POST', body: JSON.stringify(body) }),
-    getMyOrders: () => request('/orders/my'),
+    getMyOrders: (email) => request(`/orders/my?email=${encodeURIComponent(email)}`),
     getOrderById: (id) => request(`/orders/${id}`),
     getOrders: () => request('/orders'),
     updateOrderStatus: (id, body) => request(`/orders/${id}/status`, { method: 'PUT', body: JSON.stringify(body) }),

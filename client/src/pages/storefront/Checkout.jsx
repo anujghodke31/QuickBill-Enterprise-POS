@@ -49,6 +49,7 @@ export default function Checkout() {
             }
 
             const order = await api.createOrder(orderData)
+            localStorage.setItem('quickbill_customer_email', form.email)
             clearCart()
             navigate(`/order-confirmation/${order._id}`)
         } catch (err) {

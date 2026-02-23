@@ -7,14 +7,16 @@ import './CustomerAccount.css'
 export default function CustomerAccount() {
     const [orders, setOrders] = useState([])
     const [loading, setLoading] = useState(true)
+    const [email, setEmail] = useState(() => localStorage.getItem('quickbill_customer_email') || '')
 
     useEffect(() => {
         loadOrders()
     }, [])
 
     async function loadOrders() {
+        if (!email) { setLoading(false); return }
         try {
-            const data = await api.getMyOrders()
+            const data = await api.getMyOrders(email)
             setOrders(data || [])
         } catch (err) {
             console.error(err)

@@ -5,6 +5,7 @@
     flex-direction: column;
     background: #0f0f13;
     color: #e4e4e7;
+    width: 100%;
 }
 
 /* ─── Header ─── */
@@ -201,6 +202,8 @@
 /* ─── Main content ─── */
 .sf-main {
     flex: 1;
+    width: 100%;
+    overflow-x: hidden;
 }
 
 /* ─── Footer ─── */

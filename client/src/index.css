@@ -103,13 +103,11 @@ body {
   background: var(--bg-primary);
   color: var(--text-primary);
   line-height: 1.6;
-  overflow: hidden;
-  height: 100vh;
+  min-height: 100vh;
 }
 
 #root {
-  height: 100vh;
-  display: flex;
+  min-height: 100vh;
 }
 
 a {
