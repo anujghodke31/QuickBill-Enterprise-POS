@@ -1,16 +1,22 @@
 import { useState, useEffect } from 'react'
-import { Package, Plus, Search, Edit3, Calendar } from 'lucide-react'
+import { Package, Plus, Search, Edit3, Calendar, Globe, EyeOff } from 'lucide-react'
 import { api } from '../api/api'
 import { useToast } from '../hooks/useToast'
 import Modal from '../components/Modal'
 import './Inventory.css'
+
+const emptyForm = {
+    name: '', price: '', stock: '', barcode: '', category: 'Groceries',
+    manufacturingDate: '', expiryDate: '',
+    description: '', brand: '', sku: '', compareAtPrice: '', tags: '', isPublished: false
+}
 
 export default function Inventory() {
     const [products, setProducts] = useState([])
     const [search, setSearch] = useState('')
     const [modalOpen, setModalOpen] = useState(false)
     const [editingProduct, setEditingProduct] = useState(null)
-    const [form, setForm] = useState({ name: '', price: '', stock: '', barcode: '', category: 'Groceries', manufacturingDate: '', expiryDate: '' })
+    const [form, setForm] = useState(emptyForm)
     const { addToast } = useToast()
 
     useEffect(() => { loadProducts() }, [])
@@ -25,7 +31,7 @@ export default function Inventory() {
 
     function openAdd() {
         setEditingProduct(null)
-        setForm({ name: '', price: '', stock: '', barcode: '', category: 'Groceries', manufacturingDate: '', expiryDate: '' })
+        setForm(emptyForm)
         setModalOpen(true)
     }
 
@@ -39,6 +45,12 @@ export default function Inventory() {
             category: product.category || 'Groceries',
             manufacturingDate: product.manufacturingDate ? product.manufacturingDate.split('T')[0] : '',
             expiryDate: product.expiryDate ? product.expiryDate.split('T')[0] : '',
+            description: product.description || '',
+            brand: product.brand || '',
+            sku: product.sku || '',
+            compareAtPrice: product.compareAtPrice || '',
+            tags: (product.tags || []).join(', '),
+            isPublished: product.isPublished || false,
         })
         setModalOpen(true)
     }
@@ -56,6 +68,8 @@ export default function Inventory() {
                 stock: parseInt(form.stock) || 0,
                 manufacturingDate: form.manufacturingDate || null,
                 expiryDate: form.expiryDate || null,
+                compareAtPrice: form.compareAtPrice ? parseFloat(form.compareAtPrice) : null,
+                tags: form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
             }
 
             if (editingProduct) {
@@ -67,6 +81,16 @@ export default function Inventory() {
             }
 
             setModalOpen(false)
+            loadProducts()
+        } catch (err) {
+            addToast(err.message, 'error')
+        }
+    }
+
+    async function togglePublish(product) {
+        try {
+            await api.updateProduct(product._id, { isPublished: !product.isPublished })
+            addToast(product.isPublished ? 'Product unpublished' : 'Product published to store', 'success')
             loadProducts()
         } catch (err) {
             addToast(err.message, 'error')
@@ -85,7 +109,8 @@ export default function Inventory() {
 
     const filtered = products.filter(p =>
         p.name.toLowerCase().includes(search.toLowerCase()) ||
-        (p.barcode && p.barcode.includes(search))
+        (p.barcode && p.barcode.includes(search)) ||
+        (p.brand && p.brand.toLowerCase().includes(search.toLowerCase()))
     )
 
     return (
@@ -113,11 +138,12 @@ export default function Inventory() {
                     <thead>
                         <tr>
                             <th>Product</th>
+                            <th>Brand</th>
                             <th>Category</th>
-                            <th>Barcode</th>
                             <th>Price</th>
                             <th>Stock</th>
                             <th>Expiry</th>
+                            <th>Store</th>
                             <th>Status</th>
                             <th></th>
                         </tr>
@@ -128,9 +154,18 @@ export default function Inventory() {
                             return (
                                 <tr key={p._id}>
                                     <td><strong>{p.name}</strong></td>
+                                    <td>{p.brand || '—'}</td>
                                     <td><span className="badge badge-info">{p.category || '—'}</span></td>
-                                    <td className="text-mono">{p.barcode || '—'}</td>
-                                    <td>₹{p.price}</td>
+                                    <td>
+                                        {p.compareAtPrice && p.compareAtPrice > p.price ? (
+                                            <>
+                                                <span className="price-current">₹{p.price}</span>
+                                                <span className="price-compare">₹{p.compareAtPrice}</span>
+                                            </>
+                                        ) : (
+                                            <>₹{p.price}</>
+                                        )}
+                                    </td>
                                     <td>{p.stock}</td>
                                     <td>
                                         {p.expiryDate ? (
@@ -139,6 +174,15 @@ export default function Inventory() {
                                                 {new Date(p.expiryDate).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
                                             </span>
                                         ) : '—'}
+                                    </td>
+                                    <td>
+                                        <button
+                                            className={`btn btn-xs ${p.isPublished ? 'btn-published' : 'btn-unpublished'}`}
+                                            onClick={() => togglePublish(p)}
+                                            title={p.isPublished ? 'Published — click to unpublish' : 'Draft — click to publish'}
+                                        >
+                                            {p.isPublished ? <><Globe size={12} /> Live</> : <><EyeOff size={12} /> Draft</>}
+                                        </button>
                                     </td>
                                     <td>
                                         {expiryStatus === 'expired' ? (
@@ -161,7 +205,7 @@ export default function Inventory() {
                         })}
                         {filtered.length === 0 && (
                             <tr>
-                                <td colSpan="8" className="empty-state">No products found</td>
+                                <td colSpan="9" className="empty-state">No products found</td>
                             </tr>
                         )}
                     </tbody>
@@ -178,19 +222,44 @@ export default function Inventory() {
                     <label>Product Name</label>
                     <input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="e.g. Toor Dal 1kg" />
                 </div>
+                <div className="form-group">
+                    <label>Description</label>
+                    <textarea
+                        value={form.description}
+                        onChange={(e) => setForm({ ...form, description: e.target.value })}
+                        placeholder="Product description for the storefront…"
+                        rows={3}
+                    />
+                </div>
                 <div className="form-row">
                     <div className="form-group">
                         <label>Price (₹)</label>
                         <input type="number" value={form.price} onChange={(e) => setForm({ ...form, price: e.target.value })} placeholder="0" />
                     </div>
                     <div className="form-group">
+                        <label>Compare Price (₹)</label>
+                        <input type="number" value={form.compareAtPrice} onChange={(e) => setForm({ ...form, compareAtPrice: e.target.value })} placeholder="Original price (optional)" />
+                    </div>
+                </div>
+                <div className="form-row">
+                    <div className="form-group">
                         <label>Stock</label>
                         <input type="number" value={form.stock} onChange={(e) => setForm({ ...form, stock: e.target.value })} placeholder="0" />
                     </div>
+                    <div className="form-group">
+                        <label>SKU</label>
+                        <input value={form.sku} onChange={(e) => setForm({ ...form, sku: e.target.value })} placeholder="e.g. SKU-001 (optional)" />
+                    </div>
                 </div>
-                <div className="form-group">
-                    <label>Barcode</label>
-                    <input value={form.barcode} onChange={(e) => setForm({ ...form, barcode: e.target.value })} placeholder="Optional" />
+                <div className="form-row">
+                    <div className="form-group">
+                        <label>Brand</label>
+                        <input value={form.brand} onChange={(e) => setForm({ ...form, brand: e.target.value })} placeholder="e.g. Ashirvaad" />
+                    </div>
+                    <div className="form-group">
+                        <label>Barcode</label>
+                        <input value={form.barcode} onChange={(e) => setForm({ ...form, barcode: e.target.value })} placeholder="Optional" />
+                    </div>
                 </div>
                 <div className="form-group">
                     <label>Category</label>
@@ -199,7 +268,14 @@ export default function Inventory() {
                         <option>Personal Care</option>
                         <option>Household</option>
                         <option>Baby Care</option>
+                        <option>Electronics</option>
+                        <option>Fashion</option>
+                        <option>Home & Kitchen</option>
                     </select>
+                </div>
+                <div className="form-group">
+                    <label>Tags</label>
+                    <input value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })} placeholder="e.g. organic, gluten-free (comma separated)" />
                 </div>
                 <div className="form-row">
                     <div className="form-group">
@@ -211,6 +287,17 @@ export default function Inventory() {
                         <input type="date" value={form.expiryDate} onChange={(e) => setForm({ ...form, expiryDate: e.target.value })} />
                     </div>
                 </div>
+                <div className="form-group">
+                    <label className="toggle-label">
+                        <input
+                            type="checkbox"
+                            checked={form.isPublished}
+                            onChange={(e) => setForm({ ...form, isPublished: e.target.checked })}
+                        />
+                        <span>Publish to Storefront</span>
+                    </label>
+                    <small className="form-hint">Published products will be visible to customers on the storefront</small>
+                </div>
                 <div className="form-actions">
                     <button className="btn btn-secondary" onClick={() => setModalOpen(false)}>Cancel</button>
                     <button className="btn btn-primary" onClick={handleSave}>
@@ -221,3 +308,4 @@ export default function Inventory() {
         </div>
     )
 }
+
