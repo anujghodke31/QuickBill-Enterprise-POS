@@ -1,0 +1,238 @@
+/* ─── Product Catalog ─── */
+.catalog {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 32px 24px;
+}
+
+.catalog-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.catalog-header h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.catalog-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.catalog-filter-toggle {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 16px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.04);
+    color: #a1a1aa;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.catalog-filter-toggle:hover {
+    border-color: #6366f1;
+    color: #fff;
+}
+
+.catalog-sort {
+    padding: 9px 14px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.04);
+    color: #e4e4e7;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.catalog-sort option {
+    background: #1a1a2e;
+}
+
+.catalog-body {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 28px;
+}
+
+/* Sidebar */
+.catalog-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.filter-section h3 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #71717a;
+    margin-bottom: 10px;
+}
+
+.filter-chip {
+    display: block;
+    width: 100%;
+    text-align: left;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: #a1a1aa;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 2px;
+}
+
+.filter-chip:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+}
+
+.filter-chip.active {
+    background: rgba(99, 102, 241, 0.12);
+    color: #a78bfa;
+    font-weight: 600;
+}
+
+.filter-clear {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-clear:hover {
+    background: rgba(239, 68, 68, 0.2);
+}
+
+/* Product area */
+.catalog-products {
+    min-height: 400px;
+}
+
+/* Loading skeletons */
+.catalog-loading {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 20px;
+}
+
+.product-card-skeleton {
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    overflow: hidden;
+}
+
+.skeleton-img {
+    height: 180px;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.03) 25%, rgba(255, 255, 255, 0.06) 50%, rgba(255, 255, 255, 0.03) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+.skeleton-text {
+    height: 14px;
+    margin: 14px 16px 0;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.skeleton-text.short {
+    width: 60%;
+    margin-bottom: 14px;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+/* Empty state */
+.catalog-empty {
+    text-align: center;
+    padding: 80px 20px;
+    color: #71717a;
+}
+
+.catalog-empty h3 {
+    color: #a1a1aa;
+    margin: 16px 0 8px;
+}
+
+/* Pagination */
+.catalog-pagination {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 40px;
+}
+
+.page-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: transparent;
+    color: #a1a1aa;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.page-btn:hover {
+    border-color: #6366f1;
+    color: #fff;
+}
+
+.page-btn.active {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    border-color: transparent;
+    color: #fff;
+}
+
+@media (max-width: 768px) {
+    .catalog-body {
+        grid-template-columns: 1fr;
+    }
+
+    .catalog-sidebar {
+        display: none;
+    }
+
+    .catalog-sidebar.open {
+        display: flex;
+    }
+
+    .catalog-filter-toggle {
+        display: flex;
+    }
+
+    .catalog-loading {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
