@@ -395,6 +395,12 @@
     color: #fff;
 }
 
+.product-card-cart-btn.added {
+    background: rgba(34, 197, 94, 0.15);
+    border-color: #22c55e;
+    color: #22c55e;
+}
+
 @media (max-width: 640px) {
     .product-grid {
         grid-template-columns: repeat(2, 1fr);

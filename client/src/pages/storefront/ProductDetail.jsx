@@ -1,16 +1,19 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { ShoppingCart, Star, ArrowLeft, Plus, Minus, Tag, Package } from 'lucide-react'
+import { ShoppingCart, Star, ArrowLeft, Plus, Minus, Tag, Package, ShieldCheck, Truck, RotateCcw, CreditCard, ChevronRight } from 'lucide-react'
 import { api } from '../../api/api'
 import { useCart } from '../../context/CartContext'
+import { useNavigate } from 'react-router-dom'
 import './ProductDetail.css'
 
 export default function ProductDetail() {
     const { id } = useParams()
+    const navigate = useNavigate()
     const [product, setProduct] = useState(null)
     const [loading, setLoading] = useState(true)
     const [qty, setQty] = useState(1)
     const [added, setAdded] = useState(false)
+    const [activeImg, setActiveImg] = useState(0)
     const { addToCart } = useCart()
 
     useEffect(() => {
@@ -33,6 +36,12 @@ export default function ProductDetail() {
         addToCart(product, qty)
         setAdded(true)
         setTimeout(() => setAdded(false), 2000)
+    }
+
+    function handleBuyNow() {
+        if (!product) return
+        addToCart(product, qty)
+        navigate('/checkout')
     }
 
     if (loading) {
@@ -64,19 +73,45 @@ export default function ProductDetail() {
 
     return (
         <div className="pd">
-            <Link to="/shop" className="pd-back"><ArrowLeft size={16} /> Back to Shop</Link>
+            {/* Breadcrumbs */}
+            <nav className="pd-breadcrumbs">
+                <Link to="/">Home</Link>
+                <ChevronRight size={14} />
+                <Link to="/shop">Shop</Link>
+                {product.category && (
+                    <>
+                        <ChevronRight size={14} />
+                        <Link to={`/shop?category=${encodeURIComponent(product.category)}`}>{product.category}</Link>
+                    </>
+                )}
+                <ChevronRight size={14} />
+                <span className="pd-breadcrumb-current">{product.name}</span>
+            </nav>
 
             <div className="pd-layout">
-                {/* Image */}
+                {/* Image Gallery */}
                 <div className="pd-gallery">
                     <div className="pd-main-img">
-                        {product.images?.[0] ? (
-                            <img src={product.images[0]} alt={product.name} />
+                        {product.images?.length > 0 ? (
+                            <img src={product.images[activeImg] || product.images[0]} alt={product.name} />
                         ) : (
                             <div className="pd-img-placeholder">{product.name.charAt(0)}</div>
                         )}
                         {discount > 0 && <span className="pd-sale-badge">{discount}% OFF</span>}
                     </div>
+                    {product.images?.length > 1 && (
+                        <div className="pd-thumbnails">
+                            {product.images.map((img, idx) => (
+                                <button
+                                    key={idx}
+                                    className={`pd-thumbnail ${activeImg === idx ? 'active' : ''}`}
+                                    onClick={() => setActiveImg(idx)}
+                                >
+                                    <img src={img} alt={`Thumbnail ${idx + 1}`} />
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
                 {/* Info */}
@@ -106,32 +141,27 @@ export default function ProductDetail() {
                         )}
                     </div>
 
+                    {/* Offers Box */}
+                    <div className="pd-offers">
+                        <div className="pd-offer-title"><Tag size={16} /> Available Offers</div>
+                        <ul className="pd-offer-list">
+                            <li><strong>Bank Offer:</strong> Get 10% off on Select Credit Cards, up to ₹1,500.</li>
+                            <li><strong>Special Price:</strong> Get extra {discount}% off (price inclusive of cashback/coupon).</li>
+                        </ul>
+                    </div>
+
                     {product.description && (
-                        <p className="pd-description">{product.description}</p>
+                        <div className="pd-description-block">
+                            <h3>Product Description</h3>
+                            <p className="pd-description">{product.description}</p>
+                        </div>
                     )}
 
-                    <div className="pd-meta">
-                        {product.category && (
-                            <div className="pd-meta-item">
-                                <Package size={15} />
-                                <span>Category: <strong>{product.category}</strong></span>
-                            </div>
-                        )}
-                        {product.sku && (
-                            <div className="pd-meta-item">
-                                <Tag size={15} />
-                                <span>SKU: <strong>{product.sku}</strong></span>
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="pd-stock">
-                        {product.stock > 0 ? (
-                            <span className="pd-in-stock">✓ In Stock ({product.stock} available)</span>
-                        ) : (
-                            <span className="pd-out-stock">✕ Out of Stock</span>
-                        )}
-                    </div>
+                    {product.stock > 0 ? (
+                        <div className="pd-stock pd-in-stock">✓ In Stock ({product.stock} available)</div>
+                    ) : (
+                        <div className="pd-stock pd-out-stock">✕ Out of Stock</div>
+                    )}
 
                     {product.stock > 0 && (
                         <div className="pd-actions">
@@ -144,8 +174,31 @@ export default function ProductDetail() {
                                 <ShoppingCart size={18} />
                                 {added ? 'Added to Cart ✓' : 'Add to Cart'}
                             </button>
+                            <button className="pd-buy-btn" onClick={handleBuyNow}>
+                                Buy Now
+                            </button>
                         </div>
                     )}
+
+                    {/* Service Guarantees */}
+                    <div className="pd-services">
+                        <div className="pd-service-item">
+                            <div className="pd-service-icon"><Truck size={20} /></div>
+                            <span>Free Delivery</span>
+                        </div>
+                        <div className="pd-service-item">
+                            <div className="pd-service-icon"><RotateCcw size={20} /></div>
+                            <span>7 Days Replacement</span>
+                        </div>
+                        <div className="pd-service-item">
+                            <div className="pd-service-icon"><CreditCard size={20} /></div>
+                            <span>Cash on Delivery</span>
+                        </div>
+                        <div className="pd-service-item">
+                            <div className="pd-service-icon"><ShieldCheck size={20} /></div>
+                            <span>1 Year Warranty</span>
+                        </div>
+                    </div>
 
                     {product.tags?.length > 0 && (
                         <div className="pd-tags">

@@ -145,6 +145,34 @@
     background: #6366f1;
 }
 
+.credit-card-form {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: -4px;
+    margin-bottom: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.card-input-wrapper {
+    position: relative;
+}
+
+.card-input-wrapper input {
+    padding-right: 40px;
+}
+
+.card-icon {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #a1a1aa;
+}
+
 .payment-option strong {
     display: block;
     color: #e4e4e7;

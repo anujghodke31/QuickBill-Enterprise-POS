@@ -13,6 +13,21 @@ export default function ProductCatalog() {
     const [loading, setLoading] = useState(true)
     const [showFilters, setShowFilters] = useState(false)
     const { addToCart } = useCart()
+    const [addedIds, setAddedIds] = useState(new Set())
+
+    function handleAdd(e, product) {
+        e.stopPropagation()
+        e.preventDefault()
+        addToCart(product)
+        setAddedIds(prev => new Set(prev).add(product._id))
+        setTimeout(() => {
+            setAddedIds(prev => {
+                const next = new Set(prev)
+                next.delete(product._id)
+                return next
+            })
+        }, 1500)
+    }
 
     const currentCategory = searchParams.get('category') || ''
     const currentSearch = searchParams.get('search') || ''
@@ -161,8 +176,12 @@ export default function ProductCatalog() {
                                                 )}
                                             </div>
                                         </Link>
-                                        <button className="product-card-cart-btn" onClick={() => addToCart(product)}>
-                                            <ShoppingCart size={15} /> Add to Cart
+                                        <button
+                                            className={`product-card-cart-btn ${addedIds.has(product._id) ? 'added' : ''}`}
+                                            onClick={(e) => handleAdd(e, product)}
+                                        >
+                                            <ShoppingCart size={15} />
+                                            {addedIds.has(product._id) ? 'Added ✓' : 'Add to Cart'}
                                         </button>
                                     </div>
                                 ))}

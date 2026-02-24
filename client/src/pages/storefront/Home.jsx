@@ -9,6 +9,7 @@ export default function Home() {
     const [featured, setFeatured] = useState([])
     const [categories, setCategories] = useState([])
     const { addToCart } = useCart()
+    const [addedIds, setAddedIds] = useState(new Set())
 
     useEffect(() => {
         loadData()
@@ -25,6 +26,20 @@ export default function Home() {
         } catch (err) {
             console.error('Failed to load home data:', err)
         }
+    }
+
+    function handleAdd(e, product) {
+        e.stopPropagation()
+        e.preventDefault()
+        addToCart(product)
+        setAddedIds(prev => new Set(prev).add(product._id))
+        setTimeout(() => {
+            setAddedIds(prev => {
+                const next = new Set(prev)
+                next.delete(product._id)
+                return next
+            })
+        }, 1500)
     }
 
     const categoryIcons = {
@@ -156,10 +171,11 @@ export default function Home() {
                                     </div>
                                 </Link>
                                 <button
-                                    className="product-card-cart-btn"
-                                    onClick={() => addToCart(product)}
+                                    className={`product-card-cart-btn ${addedIds.has(product._id) ? 'added' : ''}`}
+                                    onClick={(e) => handleAdd(e, product)}
                                 >
-                                    <ShoppingCart size={15} /> Add
+                                    <ShoppingCart size={15} />
+                                    {addedIds.has(product._id) ? 'Added ✓' : 'Add'}
                                 </button>
                             </div>
                         ))}

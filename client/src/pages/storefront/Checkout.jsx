@@ -9,21 +9,49 @@ export default function Checkout() {
     const { cart, cartTotal, clearCart } = useCart()
     const navigate = useNavigate()
     const [submitting, setSubmitting] = useState(false)
+    const [processingPayment, setProcessingPayment] = useState(false)
 
     const [form, setForm] = useState({
         name: '', email: '', phone: '',
         address: '', city: '', state: '', pincode: '',
-        paymentMethod: 'cod'
+        paymentMethod: 'online',
+        cardNumber: '', cardExpiry: '', cardCvc: '', cardName: ''
     })
 
     function handleChange(e) {
-        setForm(prev => ({ ...prev, [e.target.name]: e.target.value }))
+        let value = e.target.value
+
+        // Auto-format card number
+        if (e.target.name === 'cardNumber') {
+            value = value.replace(/\D/g, '').substring(0, 16)
+            value = value.replace(/(\d{4})(?=\d)/g, '$1 ')
+        }
+
+        // Auto-format expiry
+        if (e.target.name === 'cardExpiry') {
+            value = value.replace(/\D/g, '')
+            if (value.length > 2) value = value.substring(0, 2) + '/' + value.substring(2, 4)
+        }
+
+        // Limit CVC
+        if (e.target.name === 'cardCvc') {
+            value = value.replace(/\D/g, '').substring(0, 3)
+        }
+
+        setForm(prev => ({ ...prev, [e.target.name]: value }))
     }
 
     async function handleSubmit(e) {
         e.preventDefault()
         if (cart.length === 0) return
         setSubmitting(true)
+
+        if (form.paymentMethod === 'online') {
+            setProcessingPayment(true)
+            // Simulate network delay for payment gateway
+            await new Promise(resolve => setTimeout(resolve, 2500))
+            setProcessingPayment(false)
+        }
 
         try {
             const orderData = {
@@ -122,6 +150,46 @@ export default function Checkout() {
                     <div className="checkout-section">
                         <h2><CreditCard size={18} /> Payment Method</h2>
                         <div className="payment-options">
+                            <label className={`payment-option ${form.paymentMethod === 'online' ? 'active' : ''}`}>
+                                <input type="radio" name="paymentMethod" value="online"
+                                    checked={form.paymentMethod === 'online'} onChange={handleChange} />
+                                <span className="payment-radio"></span>
+                                <div>
+                                    <strong>Credit / Debit Card</strong>
+                                    <small>Secure encrypted payment</small>
+                                </div>
+                            </label>
+
+                            {form.paymentMethod === 'online' && (
+                                <div className="credit-card-form">
+                                    <div className="checkout-field">
+                                        <label>Card Number</label>
+                                        <div className="card-input-wrapper">
+                                            <input name="cardNumber" placeholder="0000 0000 0000 0000"
+                                                value={form.cardNumber} onChange={handleChange} required />
+                                            <CreditCard size={18} className="card-icon" />
+                                        </div>
+                                    </div>
+                                    <div className="checkout-row two-col">
+                                        <div className="checkout-field">
+                                            <label>Expiry (MM/YY)</label>
+                                            <input name="cardExpiry" placeholder="MM/YY"
+                                                value={form.cardExpiry} onChange={handleChange} required />
+                                        </div>
+                                        <div className="checkout-field">
+                                            <label>CVC</label>
+                                            <input name="cardCvc" placeholder="123" type="password"
+                                                value={form.cardCvc} onChange={handleChange} required />
+                                        </div>
+                                    </div>
+                                    <div className="checkout-field">
+                                        <label>Name on Card</label>
+                                        <input name="cardName" placeholder="John Doe"
+                                            value={form.cardName} onChange={handleChange} required />
+                                    </div>
+                                </div>
+                            )}
+
                             <label className={`payment-option ${form.paymentMethod === 'cod' ? 'active' : ''}`}>
                                 <input type="radio" name="paymentMethod" value="cod"
                                     checked={form.paymentMethod === 'cod'} onChange={handleChange} />
@@ -129,15 +197,6 @@ export default function Checkout() {
                                 <div>
                                     <strong>Cash on Delivery</strong>
                                     <small>Pay when your order arrives</small>
-                                </div>
-                            </label>
-                            <label className={`payment-option ${form.paymentMethod === 'online' ? 'active' : ''}`}>
-                                <input type="radio" name="paymentMethod" value="online"
-                                    checked={form.paymentMethod === 'online'} onChange={handleChange} />
-                                <span className="payment-radio"></span>
-                                <div>
-                                    <strong>Online Payment</strong>
-                                    <small>UPI, Card, Net Banking</small>
                                 </div>
                             </label>
                         </div>
@@ -173,7 +232,7 @@ export default function Checkout() {
                         <span>₹{cartTotal}</span>
                     </div>
                     <button type="submit" className="btn-place-order" disabled={submitting}>
-                        {submitting ? 'Placing Order…' : 'Place Order'}
+                        {processingPayment ? 'Processing Payment...' : submitting ? 'Placing Order…' : `Pay ₹${cartTotal}`}
                     </button>
                 </aside>
             </form>

@@ -275,6 +275,12 @@
     color: #fff;
 }
 
+.catalog-products .product-card-cart-btn.added {
+    background: rgba(34, 197, 94, 0.15);
+    border-color: #22c55e;
+    color: #22c55e;
+}
+
 /* Loading skeletons */
 .catalog-loading {
     display: grid;
