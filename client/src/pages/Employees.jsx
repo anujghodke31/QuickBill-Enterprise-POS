@@ -14,15 +14,16 @@ export default function Employees() {
     const [form, setForm] = useState({ name: '', username: '', password: '', role: 'cashier' })
     const { addToast } = useToast()
 
-    useEffect(() => { loadEmployees() }, [])
-
     async function loadEmployees() {
         try {
             setEmployees(await api.getEmployees())
-        } catch (err) {
+        } catch {
             addToast('Failed to load employees', 'error')
         }
     }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => { loadEmployees() }, [])
 
     function openAdd() {
         setEditingEmp(null)

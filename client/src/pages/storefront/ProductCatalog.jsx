@@ -34,14 +34,6 @@ export default function ProductCatalog() {
     const currentSort = searchParams.get('sort') || ''
     const currentPage = parseInt(searchParams.get('page') || '1')
 
-    useEffect(() => {
-        loadProducts()
-    }, [currentCategory, currentSearch, currentSort, currentPage])
-
-    useEffect(() => {
-        api.getCategories().then(setCategories).catch(() => { })
-    }, [])
-
     async function loadProducts() {
         setLoading(true)
         try {
@@ -57,6 +49,17 @@ export default function ProductCatalog() {
         }
         setLoading(false)
     }
+
+    useEffect(() => {
+        loadProducts()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentCategory, currentSearch, currentSort, currentPage])
+
+    useEffect(() => {
+        api.getCategories().then(setCategories).catch(() => { })
+    }, [])
+
+
 
     function updateParam(key, value) {
         const params = new URLSearchParams(searchParams)

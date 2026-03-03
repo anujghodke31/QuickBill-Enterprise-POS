@@ -1,0 +1,380 @@
+﻿
+> client@0.0.0 lint
+> eslint .
+
+
+C:\Users\anujg\Desktop\Sigma\Web_Developement\pay_role_manager\client\src\api\api.js
+  22:18  error  '_' is defined but never used  no-unused-vars
+
+C:\Users\anujg\Desktop\Sigma\Web_Developement\pay_role_manager\client\src\components\Sidebar.jsx
+  49:48  error  'Icon' is defined but never used  no-unused-vars
+
+C:\Users\anujg\Desktop\Sigma\Web_Developement\pay_role_manager\client\src\context\CartContext.jsx
+  71:14  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\anujg\Desktop\Sigma\Web_Developement\pay_role_manager\client\src\hooks\useToast.jsx
+  29:18  error  '_' is defined but never used                                                                                                   no-unused-vars
+  61:17  error  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+C:\Users\anujg\Desktop\Sigma\Web_Developement\pay_role_manager\client\src\pages\Customers.jsx
+  17:23  error    Error: Cannot access variable before it is declared
+
+`loadCustomers` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+  15 |     const { addToast } = useToast()
+  16 |
+> 17 |     useEffect(() => { loadCustomers() }, [])
+     |                       ^^^^^^^^^^^^^ `loadCustomers` accessed before it is declared
+  18 |
+  19 |     async function loadCustomers() {
+  20 |         try {
+
+  17 |     useEffect(() => { loadCustomers() }, [])
+  18 |
+> 19 |     async function loadCustomers() {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 20 |         try {
+     | ^^^^^^^^^^^^^
+> 21 |             setCustomers(await api.getCustomers())
+     | ^^^^^^^^^^^^^
+> 22 |         } catch (err) {
+     | ^^^^^^^^^^^^^
+> 23 |             addToast('Failed to load customers', 'error')
+     | ^^^^^^^^^^^^^
+> 24 |         }
+     | ^^^^^^^^^^^^^
+> 25 |     }
+     | ^^^^^^ `loadCustomers` is declared here
+  26 |
+  27 |     function openAdd() {
+  28 |         setEditing(null)  react-hooks/immutability
+  17:42  warning  React Hook useEffect has a missing dependency: 'loadCustomers'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     react-hooks/exhaustive-deps
+  22:18  error    'err' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      no-unused-vars
+
+C:\Users\anujg\Desktop\Sigma\Web_Developement\pay_role_manager\client\src\pages\Dashboard.jsx
+  26:9  error  Error: Cannot access variable before it is declared
+
+`loadData` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+  24 |
+  25 |     useEffect(() => {
+> 26 |         loadData()
+     |         ^^^^^^^^ `loadData` accessed before it is declared
+  27 |     }, [])
+  28 |
+  29 |     async function loadData() {
+
+   27 |     }, [])
+   28 |
+>  29 |     async function loadData() {
+      |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>  30 |         try {
+      | ^^^^^^^^^^^^^
+>  31 |             const [products, invoices, alertsData, oStats] = await Promise.all([
+      ΓÇª
+      | ^^^^^^^^^^^^^
+> 102 |         }
+      | ^^^^^^^^^^^^^
+> 103 |     }
+      | ^^^^^^ `loadData` is declared here
+  104 |
+  105 |     const chartOptions = {
+  106 |         responsive: true,  react-hooks/immutability
+
+C:\Users\anujg\Desktop\Sigma\Web_Developement\pay_role_manager\client\src\pages\Employees.jsx
+  17:23  error    Error: Cannot access variable before it is declared
+
+`loadEmployees` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+  15 |     const { addToast } = useToast()
+  16 |
+> 17 |     useEffect(() => { loadEmployees() }, [])
+     |                       ^^^^^^^^^^^^^ `loadEmployees` accessed before it is declared
+  18 |
+  19 |     async function loadEmployees() {
+  20 |         try {
+
+  17 |     useEffect(() => { loadEmployees() }, [])
+  18 |
+> 19 |     async function loadEmployees() {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 20 |         try {
+     | ^^^^^^^^^^^^^
+> 21 |             setEmployees(await api.getEmployees())
+     | ^^^^^^^^^^^^^
+> 22 |         } catch (err) {
+     | ^^^^^^^^^^^^^
+> 23 |             addToast('Failed to load employees', 'error')
+     | ^^^^^^^^^^^^^
+> 24 |         }
+     | ^^^^^^^^^^^^^
+> 25 |     }
+     | ^^^^^^ `loadEmployees` is declared here
+  26 |
+  27 |     function openAdd() {
+  28 |         setEditingEmp(null)  react-hooks/immutability
+  17:42  warning  React Hook useEffect has a missing dependency: 'loadEmployees'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        react-hooks/exhaustive-deps
+  22:18  error    'err' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         no-unused-vars
+
+C:\Users\anujg\Desktop\Sigma\Web_Developement\pay_role_manager\client\src\pages\Inventory.jsx
+  22:23  error    Error: Cannot access variable before it is declared
+
+`loadProducts` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+  20 |     const { addToast } = useToast()
+  21 |
+> 22 |     useEffect(() => { loadProducts() }, [])
+     |                       ^^^^^^^^^^^^ `loadProducts` accessed before it is declared
+  23 |
+  24 |     async function loadProducts() {
+  25 |         try {
+
+  22 |     useEffect(() => { loadProducts() }, [])
+  23 |
+> 24 |     async function loadProducts() {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 25 |         try {
+     | ^^^^^^^^^^^^^
+> 26 |             setProducts(await api.getProducts())
+     | ^^^^^^^^^^^^^
+> 27 |         } catch (err) {
+     | ^^^^^^^^^^^^^
+> 28 |             addToast('Failed to load inventory', 'error')
+     | ^^^^^^^^^^^^^
+> 29 |         }
+     | ^^^^^^^^^^^^^
+> 30 |     }
+     | ^^^^^^ `loadProducts` is declared here
+  31 |
+  32 |     function openAdd() {
+  33 |         setEditingProduct(null)  react-hooks/immutability
+  22:41  warning  React Hook useEffect has a missing dependency: 'loadProducts'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  react-hooks/exhaustive-deps
+  27:18  error    'err' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  no-unused-vars
+
+C:\Users\anujg\Desktop\Sigma\Web_Developement\pay_role_manager\client\src\pages\Orders.jsx
+  11:23  error  Error: Cannot access variable before it is declared
+
+`loadOrders` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+   9 |     const [expandedId, setExpandedId] = useState(null)
+  10 |
+> 11 |     useEffect(() => { loadOrders() }, [])
+     |                       ^^^^^^^^^^ `loadOrders` accessed before it is declared
+  12 |
+  13 |     async function loadOrders() {
+  14 |         try {
+
+  11 |     useEffect(() => { loadOrders() }, [])
+  12 |
+> 13 |     async function loadOrders() {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 14 |         try {
+     | ^^^^^^^^^^^^^
+> 15 |             const data = await api.getOrders()
+     | ^^^^^^^^^^^^^
+> 16 |             setOrders(data || [])
+     | ^^^^^^^^^^^^^
+> 17 |         } catch (err) { console.error(err) }
+     | ^^^^^^^^^^^^^
+> 18 |         setLoading(false)
+     | ^^^^^^^^^^^^^
+> 19 |     }
+     | ^^^^^^ `loadOrders` is declared here
+  20 |
+  21 |     async function handleStatusChange(orderId, newStatus) {
+  22 |         try {  react-hooks/immutability
+
+C:\Users\anujg\Desktop\Sigma\Web_Developement\pay_role_manager\client\src\pages\POS.jsx
+   35:8   warning  React Hook useEffect has a missing dependency: 'loadInitialData'. Either include it or remove the dependency array          react-hooks/exhaustive-deps
+   44:8   warning  React Hook useEffect has a missing dependency: 'checkLoyaltyEligibility'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+   69:18  error    '_' is defined but never used                                                                                               no-unused-vars
+   77:18  error    '_' is defined but never used                                                                                               no-unused-vars
+  339:55  error    'Icon' is defined but never used                                                                                            no-unused-vars
+
+C:\Users\anujg\Desktop\Sigma\Web_Developement\pay_role_manager\client\src\pages\Reports.jsx
+  14:8   warning  React Hook useEffect has a missing dependency: 'loadInvoices'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  19:18  error    '_' is defined but never used                                                                                    no-unused-vars
+
+C:\Users\anujg\Desktop\Sigma\Web_Developement\pay_role_manager\client\src\pages\Returns.jsx
+  27:8   warning  React Hook useEffect has a missing dependency: 'loadReturns'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+  32:18  error    '_' is defined but never used                                                                                   no-unused-vars
+
+C:\Users\anujg\Desktop\Sigma\Web_Developement\pay_role_manager\client\src\pages\Suppliers.jsx
+  20:23  error    Error: Cannot access variable before it is declared
+
+`loadSuppliers` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+  18 |     const { addToast } = useToast()
+  19 |
+> 20 |     useEffect(() => { loadSuppliers() }, [])
+     |                       ^^^^^^^^^^^^^ `loadSuppliers` accessed before it is declared
+  21 |
+  22 |     async function loadSuppliers() {
+  23 |         try {
+
+  20 |     useEffect(() => { loadSuppliers() }, [])
+  21 |
+> 22 |     async function loadSuppliers() {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 23 |         try {
+     | ^^^^^^^^^^^^^
+> 24 |             setSuppliers(await api.getSuppliers())
+     | ^^^^^^^^^^^^^
+> 25 |         } catch (_) {
+     | ^^^^^^^^^^^^^
+> 26 |             addToast('Failed to load suppliers', 'error')
+     | ^^^^^^^^^^^^^
+> 27 |         }
+     | ^^^^^^^^^^^^^
+> 28 |     }
+     | ^^^^^^ `loadSuppliers` is declared here
+  29 |
+  30 |     function openAdd() {
+  31 |         setEditingSupplier(null)  react-hooks/immutability
+  20:42  warning  React Hook useEffect has a missing dependency: 'loadSuppliers'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           react-hooks/exhaustive-deps
+  25:18  error    '_' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              no-unused-vars
+
+C:\Users\anujg\Desktop\Sigma\Web_Developement\pay_role_manager\client\src\pages\storefront\CustomerAccount.jsx
+  10:19  error    'setEmail' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        no-unused-vars
+  13:9   error    Error: Cannot access variable before it is declared
+
+`loadOrders` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+  11 |
+  12 |     useEffect(() => {
+> 13 |         loadOrders()
+     |         ^^^^^^^^^^ `loadOrders` accessed before it is declared
+  14 |     }, [])
+  15 |
+  16 |     async function loadOrders() {
+
+  14 |     }, [])
+  15 |
+> 16 |     async function loadOrders() {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 17 |         if (!email) { setLoading(false); return }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 18 |         try {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 19 |             const data = await api.getMyOrders(email)
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 20 |             setOrders(data || [])
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 21 |         } catch (err) {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 22 |             console.error(err)
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 23 |         }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 24 |         setLoading(false)
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 25 |     }
+     | ^^^^^^ `loadOrders` is declared here
+  26 |
+  27 |     const statusColors = {
+  28 |         'pending': { bg: 'rgba(245,158,11,0.12)', color: '#f59e0b' },  react-hooks/immutability
+  14:8   warning  React Hook useEffect has a missing dependency: 'loadOrders'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   react-hooks/exhaustive-deps
+
+C:\Users\anujg\Desktop\Sigma\Web_Developement\pay_role_manager\client\src\pages\storefront\Home.jsx
+  15:9  error  Error: Cannot access variable before it is declared
+
+`loadData` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+  13 |
+  14 |     useEffect(() => {
+> 15 |         loadData()
+     |         ^^^^^^^^ `loadData` accessed before it is declared
+  16 |     }, [])
+  17 |
+  18 |     async function loadData() {
+
+  16 |     }, [])
+  17 |
+> 18 |     async function loadData() {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 19 |         try {
+     | ^^^^^^^^^^^^^
+> 20 |             const [prodData, cats] = await Promise.all([
+     ΓÇª
+     | ^^^^^^^^^^^^^
+> 28 |         }
+     | ^^^^^^^^^^^^^
+> 29 |     }
+     | ^^^^^^ `loadData` is declared here
+  30 |
+  31 |     function handleAdd(e, product) {
+  32 |         e.stopPropagation()  react-hooks/immutability
+
+C:\Users\anujg\Desktop\Sigma\Web_Developement\pay_role_manager\client\src\pages\storefront\ProductCatalog.jsx
+  38:9  error    Error: Cannot access variable before it is declared
+
+`loadProducts` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+  36 |
+  37 |     useEffect(() => {
+> 38 |         loadProducts()
+     |         ^^^^^^^^^^^^ `loadProducts` accessed before it is declared
+  39 |     }, [currentCategory, currentSearch, currentSort, currentPage])
+  40 |
+  41 |     useEffect(() => {
+
+  43 |     }, [])
+  44 |
+> 45 |     async function loadProducts() {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 46 |         setLoading(true)
+     | ^^^^^^^^^^^^^^^^^^^^^^^^
+> 47 |         try {
+     ΓÇª
+     | ^^^^^^^^^^^^^^^^^^^^^^^^
+> 58 |         setLoading(false)
+     | ^^^^^^^^^^^^^^^^^^^^^^^^
+> 59 |     }
+     | ^^^^^^ `loadProducts` is declared here
+  60 |
+  61 |     function updateParam(key, value) {
+  62 |         const params = new URLSearchParams(searchParams)  react-hooks/immutability
+  39:8  warning  React Hook useEffect has a missing dependency: 'loadProducts'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    react-hooks/exhaustive-deps
+
+C:\Users\anujg\Desktop\Sigma\Web_Developement\pay_role_manager\client\src\pages\storefront\ProductDetail.jsx
+  20:9  error    Error: Cannot access variable before it is declared
+
+`loadProduct` is accessed before it is declared, which prevents the earlier access from updating when this value changes over time.
+
+  18 |
+  19 |     useEffect(() => {
+> 20 |         loadProduct()
+     |         ^^^^^^^^^^^ `loadProduct` accessed before it is declared
+  21 |     }, [id])
+  22 |
+  23 |     async function loadProduct() {
+
+  21 |     }, [id])
+  22 |
+> 23 |     async function loadProduct() {
+     |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 24 |         setLoading(true)
+     | ^^^^^^^^^^^^^^^^^^^^^^^^
+> 25 |         try {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^
+> 26 |             const data = await api.getProductById(id)
+     | ^^^^^^^^^^^^^^^^^^^^^^^^
+> 27 |             setProduct(data)
+     | ^^^^^^^^^^^^^^^^^^^^^^^^
+> 28 |         } catch (err) {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^
+> 29 |             console.error(err)
+     | ^^^^^^^^^^^^^^^^^^^^^^^^
+> 30 |         }
+     | ^^^^^^^^^^^^^^^^^^^^^^^^
+> 31 |         setLoading(false)
+     | ^^^^^^^^^^^^^^^^^^^^^^^^
+> 32 |     }
+     | ^^^^^^ `loadProduct` is declared here
+  33 |
+  34 |     function handleAddToCart() {
+  35 |         if (!product) return  react-hooks/immutability
+  21:8  warning  React Hook useEffect has a missing dependency: 'loadProduct'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     react-hooks/exhaustive-deps
+
+Γ£û 36 problems (25 errors, 11 warnings)
+

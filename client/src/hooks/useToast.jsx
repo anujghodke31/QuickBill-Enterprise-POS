@@ -26,7 +26,7 @@ export function ToastProvider({ children }) {
             osc.type = 'sine'
             osc.start()
             osc.stop(ctx.currentTime + 0.12)
-        } catch (_) {/* audio not available */ }
+        } catch {/* audio not available */ }
     }, [])
 
     const removeToast = useCallback((id) => {
@@ -58,6 +58,7 @@ export function ToastProvider({ children }) {
     )
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useToast() {
     const ctx = useContext(ToastContext)
     if (!ctx) throw new Error('useToast must be inside ToastProvider')

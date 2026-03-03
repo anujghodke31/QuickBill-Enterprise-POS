@@ -2,14 +2,29 @@
     width: var(--sidebar-width);
     min-width: var(--sidebar-width);
     height: 100vh;
-    background: var(--bg-secondary);
-    border-right: 1px solid var(--border);
+    background: #264653;
+    /* Deep Charcoal for premium dark sidebar */
+    color: white;
+    border-right: none;
     display: flex;
     flex-direction: column;
     padding: var(--space-lg) var(--space-md);
     z-index: var(--z-sidebar);
     transition: transform var(--transition-slow), width var(--transition-slow);
     overflow: hidden;
+    position: relative;
+}
+
+/* Add a subtle shine effect */
+.sidebar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.03) 0%, transparent 100%);
+    pointer-events: none;
 }
 
 /* Brand */
@@ -19,6 +34,7 @@
     gap: var(--space-md);
     padding: var(--space-sm) var(--space-sm);
     margin-bottom: var(--space-xl);
+    position: relative;
 }
 
 .brand-icon {
@@ -34,6 +50,7 @@
     font-size: 1.2rem;
     color: white;
     flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .brand-text {
@@ -48,11 +65,12 @@
     font-size: 1.1rem;
     line-height: 1.2;
     white-space: nowrap;
+    color: white;
 }
 
 .brand-sub {
     font-size: 0.7rem;
-    color: var(--text-muted);
+    color: rgba(255, 255, 255, 0.6);
     text-transform: uppercase;
     letter-spacing: 0.08em;
     white-space: nowrap;
@@ -64,6 +82,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-xs);
+    position: relative;
 }
 
 .nav-link {
@@ -72,7 +91,7 @@
     gap: var(--space-md);
     padding: var(--space-md) var(--space-md);
     border-radius: var(--radius-md);
-    color: var(--text-secondary);
+    color: rgba(255, 255, 255, 0.7);
     font-weight: 500;
     font-size: 0.9rem;
     transition: all var(--transition-fast);
@@ -82,14 +101,16 @@
 }
 
 .nav-link:hover {
-    color: var(--text-primary);
-    background: var(--bg-hover);
+    color: white;
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateX(4px);
 }
 
 .nav-link.active {
     color: white;
     background: var(--accent-gradient);
-    box-shadow: 0 2px 12px rgba(99, 102, 241, 0.25);
+    box-shadow: 0 4px 16px rgba(42, 157, 143, 0.3);
+    font-weight: 600;
 }
 
 .nav-label {
@@ -100,17 +121,19 @@
 /* Footer */
 .sidebar-footer {
     padding-top: var(--space-lg);
-    border-top: 1px solid var(--border);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
 }
 
 .logout-btn {
     width: 100%;
-    color: var(--text-secondary);
+    color: rgba(255, 255, 255, 0.7);
+    transition: all var(--transition-fast);
 }
 
 .logout-btn:hover {
     color: var(--danger);
-    background: var(--danger-bg);
+    background: rgba(231, 111, 81, 0.1);
 }
 
 /* Mobile */

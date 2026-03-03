@@ -41,7 +41,7 @@
 }
 
 .catalog-filter-toggle:hover {
-    border-color: #6366f1;
+    border-color: var(--accent);
     color: #fff;
 }
 
@@ -101,8 +101,8 @@
 }
 
 .filter-chip.active {
-    background: rgba(99, 102, 241, 0.12);
-    color: #a78bfa;
+    background: rgba(42, 157, 143, 0.12);
+    color: #E9C46A;
     font-weight: 600;
 }
 
@@ -146,7 +146,7 @@
 }
 
 .catalog-products .product-card:hover {
-    border-color: rgba(99, 102, 241, 0.2);
+    border-color: rgba(42, 157, 143, 0.2);
     transform: translateY(-4px);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
 }
@@ -177,13 +177,13 @@
     width: 80px;
     height: 80px;
     border-radius: 16px;
-    background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+    background: linear-gradient(135deg, rgba(42, 157, 143, 0.2), rgba(38, 70, 83, 0.2));
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 2rem;
     font-weight: 800;
-    color: #a78bfa;
+    color: #E9C46A;
 }
 
 .catalog-products .product-card-sale {
@@ -260,9 +260,9 @@
     margin: 8px 16px 14px;
     padding: 10px;
     border-radius: 10px;
-    border: 1px solid rgba(99, 102, 241, 0.3);
-    background: rgba(99, 102, 241, 0.08);
-    color: #a78bfa;
+    border: 1px solid rgba(42, 157, 143, 0.3);
+    background: rgba(42, 157, 143, 0.08);
+    color: #E9C46A;
     font-size: 0.85rem;
     font-weight: 600;
     cursor: pointer;
@@ -270,8 +270,8 @@
 }
 
 .catalog-products .product-card-cart-btn:hover {
-    background: rgba(99, 102, 241, 0.2);
-    border-color: #6366f1;
+    background: rgba(42, 157, 143, 0.2);
+    border-color: var(--accent);
     color: #fff;
 }
 
@@ -357,12 +357,12 @@
 }
 
 .page-btn:hover {
-    border-color: #6366f1;
+    border-color: var(--accent);
     color: #fff;
 }
 
 .page-btn.active {
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: linear-gradient(135deg, var(--accent), var(--text-primary));
     border-color: transparent;
     color: #fff;
 }

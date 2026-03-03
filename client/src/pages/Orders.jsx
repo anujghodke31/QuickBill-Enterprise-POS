@@ -8,8 +8,6 @@ export default function Orders() {
     const [loading, setLoading] = useState(true)
     const [expandedId, setExpandedId] = useState(null)
 
-    useEffect(() => { loadOrders() }, [])
-
     async function loadOrders() {
         try {
             const data = await api.getOrders()
@@ -17,6 +15,9 @@ export default function Orders() {
         } catch (err) { console.error(err) }
         setLoading(false)
     }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => { loadOrders() }, [])
 
     async function handleStatusChange(orderId, newStatus) {
         try {
@@ -28,7 +29,7 @@ export default function Orders() {
     const statusConfig = {
         pending: { icon: Clock, color: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
         confirmed: { icon: Package, color: '#3b82f6', bg: 'rgba(59,130,246,0.12)' },
-        shipped: { icon: Truck, color: '#8b5cf6', bg: 'rgba(139,92,246,0.12)' },
+        shipped: { icon: Truck, color: '#264653', bg: 'rgba(38, 70, 83,0.12)' },
         delivered: { icon: CheckCircle, color: '#22c55e', bg: 'rgba(34,197,94,0.12)' },
         cancelled: { icon: XCircle, color: '#ef4444', bg: 'rgba(239,68,68,0.12)' },
     }

@@ -11,10 +11,6 @@ export default function Home() {
     const { addToCart } = useCart()
     const [addedIds, setAddedIds] = useState(new Set())
 
-    useEffect(() => {
-        loadData()
-    }, [])
-
     async function loadData() {
         try {
             const [prodData, cats] = await Promise.all([
@@ -27,6 +23,11 @@ export default function Home() {
             console.error('Failed to load home data:', err)
         }
     }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => {
+        loadData()
+    }, [])
 
     function handleAdd(e, product) {
         e.stopPropagation()
@@ -43,13 +44,13 @@ export default function Home() {
     }
 
     const categoryIcons = {
-        'Groceries': '🛒',
+        'Groceries': '🍍',
         'Personal Care': '🧴',
         'Household': '🏠',
-        'Baby Care': '👶',
-        'Electronics': '📱',
-        'Fashion': '👗',
-        'Home & Kitchen': '🍳',
+        'Baby Care': '🍼',
+        'Electronics': '🛸',
+        'Fashion': '🌺',
+        'Home & Kitchen': '🥥',
     }
 
     return (
@@ -57,17 +58,17 @@ export default function Home() {
             {/* Hero */}
             <section className="hero">
                 <div className="hero-content">
-                    <div className="hero-badge"><Sparkles size={14} /> New Arrivals Daily</div>
+                    <div className="hero-badge"><Sparkles size={14} /> Ohana means family deals!</div>
                     <h1 className="hero-title">
-                        Your everyday<br />
-                        <span className="hero-gradient">essentials delivered</span>
+                        Say Aloha to your<br />
+                        <span className="hero-gradient">everyday essentials</span>
                     </h1>
                     <p className="hero-subtitle">
-                        Fresh groceries, personal care, household items &amp; more — all at the best prices with fast delivery.
+                        Fresh groceries, alien-approved snacks, and tropical finds — delivered faster than a spaceship! 🚀🏄‍♂️
                     </p>
                     <div className="hero-actions">
                         <Link to="/shop" className="btn-hero-primary">
-                            Shop Now <ArrowRight size={18} />
+                            Catch the Wave 🌊 <ArrowRight size={18} />
                         </Link>
                     </div>
                 </div>
@@ -94,19 +95,19 @@ export default function Home() {
             <section className="features-bar">
                 <div className="feature-item">
                     <Truck size={20} />
-                    <span>Fast Delivery</span>
+                    <span>Hyperdrive Delivery</span>
                 </div>
                 <div className="feature-item">
                     <Shield size={20} />
-                    <span>Secure Checkout</span>
+                    <span>Galactic Security</span>
                 </div>
                 <div className="feature-item">
                     <RotateCcw size={20} />
-                    <span>Easy Returns</span>
+                    <span>Island Returns</span>
                 </div>
                 <div className="feature-item">
                     <Star size={20} />
-                    <span>Best Prices</span>
+                    <span>Stellar Prices</span>
                 </div>
             </section>
 

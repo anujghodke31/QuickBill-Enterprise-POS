@@ -16,10 +16,6 @@ export default function ProductDetail() {
     const [activeImg, setActiveImg] = useState(0)
     const { addToCart } = useCart()
 
-    useEffect(() => {
-        loadProduct()
-    }, [id])
-
     async function loadProduct() {
         setLoading(true)
         try {
@@ -30,6 +26,13 @@ export default function ProductDetail() {
         }
         setLoading(false)
     }
+
+    useEffect(() => {
+        loadProduct()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [id])
+
+
 
     function handleAddToCart() {
         if (!product) return

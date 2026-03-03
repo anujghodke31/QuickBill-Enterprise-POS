@@ -46,18 +46,21 @@ export default function Sidebar({ onLogout }) {
 
                 {/* Navigation */}
                 <nav className="sidebar-nav">
-                    {navItems.map(({ to, icon: Icon, label }) => (
-                        <NavLink
-                            key={to}
-                            to={to}
-                            end={to === '/admin'}
-                            className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
-                            onClick={() => setMobileOpen(false)}
-                        >
-                            <Icon size={20} />
-                            <span className="nav-label">{label}</span>
-                        </NavLink>
-                    ))}
+                    {navItems.map((item) => {
+                        const Icon = item.icon;
+                        return (
+                            <NavLink
+                                key={item.to}
+                                to={item.to}
+                                end={item.to === '/admin'}
+                                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                                onClick={() => setMobileOpen(false)}
+                            >
+                                <Icon size={20} />
+                                <span className="nav-label">{item.label}</span>
+                            </NavLink>
+                        )
+                    })}
                 </nav>
 
                 {/* Footer */}

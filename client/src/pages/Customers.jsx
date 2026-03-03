@@ -14,15 +14,16 @@ export default function Customers() {
     const [form, setForm] = useState({ name: '', phone: '', email: '' })
     const { addToast } = useToast()
 
-    useEffect(() => { loadCustomers() }, [])
-
     async function loadCustomers() {
         try {
             setCustomers(await api.getCustomers())
-        } catch (err) {
+        } catch {
             addToast('Failed to load customers', 'error')
         }
     }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => { loadCustomers() }, [])
 
     function openAdd() {
         setEditing(null)

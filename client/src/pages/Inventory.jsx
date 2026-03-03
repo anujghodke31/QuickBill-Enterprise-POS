@@ -19,15 +19,16 @@ export default function Inventory() {
     const [form, setForm] = useState(emptyForm)
     const { addToast } = useToast()
 
-    useEffect(() => { loadProducts() }, [])
-
     async function loadProducts() {
         try {
             setProducts(await api.getProducts())
-        } catch (err) {
+        } catch {
             addToast('Failed to load inventory', 'error')
         }
     }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => { loadProducts() }, [])
 
     function openAdd() {
         setEditingProduct(null)

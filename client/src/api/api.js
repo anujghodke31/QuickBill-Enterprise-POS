@@ -19,7 +19,7 @@ async function request(endpoint, options = {}) {
                 const text = await res.text();
                 message = text || message;
             }
-        } catch (_) {
+        } catch {
             // Ignore parsing errors and keep fallback message
         }
         throw new Error(message);

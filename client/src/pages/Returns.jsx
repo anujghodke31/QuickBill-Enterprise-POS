@@ -24,12 +24,13 @@ export default function Returns() {
 
     useEffect(() => {
         loadReturns()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     async function loadReturns() {
         try {
             setReturns(await api.getReturns())
-        } catch (_) {
+        } catch {
             addToast('Failed to load return history', 'error')
         }
     }

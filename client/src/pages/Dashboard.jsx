@@ -22,9 +22,8 @@ export default function Dashboard() {
     const [salesTrend, setSalesTrend] = useState(0)
     const [orderStats, setOrderStats] = useState({ totalOrders: 0, pendingOrders: 0, totalRevenue: 0 })
 
-    useEffect(() => {
-        loadData()
-    }, [])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => { loadData() }, [])
 
     async function loadData() {
         try {
@@ -82,8 +81,8 @@ export default function Dashboard() {
                     borderColor: '#818cf8',
                     backgroundColor: (ctx) => {
                         const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, ctx.chart.height)
-                        gradient.addColorStop(0, 'rgba(129, 140, 248, 0.25)')
-                        gradient.addColorStop(1, 'rgba(129, 140, 248, 0.0)')
+                        gradient.addColorStop(0, 'rgba(42, 157, 143, 0.25)')
+                        gradient.addColorStop(1, 'rgba(42, 157, 143, 0.0)')
                         return gradient
                     },
                     fill: true,
@@ -115,7 +114,7 @@ export default function Dashboard() {
                 backgroundColor: 'rgba(15, 23, 42, 0.95)',
                 titleColor: '#e2e8f0',
                 bodyColor: '#94a3b8',
-                borderColor: 'rgba(129, 140, 248, 0.3)',
+                borderColor: 'rgba(42, 157, 143, 0.3)',
                 borderWidth: 1,
                 cornerRadius: 12,
                 padding: 14,

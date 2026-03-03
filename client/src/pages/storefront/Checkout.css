@@ -67,8 +67,8 @@
 .checkout-field input:focus,
 .checkout-field textarea:focus {
     outline: none;
-    border-color: #6366f1;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(42, 157, 143, 0.15);
 }
 
 .checkout-field textarea {
@@ -112,8 +112,8 @@
 }
 
 .payment-option.active {
-    border-color: #6366f1;
-    background: rgba(99, 102, 241, 0.06);
+    border-color: var(--accent);
+    background: rgba(42, 157, 143, 0.06);
 }
 
 .payment-option input {
@@ -131,7 +131,7 @@
 }
 
 .payment-option.active .payment-radio {
-    border-color: #6366f1;
+    border-color: var(--accent);
 }
 
 .payment-option.active .payment-radio::after {
@@ -142,7 +142,7 @@
     width: 10px;
     height: 10px;
     border-radius: 50%;
-    background: #6366f1;
+    background: var(--accent);
 }
 
 .credit-card-form {
@@ -223,7 +223,7 @@
 }
 
 .checkout-item-qty {
-    color: #a78bfa;
+    color: #E9C46A;
     font-weight: 600;
     flex-shrink: 0;
 }

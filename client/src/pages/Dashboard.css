@@ -94,7 +94,7 @@
 }
 
 .stat-revenue .stat-glow {
-    background: radial-gradient(ellipse at 30% 50%, rgba(129, 140, 248, 0.08) 0%, transparent 70%);
+    background: radial-gradient(ellipse at 30% 50%, rgba(42, 157, 143, 0.08) 0%, transparent 70%);
 }
 
 .stat-icon-wrap {
@@ -108,9 +108,9 @@
 }
 
 .stat-revenue .stat-icon-wrap {
-    background: linear-gradient(135deg, rgba(129, 140, 248, 0.15), rgba(99, 102, 241, 0.25));
+    background: linear-gradient(135deg, rgba(42, 157, 143, 0.15), rgba(42, 157, 143, 0.25));
     color: #818cf8;
-    box-shadow: 0 4px 16px rgba(129, 140, 248, 0.15);
+    box-shadow: 0 4px 16px rgba(42, 157, 143, 0.15);
 }
 
 .stat-transactions .stat-icon-wrap {
@@ -132,7 +132,7 @@
 }
 
 .stat-revenue:hover {
-    border-color: rgba(129, 140, 248, 0.3);
+    border-color: rgba(42, 157, 143, 0.3);
 }
 
 .stat-transactions:hover {
@@ -314,7 +314,7 @@
     width: 36px;
     height: 36px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    background: linear-gradient(135deg, var(--accent), var(--text-primary));
     display: flex;
     align-items: center;
     justify-content: center;

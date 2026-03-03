@@ -7,11 +7,7 @@ import './CustomerAccount.css'
 export default function CustomerAccount() {
     const [orders, setOrders] = useState([])
     const [loading, setLoading] = useState(true)
-    const [email, setEmail] = useState(() => localStorage.getItem('quickbill_customer_email') || '')
-
-    useEffect(() => {
-        loadOrders()
-    }, [])
+    const [email] = useState(() => localStorage.getItem('quickbill_customer_email') || '')
 
     async function loadOrders() {
         if (!email) { setLoading(false); return }
@@ -24,10 +20,17 @@ export default function CustomerAccount() {
         setLoading(false)
     }
 
+    useEffect(() => {
+        loadOrders()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
+
+
     const statusColors = {
         'pending': { bg: 'rgba(245,158,11,0.12)', color: '#f59e0b' },
         'confirmed': { bg: 'rgba(59,130,246,0.12)', color: '#3b82f6' },
-        'shipped': { bg: 'rgba(139,92,246,0.12)', color: '#8b5cf6' },
+        'shipped': { bg: 'rgba(38, 70, 83,0.12)', color: '#264653' },
         'delivered': { bg: 'rgba(34,197,94,0.12)', color: '#22c55e' },
         'cancelled': { bg: 'rgba(239,68,68,0.12)', color: '#ef4444' },
     }

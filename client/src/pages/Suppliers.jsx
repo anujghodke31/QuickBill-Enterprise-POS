@@ -17,15 +17,16 @@ export default function Suppliers() {
     })
     const { addToast } = useToast()
 
-    useEffect(() => { loadSuppliers() }, [])
-
     async function loadSuppliers() {
         try {
             setSuppliers(await api.getSuppliers())
-        } catch (_) {
+        } catch {
             addToast('Failed to load suppliers', 'error')
         }
     }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    useEffect(() => { loadSuppliers() }, [])
 
     function openAdd() {
         setEditingSupplier(null)

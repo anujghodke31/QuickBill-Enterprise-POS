@@ -32,6 +32,7 @@ export default function POS() {
 
     useEffect(() => {
         loadInitialData()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     useEffect(() => {
@@ -41,6 +42,7 @@ export default function POS() {
         }
 
         checkLoyaltyEligibility(selectedCustomerId)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedCustomerId])
 
     useEffect(() => {
@@ -66,7 +68,7 @@ export default function POS() {
     async function loadProducts() {
         try {
             setProducts(await api.getProducts())
-        } catch (_) {
+        } catch {
             addToast('Failed to load products', 'error')
         }
     }
@@ -74,7 +76,7 @@ export default function POS() {
     async function loadCustomers() {
         try {
             setCustomers(await api.getCustomers())
-        } catch (_) {
+        } catch {
             addToast('Failed to load customers', 'error')
         }
     }
@@ -336,16 +338,19 @@ export default function POS() {
                 </div>
 
                 <div className="payment-methods">
-                    {PAYMENT_METHODS.map(({ id, icon: Icon, label }) => (
-                        <button
-                            key={id}
-                            className={`payment-option ${paymentMethod === id ? 'active' : ''}`}
-                            onClick={() => setPaymentMethod(id)}
-                        >
-                            <Icon size={20} />
-                            <span>{label}</span>
-                        </button>
-                    ))}
+                    {PAYMENT_METHODS.map((method) => {
+                        const Icon = method.icon;
+                        return (
+                            <button
+                                key={method.id}
+                                className={`payment-option ${paymentMethod === method.id ? 'active' : ''}`}
+                                onClick={() => setPaymentMethod(method.id)}
+                            >
+                                <Icon size={20} />
+                                <span>{method.label}</span>
+                            </button>
+                        )
+                    })}
                 </div>
 
                 {paymentMethod === 'Cash' && (

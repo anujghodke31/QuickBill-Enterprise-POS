@@ -11,12 +11,13 @@ export default function Reports() {
 
     useEffect(() => {
         loadInvoices()
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     async function loadInvoices() {
         try {
             setInvoices(await api.getInvoices())
-        } catch (_) {
+        } catch {
             addToast('Failed to load reports', 'error')
         }
     }
@@ -82,13 +83,12 @@ export default function Reports() {
                                     </span>
                                 </td>
                                 <td>
-                                    <span className={`badge ${
-                                        invoice.paymentMethod === 'Cash'
-                                            ? 'badge-success'
-                                            : invoice.paymentMethod === 'Card'
-                                                ? 'badge-info'
-                                                : 'badge-warning'
-                                    }`}>
+                                    <span className={`badge ${invoice.paymentMethod === 'Cash'
+                                        ? 'badge-success'
+                                        : invoice.paymentMethod === 'Card'
+                                            ? 'badge-info'
+                                            : 'badge-warning'
+                                        }`}>
                                         {invoice.paymentMethod}
                                     </span>
                                 </td>
