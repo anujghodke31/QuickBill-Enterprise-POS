@@ -81,19 +81,19 @@ export default function Dashboard() {
                     borderColor: '#818cf8',
                     backgroundColor: (ctx) => {
                         const gradient = ctx.chart.ctx.createLinearGradient(0, 0, 0, ctx.chart.height)
-                        gradient.addColorStop(0, 'rgba(42, 157, 143, 0.25)')
-                        gradient.addColorStop(1, 'rgba(42, 157, 143, 0.0)')
+                        gradient.addColorStop(0, 'rgba(99, 102, 241, 0.18)')
+                        gradient.addColorStop(1, 'rgba(99, 102, 241, 0.0)')
                         return gradient
                     },
                     fill: true,
-                    tension: 0.4,
+                    tension: 0.45,
                     pointBackgroundColor: '#818cf8',
-                    pointBorderColor: '#1e1b4b',
+                    pointBorderColor: '#0d1117',
                     pointBorderWidth: 2,
-                    pointRadius: 5,
-                    pointHoverRadius: 8,
+                    pointRadius: 4,
+                    pointHoverRadius: 7,
                     pointHoverBorderWidth: 3,
-                    borderWidth: 2.5,
+                    borderWidth: 2,
                 }]
             })
         } catch (err) {
@@ -104,37 +104,32 @@ export default function Dashboard() {
     const chartOptions = {
         responsive: true,
         maintainAspectRatio: false,
-        interaction: {
-            intersect: false,
-            mode: 'index',
-        },
+        interaction: { intersect: false, mode: 'index' },
         plugins: {
             legend: { display: false },
             tooltip: {
-                backgroundColor: 'rgba(15, 23, 42, 0.95)',
-                titleColor: '#e2e8f0',
+                backgroundColor: 'rgba(13, 17, 23, 0.95)',
+                titleColor: '#f1f5f9',
                 bodyColor: '#94a3b8',
-                borderColor: 'rgba(42, 157, 143, 0.3)',
+                borderColor: 'rgba(99, 102, 241, 0.35)',
                 borderWidth: 1,
-                cornerRadius: 12,
-                padding: 14,
-                titleFont: { weight: '600', size: 13 },
+                cornerRadius: 10,
+                padding: 12,
+                titleFont: { weight: '700', size: 13, family: "'Space Grotesk', sans-serif" },
                 bodyFont: { size: 12 },
-                callbacks: {
-                    label: (ctx) => ` ₹${ctx.parsed.y.toLocaleString()}`
-                }
+                callbacks: { label: (ctx) => ` ₹${ctx.parsed.y.toLocaleString()}` }
             }
         },
         scales: {
             x: {
-                grid: { color: 'rgba(148,163,184,0.04)', drawBorder: false },
-                ticks: { color: '#64748b', font: { size: 11, weight: '500' } },
+                grid: { color: 'rgba(255,255,255,0.03)', drawBorder: false },
+                ticks: { color: '#4b5563', font: { size: 11, weight: '500' } },
                 border: { display: false },
             },
             y: {
-                grid: { color: 'rgba(148,163,184,0.06)', drawBorder: false },
+                grid: { color: 'rgba(255,255,255,0.04)', drawBorder: false },
                 ticks: {
-                    color: '#64748b',
+                    color: '#4b5563',
                     font: { size: 11 },
                     callback: v => v >= 1000 ? `₹${(v / 1000).toFixed(0)}k` : `₹${v}`,
                     maxTicksLimit: 5,

@@ -3,10 +3,11 @@ import { Package, Plus, Search, Edit3, Calendar, Globe, EyeOff } from 'lucide-re
 import { api } from '../api/api'
 import { useToast } from '../hooks/useToast'
 import Modal from '../components/Modal'
+import { CATEGORY_TREE } from '../constants/categories'
 import './Inventory.css'
 
 const emptyForm = {
-    name: '', price: '', stock: '', barcode: '', category: 'Groceries',
+    name: '', price: '', stock: '', barcode: '', category: 'Fruits & Vegetables',
     manufacturingDate: '', expiryDate: '',
     description: '', brand: '', sku: '', compareAtPrice: '', tags: '', isPublished: false
 }
@@ -43,7 +44,7 @@ export default function Inventory() {
             price: product.price,
             stock: product.stock,
             barcode: product.barcode || '',
-            category: product.category || 'Groceries',
+            category: product.category || 'Fruits & Vegetables',
             manufacturingDate: product.manufacturingDate ? product.manufacturingDate.split('T')[0] : '',
             expiryDate: product.expiryDate ? product.expiryDate.split('T')[0] : '',
             description: product.description || '',
@@ -265,13 +266,13 @@ export default function Inventory() {
                 <div className="form-group">
                     <label>Category</label>
                     <select value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })}>
-                        <option>Groceries</option>
-                        <option>Personal Care</option>
-                        <option>Household</option>
-                        <option>Baby Care</option>
-                        <option>Electronics</option>
-                        <option>Fashion</option>
-                        <option>Home & Kitchen</option>
+                        {Object.entries(CATEGORY_TREE).map(([dept, subs]) => (
+                            <optgroup key={dept} label={dept}>
+                                {subs.map(sub => (
+                                    <option key={sub} value={sub}>{sub}</option>
+                                ))}
+                            </optgroup>
+                        ))}
                     </select>
                 </div>
                 <div className="form-group">

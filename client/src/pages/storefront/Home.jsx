@@ -3,22 +3,18 @@ import { Link } from 'react-router-dom'
 import { ArrowRight, Star, ShoppingCart, TrendingUp, Sparkles, Truck, Shield, RotateCcw } from 'lucide-react'
 import { api } from '../../api/api'
 import { useCart } from '../../context/CartContext'
+import { DEPARTMENTS } from '../../constants/categories'
 import './Home.css'
 
 export default function Home() {
     const [featured, setFeatured] = useState([])
-    const [categories, setCategories] = useState([])
     const { addToCart } = useCart()
     const [addedIds, setAddedIds] = useState(new Set())
 
     async function loadData() {
         try {
-            const [prodData, cats] = await Promise.all([
-                api.getStorefrontProducts({ limit: 8, sort: 'rating' }),
-                api.getCategories()
-            ])
+            const prodData = await api.getStorefrontProducts({ limit: 8, sort: 'rating' })
             setFeatured(prodData.products || [])
-            setCategories(cats || [])
         } catch (err) {
             console.error('Failed to load home data:', err)
         }
@@ -44,13 +40,14 @@ export default function Home() {
     }
 
     const categoryIcons = {
-        'Groceries': '🍍',
-        'Personal Care': '🧴',
-        'Household': '🏠',
-        'Baby Care': '🍼',
+        'Groceries & Food': '🍍',
+        'Fashion': '👗',
         'Electronics': '🛸',
-        'Fashion': '🌺',
         'Home & Kitchen': '🥥',
+        'Personal Care': '🧴',
+        'Baby & Kids': '🍼',
+        'Sports & Fitness': '🏋️',
+        'Health & Wellness': '💊',
     }
 
     return (
@@ -112,17 +109,17 @@ export default function Home() {
             </section>
 
             {/* Categories */}
-            {categories.length > 0 && (
+            {DEPARTMENTS.length > 0 && (
                 <section className="home-section">
                     <div className="section-header">
                         <h2>Shop by Category</h2>
                         <Link to="/shop" className="section-link">View All <ArrowRight size={16} /></Link>
                     </div>
                     <div className="category-grid">
-                        {categories.map(cat => (
-                            <Link to={`/shop?category=${encodeURIComponent(cat)}`} key={cat} className="category-card">
-                                <span className="category-icon">{categoryIcons[cat] || '📦'}</span>
-                                <span className="category-name">{cat}</span>
+                        {DEPARTMENTS.map(dept => (
+                            <Link to={`/shop?category=${encodeURIComponent(dept)}`} key={dept} className="category-card">
+                                <span className="category-icon">{categoryIcons[dept] || '📦'}</span>
+                                <span className="category-name">{dept}</span>
                             </Link>
                         ))}
                     </div>

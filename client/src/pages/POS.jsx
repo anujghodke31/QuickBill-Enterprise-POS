@@ -3,9 +3,9 @@ import { Search, ShoppingCart, Trash2, CreditCard, Banknote, Smartphone, Receipt
 import { api } from '../api/api'
 import { useToast } from '../hooks/useToast'
 import Modal from '../components/Modal'
+import { CATEGORY_TREE, DEPARTMENTS } from '../constants/categories'
 import './POS.css'
 
-const CATEGORIES = ['All', 'Groceries', 'Personal Care', 'Household', 'Baby Care']
 const PAYMENT_METHODS = [
     { id: 'Cash', icon: Banknote, label: 'Cash' },
     { id: 'Card', icon: CreditCard, label: 'Card' },
@@ -19,6 +19,7 @@ export default function POS() {
     const [customers, setCustomers] = useState([])
     const [cart, setCart] = useState([])
     const [search, setSearch] = useState('')
+    const [activeDept, setActiveDept] = useState('All')
     const [activeCategory, setActiveCategory] = useState('All')
     const [checkoutOpen, setCheckoutOpen] = useState(false)
     const [paymentMethod, setPaymentMethod] = useState('Cash')
@@ -90,8 +91,19 @@ export default function POS() {
         }
     }
 
+    const activeDeptSubs = activeDept !== 'All' ? (CATEGORY_TREE[activeDept] || []) : []
+
     const filteredProducts = products.filter((product) => {
-        const matchCategory = activeCategory === 'All' || product.category === activeCategory
+        let matchCategory
+        if (activeCategory !== 'All') {
+            // Subcategory selected — exact match
+            matchCategory = product.category === activeCategory
+        } else if (activeDept !== 'All') {
+            // Department selected — match any subcategory in that dept
+            matchCategory = activeDeptSubs.includes(product.category)
+        } else {
+            matchCategory = true
+        }
         const term = search.toLowerCase()
         const matchSearch =
             !term ||
@@ -203,17 +215,39 @@ export default function POS() {
                     />
                 </div>
 
-                <div className="category-tabs">
-                    {CATEGORIES.map((category) => (
+                <div className="category-tabs dept-tabs">
+                    <button
+                        className={`cat-btn ${activeDept === 'All' ? 'active' : ''}`}
+                        onClick={() => { setActiveDept('All'); setActiveCategory('All') }}
+                    >All</button>
+                    {DEPARTMENTS.map((dept) => (
                         <button
-                            key={category}
-                            className={`cat-btn ${activeCategory === category ? 'active' : ''}`}
-                            onClick={() => setActiveCategory(category)}
+                            key={dept}
+                            className={`cat-btn ${activeDept === dept ? 'active' : ''}`}
+                            onClick={() => { setActiveDept(dept); setActiveCategory('All') }}
                         >
-                            {category}
+                            {dept}
                         </button>
                     ))}
                 </div>
+
+                {activeDept !== 'All' && (
+                    <div className="category-tabs subcategory-tabs">
+                        <button
+                            className={`cat-btn sub ${activeCategory === 'All' ? 'active' : ''}`}
+                            onClick={() => setActiveCategory('All')}
+                        >All {activeDept}</button>
+                        {activeDeptSubs.map((sub) => (
+                            <button
+                                key={sub}
+                                className={`cat-btn sub ${activeCategory === sub ? 'active' : ''}`}
+                                onClick={() => setActiveCategory(sub)}
+                            >
+                                {sub}
+                            </button>
+                        ))}
+                    </div>
+                )}
 
                 <div className="product-grid">
                     {filteredProducts.length === 0 ? (

@@ -17,10 +17,16 @@ const getProducts = async (req, res) => {
 // @access  Public
 const getPublishedProducts = async (req, res) => {
     try {
-        const { category, brand, minPrice, maxPrice, search, sort, page = 1, limit = 12 } = req.query;
+        const { category, categories, brand, minPrice, maxPrice, search, sort, page = 1, limit = 12 } = req.query;
         const filter = { isPublished: true };
 
-        if (category) filter.category = category;
+        if (categories) {
+            // Department-level filter: match any of the subcategories in the dept
+            const catList = categories.split(',').map(c => c.trim()).filter(Boolean);
+            if (catList.length > 0) filter.category = { $in: catList };
+        } else if (category) {
+            filter.category = category;
+        }
         if (brand) filter.brand = brand;
         if (minPrice || maxPrice) {
             filter.price = {};

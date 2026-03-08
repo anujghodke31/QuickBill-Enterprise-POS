@@ -1,19 +1,21 @@
 import { useState, useEffect } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { Search, SlidersHorizontal, Star, ShoppingCart, X } from 'lucide-react'
+import { Search, SlidersHorizontal, Star, ShoppingCart, X, ChevronDown, ChevronRight } from 'lucide-react'
 import { api } from '../../api/api'
 import { useCart } from '../../context/CartContext'
+import { CATEGORY_TREE, DEPARTMENTS } from '../../constants/categories'
 import './ProductCatalog.css'
 
 export default function ProductCatalog() {
     const [searchParams, setSearchParams] = useSearchParams()
     const [products, setProducts] = useState([])
-    const [categories, setCategories] = useState([])
     const [totalPages, setTotalPages] = useState(1)
     const [loading, setLoading] = useState(true)
     const [showFilters, setShowFilters] = useState(false)
     const { addToCart } = useCart()
     const [addedIds, setAddedIds] = useState(new Set())
+    // Which departments are expanded in the sidebar
+    const [expandedDepts, setExpandedDepts] = useState({})
 
     function handleAdd(e, product) {
         e.stopPropagation()
@@ -34,11 +36,20 @@ export default function ProductCatalog() {
     const currentSort = searchParams.get('sort') || ''
     const currentPage = parseInt(searchParams.get('page') || '1')
 
+    // Is the currentCategory a department name or a specific subcategory?
+    const isDept = DEPARTMENTS.includes(currentCategory)
+    const deptSubs = isDept ? (CATEGORY_TREE[currentCategory] || []) : []
+
     async function loadProducts() {
         setLoading(true)
         try {
             const params = { page: currentPage, limit: 12 }
-            if (currentCategory) params.category = currentCategory
+            // If the selected category is a department, pass all its subcategories
+            if (isDept) {
+                params.categories = deptSubs.join(',')
+            } else if (currentCategory) {
+                params.category = currentCategory
+            }
             if (currentSearch) params.search = currentSearch
             if (currentSort) params.sort = currentSort
             const data = await api.getStorefrontProducts(params)
@@ -55,11 +66,22 @@ export default function ProductCatalog() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentCategory, currentSearch, currentSort, currentPage])
 
+    // Auto-expand the dept that contains the current category
     useEffect(() => {
-        api.getCategories().then(setCategories).catch(() => { })
-    }, [])
-
-
+        if (!currentCategory) return
+        if (isDept) {
+            setExpandedDepts(prev => ({ ...prev, [currentCategory]: true }))
+        } else {
+            // Find parent dept
+            for (const [dept, subs] of Object.entries(CATEGORY_TREE)) {
+                if (subs.includes(currentCategory)) {
+                    setExpandedDepts(prev => ({ ...prev, [dept]: true }))
+                    break
+                }
+            }
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentCategory])
 
     function updateParam(key, value) {
         const params = new URLSearchParams(searchParams)
@@ -109,13 +131,39 @@ export default function ProductCatalog() {
                             className={`filter-chip ${!currentCategory ? 'active' : ''}`}
                             onClick={() => updateParam('category', '')}
                         >All</button>
-                        {categories.map(cat => (
-                            <button
-                                key={cat}
-                                className={`filter-chip ${currentCategory === cat ? 'active' : ''}`}
-                                onClick={() => updateParam('category', cat)}
-                            >{cat}</button>
-                        ))}
+
+                        {DEPARTMENTS.map(dept => {
+                            const isOpen = expandedDepts[dept]
+                            const isDeptActive = currentCategory === dept
+                            const subs = CATEGORY_TREE[dept]
+                            return (
+                                <div key={dept} className="filter-dept">
+                                    <div className="filter-dept-header">
+                                        <button
+                                            className={`filter-chip filter-chip-dept ${isDeptActive ? 'active' : ''}`}
+                                            onClick={() => updateParam('category', dept)}
+                                        >{dept}</button>
+                                        <button
+                                            className="filter-dept-toggle"
+                                            onClick={() => setExpandedDepts(prev => ({ ...prev, [dept]: !prev[dept] }))}
+                                        >
+                                            {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                                        </button>
+                                    </div>
+                                    {isOpen && (
+                                        <div className="filter-subcats">
+                                            {subs.map(sub => (
+                                                <button
+                                                    key={sub}
+                                                    className={`filter-chip filter-chip-sub ${currentCategory === sub ? 'active' : ''}`}
+                                                    onClick={() => updateParam('category', sub)}
+                                                >{sub}</button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )
+                        })}
                     </div>
                     {hasFilters && (
                         <button className="filter-clear" onClick={clearFilters}>

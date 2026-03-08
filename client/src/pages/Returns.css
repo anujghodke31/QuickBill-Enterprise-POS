@@ -1,116 +1,47 @@
-.returns {
-    max-width: 1200px;
-    display: grid;
-    gap: var(--space-xl);
-}
-
-.return-lookup-card {
-    padding: var(--space-lg);
-}
-
-.return-lookup-row {
-    display: flex;
-    gap: var(--space-md);
-    align-items: center;
-    flex-wrap: wrap;
-}
-
-.search-wrap {
-    position: relative;
-    flex: 1;
-    min-width: 280px;
-}
-
-.search-wrap .search-icon {
-    position: absolute;
-    left: 12px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-muted);
-}
-
-.search-wrap input {
-    padding-left: 36px;
-}
-
-.return-invoice-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--space-lg);
-}
-
-.return-invoice-header h3 {
-    display: flex;
-    align-items: center;
-    gap: var(--space-sm);
-    margin-bottom: var(--space-xs);
-}
-
-.return-invoice-header p {
-    color: var(--text-secondary);
-    font-size: 0.85rem;
-}
-
-.qty-input {
-    max-width: 84px;
-    padding: var(--space-sm);
-}
-
-.return-form-grid {
-    margin-top: var(--space-lg);
-    display: grid;
-    gap: var(--space-lg);
-    grid-template-columns: 1fr 260px;
-}
-
-.return-summary-card {
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: var(--space-lg);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-md);
-    justify-content: center;
-    background: var(--bg-elevated);
-}
-
-.return-summary-label {
-    color: var(--text-secondary);
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-}
-
-.return-summary-value {
-    font-family: var(--font-display);
-    font-size: 1.6rem;
-    font-weight: 800;
-}
-
-.return-history-card h3 {
-    margin-bottom: var(--space-md);
-    font-family: var(--font-display);
-}
-
-.return-empty-state {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-sm);
-    color: var(--text-muted);
-    padding: var(--space-2xl);
-}
-
-.text-mono {
-    font-family: 'Menlo', 'Consolas', monospace;
-    font-size: 0.8rem;
-    color: var(--text-muted);
-}
-
-@media (max-width: 900px) {
-    .return-form-grid {
-        grid-template-columns: 1fr;
-    }
-}
+﻿/* Customers v2 */
+.customers { max-width: 1400px; animation: fadeIn 0.3s ease; }
+.customers-filters { display: flex; gap: var(--space-md); margin-bottom: var(--space-xl); flex-wrap: wrap; align-items: center; }
+.customer-avatar { width: 38px; height: 38px; border-radius: 50%; background: var(--accent-gradient); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; color: white; flex-shrink: 0; }
+.customer-name-cell { display: flex; align-items: center; gap: var(--space-md); }
+.customer-name { font-weight: 600; color: var(--text-primary); }
+.customer-email { font-size: 0.72rem; color: var(--text-muted); margin-top: 1px; }
+.loyalty-bar { display: flex; align-items: center; gap: var(--space-sm); }
+.loyalty-fill { height: 4px; border-radius: 99px; background: var(--accent-gradient); }
+.loyalty-track { flex: 1; height: 4px; border-radius: 99px; background: var(--bg-overlay); max-width: 80px; }
+.loyalty-pts { font-size: 0.72rem; font-weight: 700; color: var(--text-accent); }
+.spending-val { font-family: var(--font-display); font-weight: 700; color: var(--success); }
+/* Customer modal */
+.cust-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md) var(--space-xl); margin-bottom: var(--space-xl); }
+.cust-detail-item label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); font-weight: 600; }
+.cust-detail-item span { display: block; color: var(--text-primary); font-weight: 500; margin-top: 3px; }
+.cust-history h4 { font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); font-weight: 600; margin-bottom: var(--space-md); }
+/* Reports */
+.reports { max-width: 1200px; animation: fadeIn 0.3s ease; }
+.report-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-xl); }
+.report-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius-xl); padding: var(--space-xl); display: flex; align-items: flex-start; gap: var(--space-lg); transition: all var(--transition-base); cursor: pointer; }
+.report-card:hover { border-color: var(--border-accent); transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.report-icon { width: 52px; height: 52px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0; background: var(--accent-light); color: var(--text-accent); }
+.report-title { font-family: var(--font-display); font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+.report-desc { font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; }
+/* Employees */
+.employees { max-width: 1200px; animation: fadeIn 0.3s ease; }
+.emp-role { font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: var(--radius-full); }
+.emp-role.admin { background: var(--accent-light); color: var(--text-accent); }
+.emp-role.cashier { background: var(--info-bg); color: var(--info); }
+/* Suppliers */
+.suppliers { max-width: 1200px; animation: fadeIn 0.3s ease; }
+/* Orders */
+.orders { max-width: 1200px; animation: fadeIn 0.3s ease; }
+.order-status { font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: var(--radius-full); }
+.order-status.pending { background: var(--warning-bg); color: var(--warning); }
+.order-status.processing { background: var(--info-bg); color: var(--info); }
+.order-status.shipped { background: var(--accent-light); color: var(--text-accent); }
+.order-status.delivered { background: var(--success-bg); color: var(--success); }
+.order-status.cancelled { background: var(--danger-bg); color: var(--danger); }
+.order-status.refunded { background: var(--bg-overlay); color: var(--text-muted); }
+/* Returns */
+.returns { max-width: 1200px; animation: fadeIn 0.3s ease; }
+.return-status { font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: var(--radius-full); }
+.return-status.pending { background: var(--warning-bg); color: var(--warning); }
+.return-status.approved { background: var(--success-bg); color: var(--success); }
+.return-status.rejected { background: var(--danger-bg); color: var(--danger); }
