@@ -2,8 +2,16 @@ const BASE = '/api';
 
 async function request(endpoint, options = {}) {
     const { responseType = 'json', ...fetchOptions } = options;
+    const token = localStorage.getItem('quickbill_token');
+    
+    const headers = {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(fetchOptions.headers || {})
+    };
+
     const res = await fetch(`${BASE}${endpoint}`, {
-        headers: { 'Content-Type': 'application/json', ...(fetchOptions.headers || {}) },
+        headers,
         ...fetchOptions,
     });
 

@@ -55,13 +55,17 @@ export default function App() {
     return localStorage.getItem('quickbill_auth') === 'true'
   })
 
-  const handleLogin = () => {
+  const handleLogin = (response) => {
     localStorage.setItem('quickbill_auth', 'true')
+    if (response?.token) {
+      localStorage.setItem('quickbill_token', response.token)
+    }
     setIsLoggedIn(true)
   }
 
   const handleLogout = () => {
     localStorage.removeItem('quickbill_auth')
+    localStorage.removeItem('quickbill_token')
     setIsLoggedIn(false)
   }
 

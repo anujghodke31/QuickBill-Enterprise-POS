@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { CreditCard, MapPin, ArrowLeft, Lock } from 'lucide-react'
+import { CreditCard, MapPin, ArrowLeft, Lock, ShieldCheck, Loader, Check } from 'lucide-react'
 import { useCart } from '../../context/CartContext'
 import { api } from '../../api/api'
 import './Checkout.css'
@@ -10,6 +10,7 @@ export default function Checkout() {
     const navigate = useNavigate()
     const [submitting, setSubmitting] = useState(false)
     const [processingPayment, setProcessingPayment] = useState(false)
+    const [activeStep, setActiveStep] = useState(0) // 0: contact, 1: address, 2: payment
 
     const [form, setForm] = useState({
         name: '', email: '', phone: '',
@@ -21,24 +22,24 @@ export default function Checkout() {
     function handleChange(e) {
         let value = e.target.value
 
-        // Auto-format card number
         if (e.target.name === 'cardNumber') {
             value = value.replace(/\D/g, '').substring(0, 16)
             value = value.replace(/(\d{4})(?=\d)/g, '$1 ')
         }
-
-        // Auto-format expiry
         if (e.target.name === 'cardExpiry') {
             value = value.replace(/\D/g, '')
             if (value.length > 2) value = value.substring(0, 2) + '/' + value.substring(2, 4)
         }
-
-        // Limit CVC
         if (e.target.name === 'cardCvc') {
             value = value.replace(/\D/g, '').substring(0, 3)
         }
 
         setForm(prev => ({ ...prev, [e.target.name]: value }))
+
+        // Auto-advance step based on field focus
+        if (['name', 'email', 'phone'].includes(e.target.name)) setActiveStep(0)
+        if (['address', 'city', 'state', 'pincode'].includes(e.target.name)) setActiveStep(1)
+        if (['paymentMethod', 'cardNumber', 'cardExpiry', 'cardCvc', 'cardName'].includes(e.target.name)) setActiveStep(2)
     }
 
     async function handleSubmit(e) {
@@ -48,30 +49,15 @@ export default function Checkout() {
 
         if (form.paymentMethod === 'online') {
             setProcessingPayment(true)
-            // Simulate network delay for payment gateway
             await new Promise(resolve => setTimeout(resolve, 2500))
             setProcessingPayment(false)
         }
 
         try {
             const orderData = {
-                customer: {
-                    name: form.name,
-                    email: form.email,
-                    phone: form.phone,
-                },
-                shippingAddress: {
-                    address: form.address,
-                    city: form.city,
-                    state: form.state,
-                    pincode: form.pincode,
-                },
-                items: cart.map(item => ({
-                    product: item._id,
-                    name: item.name,
-                    price: item.price,
-                    quantity: item.quantity,
-                })),
+                customer: { name: form.name, email: form.email, phone: form.phone },
+                shippingAddress: { address: form.address, city: form.city, state: form.state, pincode: form.pincode },
+                items: cart.map(item => ({ product: item._id, name: item.name, price: item.price, quantity: item.quantity })),
                 paymentMethod: form.paymentMethod,
                 totalAmount: cartTotal,
             }
@@ -87,6 +73,12 @@ export default function Checkout() {
         setSubmitting(false)
     }
 
+    const steps = [
+        { icon: MapPin, label: 'Contact' },
+        { icon: MapPin, label: 'Address' },
+        { icon: CreditCard, label: 'Payment' },
+    ]
+
     if (cart.length === 0) {
         return (
             <div className="checkout-empty">
@@ -98,59 +90,83 @@ export default function Checkout() {
 
     return (
         <div className="checkout">
-            <h1 className="checkout-title"><Lock size={20} /> Checkout</h1>
+            {/* Step indicator */}
+            <div className="checkout-steps">
+                {steps.map((step, i) => (
+                    <div
+                        key={step.label}
+                        className={`checkout-step ${i <= activeStep ? 'checkout-step--active' : ''} ${i < activeStep ? 'checkout-step--done' : ''}`}
+                    >
+                        <div className="checkout-step-icon">
+                            {i < activeStep ? <Check size={16} /> : <step.icon size={16} />}
+                        </div>
+                        <span>{step.label}</span>
+                        {i < steps.length - 1 && <div className="checkout-step-line" />}
+                    </div>
+                ))}
+            </div>
+
+            <h1 className="checkout-title"><Lock size={20} /> Secure Checkout</h1>
 
             <form className="checkout-layout" onSubmit={handleSubmit}>
                 <div className="checkout-form">
                     {/* Contact */}
-                    <div className="checkout-section">
+                    <div className={`checkout-section ${activeStep === 0 ? 'checkout-section--active' : ''}`}>
                         <h2><MapPin size={18} /> Contact Information</h2>
                         <div className="checkout-row">
                             <div className="checkout-field">
                                 <label>Full Name *</label>
-                                <input name="name" value={form.name} onChange={handleChange} required />
+                                <input name="name" value={form.name} onChange={handleChange} required
+                                    onFocus={() => setActiveStep(0)} />
                             </div>
                         </div>
                         <div className="checkout-row two-col">
                             <div className="checkout-field">
                                 <label>Email *</label>
-                                <input type="email" name="email" value={form.email} onChange={handleChange} required />
+                                <input type="email" name="email" value={form.email} onChange={handleChange} required
+                                    onFocus={() => setActiveStep(0)} />
                             </div>
                             <div className="checkout-field">
                                 <label>Phone *</label>
-                                <input type="tel" name="phone" value={form.phone} onChange={handleChange} required />
+                                <input type="tel" name="phone" value={form.phone} onChange={handleChange} required
+                                    onFocus={() => setActiveStep(0)} />
                             </div>
                         </div>
                     </div>
 
                     {/* Address */}
-                    <div className="checkout-section">
+                    <div className={`checkout-section ${activeStep === 1 ? 'checkout-section--active' : ''}`}>
                         <h2><MapPin size={18} /> Shipping Address</h2>
                         <div className="checkout-field">
                             <label>Address *</label>
-                            <textarea name="address" value={form.address} onChange={handleChange} required rows="2" />
+                            <textarea name="address" value={form.address} onChange={handleChange} required rows="2"
+                                onFocus={() => setActiveStep(1)} />
                         </div>
                         <div className="checkout-row three-col">
                             <div className="checkout-field">
                                 <label>City *</label>
-                                <input name="city" value={form.city} onChange={handleChange} required />
+                                <input name="city" value={form.city} onChange={handleChange} required
+                                    onFocus={() => setActiveStep(1)} />
                             </div>
                             <div className="checkout-field">
                                 <label>State *</label>
-                                <input name="state" value={form.state} onChange={handleChange} required />
+                                <input name="state" value={form.state} onChange={handleChange} required
+                                    onFocus={() => setActiveStep(1)} />
                             </div>
                             <div className="checkout-field">
                                 <label>Pincode *</label>
-                                <input name="pincode" value={form.pincode} onChange={handleChange} required />
+                                <input name="pincode" value={form.pincode} onChange={handleChange} required
+                                    onFocus={() => setActiveStep(1)} />
                             </div>
                         </div>
                     </div>
 
                     {/* Payment */}
-                    <div className="checkout-section">
+                    <div className={`checkout-section ${activeStep === 2 ? 'checkout-section--active' : ''}`}>
                         <h2><CreditCard size={18} /> Payment Method</h2>
                         <div className="payment-options">
-                            <label className={`payment-option ${form.paymentMethod === 'online' ? 'active' : ''}`}>
+                            <label className={`payment-option ${form.paymentMethod === 'online' ? 'active' : ''}`}
+                                onClick={() => setActiveStep(2)}>
                                 <input type="radio" name="paymentMethod" value="online"
                                     checked={form.paymentMethod === 'online'} onChange={handleChange} />
                                 <span className="payment-radio"></span>
@@ -190,7 +206,8 @@ export default function Checkout() {
                                 </div>
                             )}
 
-                            <label className={`payment-option ${form.paymentMethod === 'cod' ? 'active' : ''}`}>
+                            <label className={`payment-option ${form.paymentMethod === 'cod' ? 'active' : ''}`}
+                                onClick={() => setActiveStep(2)}>
                                 <input type="radio" name="paymentMethod" value="cod"
                                     checked={form.paymentMethod === 'cod'} onChange={handleChange} />
                                 <span className="payment-radio"></span>
@@ -232,10 +249,30 @@ export default function Checkout() {
                         <span>₹{cartTotal}</span>
                     </div>
                     <button type="submit" className="btn-place-order" disabled={submitting}>
-                        {processingPayment ? 'Processing Payment...' : submitting ? 'Placing Order…' : `Pay ₹${cartTotal}`}
+                        {processingPayment ? (
+                            <><Loader size={18} className="btn-spinner" /> Processing Payment...</>
+                        ) : submitting ? (
+                            'Placing Order…'
+                        ) : (
+                            <><ShieldCheck size={18} /> Pay ₹{cartTotal}</>
+                        )}
                     </button>
+                    <div className="checkout-secure-note">
+                        <Lock size={12} /> Your payment is 256-bit SSL encrypted
+                    </div>
                 </aside>
             </form>
+
+            {/* Payment processing overlay */}
+            {processingPayment && (
+                <div className="payment-overlay">
+                    <div className="payment-overlay-card">
+                        <div className="payment-spinner" />
+                        <h3>Processing Your Payment</h3>
+                        <p>Please wait while we securely process your transaction...</p>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

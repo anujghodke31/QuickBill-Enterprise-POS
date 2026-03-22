@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { Search, SlidersHorizontal, Star, ShoppingCart, X, ChevronDown, ChevronRight } from 'lucide-react'
+import { Search, SlidersHorizontal, Star, ShoppingCart, X, ChevronDown, ChevronRight, Zap } from 'lucide-react'
 import { api } from '../../api/api'
 import { useCart } from '../../context/CartContext'
 import { CATEGORY_TREE, DEPARTMENTS } from '../../constants/categories'
+import { useScrollReveal, useStaggeredReveal } from '../../hooks/useScrollReveal'
 import './ProductCatalog.css'
 
 export default function ProductCatalog() {
@@ -14,8 +15,12 @@ export default function ProductCatalog() {
     const [showFilters, setShowFilters] = useState(false)
     const { addToCart } = useCart()
     const [addedIds, setAddedIds] = useState(new Set())
-    // Which departments are expanded in the sidebar
     const [expandedDepts, setExpandedDepts] = useState({})
+    const [fadeState, setFadeState] = useState('in') // 'in' | 'out'
+
+    // Scroll reveal for product grid
+    const [gridRef, gridVisible] = useScrollReveal({ threshold: 0.05 })
+    const productStagger = useStaggeredReveal(gridVisible && fadeState === 'in', 60)
 
     function handleAdd(e, product) {
         e.stopPropagation()
@@ -36,15 +41,17 @@ export default function ProductCatalog() {
     const currentSort = searchParams.get('sort') || ''
     const currentPage = parseInt(searchParams.get('page') || '1')
 
-    // Is the currentCategory a department name or a specific subcategory?
     const isDept = DEPARTMENTS.includes(currentCategory)
     const deptSubs = isDept ? (CATEGORY_TREE[currentCategory] || []) : []
 
-    async function loadProducts() {
+    const loadProducts = useCallback(async () => {
+        // Fade out before loading
+        setFadeState('out')
+        await new Promise(resolve => setTimeout(resolve, 200))
+
         setLoading(true)
         try {
             const params = { page: currentPage, limit: 12 }
-            // If the selected category is a department, pass all its subcategories
             if (isDept) {
                 params.categories = deptSubs.join(',')
             } else if (currentCategory) {
@@ -59,12 +66,14 @@ export default function ProductCatalog() {
             console.error(err)
         }
         setLoading(false)
-    }
+        // Fade in after loading
+        requestAnimationFrame(() => setFadeState('in'))
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [currentCategory, currentSearch, currentSort, currentPage])
 
     useEffect(() => {
         loadProducts()
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentCategory, currentSearch, currentSort, currentPage])
+    }, [loadProducts])
 
     // Auto-expand the dept that contains the current category
     useEffect(() => {
@@ -72,7 +81,6 @@ export default function ProductCatalog() {
         if (isDept) {
             setExpandedDepts(prev => ({ ...prev, [currentCategory]: true }))
         } else {
-            // Find parent dept
             for (const [dept, subs] of Object.entries(CATEGORY_TREE)) {
                 if (subs.includes(currentCategory)) {
                     setExpandedDepts(prev => ({ ...prev, [dept]: true }))
@@ -150,17 +158,15 @@ export default function ProductCatalog() {
                                             {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
                                         </button>
                                     </div>
-                                    {isOpen && (
-                                        <div className="filter-subcats">
-                                            {subs.map(sub => (
-                                                <button
-                                                    key={sub}
-                                                    className={`filter-chip filter-chip-sub ${currentCategory === sub ? 'active' : ''}`}
-                                                    onClick={() => updateParam('category', sub)}
-                                                >{sub}</button>
-                                            ))}
-                                        </div>
-                                    )}
+                                    <div className={`filter-subcats ${isOpen ? 'filter-subcats--open' : ''}`}>
+                                        {subs.map(sub => (
+                                            <button
+                                                key={sub}
+                                                className={`filter-chip filter-chip-sub ${currentCategory === sub ? 'active' : ''}`}
+                                                onClick={() => updateParam('category', sub)}
+                                            >{sub}</button>
+                                        ))}
+                                    </div>
                                 </div>
                             )
                         })}
@@ -173,11 +179,11 @@ export default function ProductCatalog() {
                 </aside>
 
                 {/* Products */}
-                <div className="catalog-products">
+                <div className="catalog-products" ref={gridRef}>
                     {loading ? (
                         <div className="catalog-loading">
                             {[...Array(8)].map((_, i) => (
-                                <div key={i} className="product-card-skeleton">
+                                <div key={i} className="product-card-skeleton" style={{ animationDelay: `${i * 100}ms` }}>
                                     <div className="skeleton-img"></div>
                                     <div className="skeleton-text"></div>
                                     <div className="skeleton-text short"></div>
@@ -192,50 +198,58 @@ export default function ProductCatalog() {
                         </div>
                     ) : (
                         <>
-                            <div className="product-grid">
-                                {products.map(product => (
-                                    <div className="product-card" key={product._id}>
-                                        <Link to={`/product/${product._id}`} className="product-card-link">
-                                            <div className="product-card-img">
-                                                {product.images?.[0] ? (
-                                                    <img src={product.images[0]} alt={product.name} />
-                                                ) : (
-                                                    <div className="product-card-placeholder">
-                                                        {product.name.charAt(0)}
-                                                    </div>
-                                                )}
-                                                {product.compareAtPrice && product.compareAtPrice > product.price && (
-                                                    <span className="product-card-sale">
-                                                        {Math.round((1 - product.price / product.compareAtPrice) * 100)}% OFF
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <div className="product-card-info">
-                                                <span className="product-card-brand">{product.brand}</span>
-                                                <h3 className="product-card-name">{product.name}</h3>
-                                                <div className="product-card-price">
-                                                    <span className="product-card-current">₹{product.price}</span>
-                                                    {product.compareAtPrice && product.compareAtPrice > product.price && (
-                                                        <span className="product-card-compare">₹{product.compareAtPrice}</span>
+                            <div className={`product-grid catalog-grid--${fadeState}`}>
+                                {products.map((product, i) => {
+                                    const discount = product.compareAtPrice && product.compareAtPrice > product.price
+                                        ? Math.round((1 - product.price / product.compareAtPrice) * 100) : 0
+                                    return (
+                                        <div
+                                            className={`product-card ${productStagger(i).className}`}
+                                            key={product._id}
+                                            style={productStagger(i).style}
+                                        >
+                                            <Link to={`/product/${product._id}`} className="product-card-link">
+                                                <div className="product-card-img">
+                                                    {product.images?.[0] ? (
+                                                        <img src={product.images[0]} alt={product.name} loading="lazy" />
+                                                    ) : (
+                                                        <div className="product-card-placeholder">
+                                                            {product.name.charAt(0)}
+                                                        </div>
+                                                    )}
+                                                    {discount > 0 && (
+                                                        <span className="product-card-sale">
+                                                            <Zap size={10} /> {discount}% OFF
+                                                        </span>
                                                     )}
                                                 </div>
-                                                {product.ratings?.average > 0 && (
-                                                    <div className="product-card-rating">
-                                                        <Star size={13} fill="#f59e0b" stroke="#f59e0b" />
-                                                        <span>{product.ratings.average.toFixed(1)}</span>
+                                                <div className="product-card-info">
+                                                    <span className="product-card-brand">{product.brand}</span>
+                                                    <h3 className="product-card-name">{product.name}</h3>
+                                                    <div className="product-card-price">
+                                                        <span className="product-card-current">₹{product.price}</span>
+                                                        {product.compareAtPrice && product.compareAtPrice > product.price && (
+                                                            <span className="product-card-compare">₹{product.compareAtPrice}</span>
+                                                        )}
                                                     </div>
-                                                )}
-                                            </div>
-                                        </Link>
-                                        <button
-                                            className={`product-card-cart-btn ${addedIds.has(product._id) ? 'added' : ''}`}
-                                            onClick={(e) => handleAdd(e, product)}
-                                        >
-                                            <ShoppingCart size={15} />
-                                            {addedIds.has(product._id) ? 'Added ✓' : 'Add to Cart'}
-                                        </button>
-                                    </div>
-                                ))}
+                                                    {product.ratings?.average > 0 && (
+                                                        <div className="product-card-rating">
+                                                            <Star size={13} fill="#f59e0b" stroke="#f59e0b" />
+                                                            <span>{product.ratings.average.toFixed(1)}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </Link>
+                                            <button
+                                                className={`product-card-cart-btn ${addedIds.has(product._id) ? 'added' : ''}`}
+                                                onClick={(e) => handleAdd(e, product)}
+                                            >
+                                                <ShoppingCart size={15} />
+                                                {addedIds.has(product._id) ? 'Added ✓' : 'Add to Cart'}
+                                            </button>
+                                        </div>
+                                    )
+                                })}
                             </div>
 
                             {/* Pagination */}

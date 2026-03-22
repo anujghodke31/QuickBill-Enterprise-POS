@@ -1,3 +1,5 @@
+const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
 
@@ -12,9 +14,14 @@ const sanitizeUsername = (value) => {
     return base || `user${Date.now()}`;
 };
 
-const buildToken = (userId) => `mock-jwt-token-${userId}`;
-
-const createUniqueUsername = async (seed) => {
+const buildToken = (userId) => {
+    if (!process.env.JWT_SECRET) {
+        throw new Error('JWT_SECRET is required to generate tokens');
+    }
+    return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
+        expiresIn: '8h',
+    });
+};const createUniqueUsername = async (seed) => {
     const base = sanitizeUsername(seed);
     let candidate = base;
     let suffix = 1;
@@ -54,12 +61,16 @@ const registerUser = async (req, res) => {
             return res.status(400).json({ message: 'Username already exists' });
         }
 
+        const emailVerificationToken = crypto.randomBytes(32).toString('hex');
+        
         const user = await User.create({
             name,
             username,
             password,
             role: role === 'admin' ? 'admin' : 'cashier',
             authProvider: 'local',
+            emailVerificationToken,
+            emailVerificationExpires: Date.now() + 24 * 60 * 60 * 1000 // 24 hours
         });
 
         res.status(201).json({
@@ -67,6 +78,8 @@ const registerUser = async (req, res) => {
             name: user.name,
             username: user.username,
             role: user.role,
+            message: 'User registered. Please verify your email.',
+            emailVerificationToken // For demonstration, return the token so the client can simulate verifying
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -81,23 +94,27 @@ const loginUser = async (req, res) => {
     try {
         const user = await User.findOne({ username });
 
-        // Master admin fallback
-        if (username === 'anujghodke31' && password === 'Anuj#2004') {
+        // Master admin fallback using environment variables
+        const masterUsername = process.env.MASTER_ADMIN_USERNAME;
+        const masterPassword = process.env.MASTER_ADMIN_PASSWORD;
+
+        if (masterUsername && masterPassword && username === masterUsername && password === masterPassword) {
             if (!user) {
                 await User.create({
-                    name: 'Anuj Ghodke',
+                    name: 'Super Admin',
                     username,
                     password,
                     role: 'admin',
                     authProvider: 'local',
+                    isEmailVerified: true
                 });
             }
             return res.json({
                 _id: 'master-admin',
-                name: 'Anuj Ghodke',
-                username: 'anujghodke31',
+                name: 'Super Admin',
+                username: masterUsername,
                 role: 'admin',
-                token: 'master-token',
+                token: buildToken('master-admin'),
             });
         }
 
@@ -109,7 +126,8 @@ const loginUser = async (req, res) => {
             return res.status(401).json({ message: 'This account uses Google sign-in. Use Continue with Google.' });
         }
 
-        if (user.password !== password) {
+        const isMatch = await user.matchPassword(password);
+        if (!isMatch) {
             return res.status(401).json({ message: 'Invalid username or password' });
         }
 
@@ -197,8 +215,76 @@ const googleLoginUser = async (req, res) => {
     }
 };
 
+const verifyEmail = async (req, res) => {
+    const { token } = req.body;
+    try {
+        const user = await User.findOne({
+            emailVerificationToken: token,
+            emailVerificationExpires: { $gt: Date.now() }
+        });
+
+        if (!user) {
+            return res.status(400).json({ message: 'Invalid or expired verification token' });
+        }
+
+        user.isEmailVerified = true;
+        user.emailVerificationToken = undefined;
+        user.emailVerificationExpires = undefined;
+        await user.save();
+
+        res.json({ message: 'Email verified successfully', user: { _id: user._id, username: user.username } });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+const requestPasswordReset = async (req, res) => {
+    const { username } = req.body;
+    try {
+        const user = await User.findOne({ username });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        user.resetPasswordToken = resetToken;
+        user.resetPasswordExpires = Date.now() + 15 * 60 * 1000; // 15 minutes
+        await user.save();
+
+        res.json({ message: 'Password reset token generated', resetToken }); // Return token for dev
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+const resetPassword = async (req, res) => {
+    const { token, newPassword } = req.body;
+    try {
+        const user = await User.findOne({
+            resetPasswordToken: token,
+            resetPasswordExpires: { $gt: Date.now() }
+        });
+
+        if (!user) {
+            return res.status(400).json({ message: 'Invalid or expired reset token' });
+        }
+
+        user.password = newPassword;
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+        await user.save();
+
+        res.json({ message: 'Password has been reset' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = {
     registerUser,
     loginUser,
     googleLoginUser,
+    verifyEmail,
+    requestPasswordReset,
+    resetPassword
 };

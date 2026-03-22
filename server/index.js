@@ -11,6 +11,7 @@ const employeeRoutes = require('./routes/employeeRoutes');
 const supplierRoutes = require('./routes/supplierRoutes');
 const returnRoutes = require('./routes/returnRoutes');
 const orderRoutes = require('./routes/orderRoutes');
+const { protect } = require('./middleware/authMiddleware');
 
 require('dotenv').config();
 
@@ -30,14 +31,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 // API Routes
-app.use('/api/products', productRoutes);
-app.use('/api/invoices', invoiceRoutes);
+app.use('/api/products', productRoutes); // Handled inside productRoutes.js for partial protection
+app.use('/api/invoices', protect, invoiceRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/customers', customerRoutes);
-app.use('/api/employees', employeeRoutes);
-app.use('/api/suppliers', supplierRoutes);
-app.use('/api/returns', returnRoutes);
-app.use('/api/orders', orderRoutes);
+app.use('/api/customers', protect, customerRoutes);
+app.use('/api/employees', protect, employeeRoutes);
+app.use('/api/suppliers', protect, supplierRoutes);
+app.use('/api/returns', protect, returnRoutes);
+app.use('/api/orders', protect, orderRoutes);
 
 // Serve React build in production
 const clientDist = path.join(__dirname, '../client/dist');

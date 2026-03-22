@@ -46,12 +46,12 @@ export default function Login({ onLogin }) {
                 setIsRegister(false)
                 setForm({ name: '', username: '', password: '', role: 'cashier' })
             } else {
-                await api.login({
+                const response = await api.login({
                     username: form.username,
                     password: form.password,
                 })
                 addToast('Welcome to QuickBill!', 'success')
-                onLogin()
+                onLogin(response)
             }
         } catch (err) {
             addToast(err.message, 'error')
@@ -82,7 +82,7 @@ export default function Login({ onLogin }) {
             })
 
             addToast(response.isNewUser ? 'Google account created successfully' : 'Logged in with Google', 'success')
-            onLogin()
+            onLogin(response)
         } catch (error) {
             addToast(mapFirebaseErrorMessage(error), 'error')
         } finally {
