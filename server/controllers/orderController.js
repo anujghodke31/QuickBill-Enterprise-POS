@@ -48,7 +48,8 @@ const createOrder = async (req, res) => {
 // Get all orders (admin)
 const getOrders = async (req, res) => {
     try {
-        const orders = await Order.find().sort({ createdAt: -1 });
+        const filter = req.user.role === 'admin' ? {} : { user: req.user._id };
+        const orders = await Order.find(filter).sort({ createdAt: -1 });
         res.json(orders);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -72,9 +73,12 @@ const getMyOrders = async (req, res) => {
 // Get single order
 const getOrderById = async (req, res) => {
     try {
-        const order = await Order.findById(req.params.id);
+        const query = { _id: req.params.id };
+        if (req.user.role !== 'admin') query.user = req.user._id;
+
+        const order = await Order.findOne(query);
         if (!order) {
-            return res.status(404).json({ message: 'Order not found' });
+            return res.status(404).json({ message: 'Order not found or unauthorized' });
         }
         res.json(order);
     } catch (error) {
@@ -85,10 +89,13 @@ const getOrderById = async (req, res) => {
 // Update order status (admin)
 const updateOrderStatus = async (req, res) => {
     try {
+        const query = { _id: req.params.id };
+        if (req.user.role !== 'admin') query.user = req.user._id;
+
         const { status, paymentStatus } = req.body;
-        const order = await Order.findById(req.params.id);
+        const order = await Order.findOne(query);
         if (!order) {
-            return res.status(404).json({ message: 'Order not found' });
+            return res.status(404).json({ message: 'Order not found or unauthorized' });
         }
 
         const previousStatus = order.status;
@@ -115,13 +122,18 @@ const updateOrderStatus = async (req, res) => {
 // Get order stats (admin dashboard)
 const getOrderStats = async (req, res) => {
     try {
-        const totalOrders = await Order.countDocuments();
-        const pendingOrders = await Order.countDocuments({ status: 'pending' });
+        const filter = req.user.role === 'admin' ? {} : { user: req.user._id };
+        const totalOrders = await Order.countDocuments(filter);
+        const pendingOrders = await Order.countDocuments({ ...filter, status: 'pending' });
+        
+        const matchStage = { status: { $ne: 'cancelled' } };
+        if (req.user.role !== 'admin') matchStage.user = req.user._id;
+
         const totalRevenue = await Order.aggregate([
-            { $match: { status: { $ne: 'cancelled' } } },
+            { $match: matchStage },
             { $group: { _id: null, total: { $sum: '$totalAmount' } } }
         ]);
-        const recentOrders = await Order.find().sort({ createdAt: -1 }).limit(5);
+        const recentOrders = await Order.find(filter).sort({ createdAt: -1 }).limit(5);
 
         res.json({
             totalOrders,

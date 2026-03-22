@@ -4,6 +4,9 @@ const User = require('../models/User');
 // @route   GET /api/employees
 const getEmployees = async (req, res) => {
     try {
+        if (req.user.role !== 'admin') {
+            return res.json([await User.findById(req.user._id).select('-password')]);
+        }
         const employees = await User.find({}).select('-password').sort({ createdAt: -1 });
         res.json(employees);
     } catch (error) {
@@ -14,6 +17,9 @@ const getEmployees = async (req, res) => {
 // @desc    Create new employee
 // @route   POST /api/employees
 const createEmployee = async (req, res) => {
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({ message: 'Only admins can create employees' });
+    }
     const { name, username, password, role } = req.body;
 
     try {
@@ -47,9 +53,18 @@ const updateEmployee = async (req, res) => {
     const { name, username, password, role } = req.body;
 
     try {
+        if (req.user.role !== 'admin' && req.user._id.toString() !== req.params.id) {
+            return res.status(403).json({ message: 'Not authorized to update this employee' });
+        }
+
         const employee = await User.findById(req.params.id);
         if (!employee) {
             return res.status(404).json({ message: 'Employee not found' });
+        }
+
+        // Only admins can change roles
+        if (role && req.user.role !== 'admin' && role !== employee.role) {
+            return res.status(403).json({ message: 'Not authorized to change roles' });
         }
 
         // Check username uniqueness if changed
@@ -84,6 +99,10 @@ const updateEmployee = async (req, res) => {
 // @route   DELETE /api/employees/:id
 const deleteEmployee = async (req, res) => {
     try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ message: 'Only admins can delete employees' });
+        }
+
         const employee = await User.findById(req.params.id);
         if (!employee) {
             return res.status(404).json({ message: 'Employee not found' });

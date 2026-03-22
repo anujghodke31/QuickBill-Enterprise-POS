@@ -4,7 +4,8 @@ const Supplier = require('../models/Supplier');
 // @route   GET /api/suppliers
 const getSuppliers = async (req, res) => {
     try {
-        const suppliers = await Supplier.find({}).sort({ createdAt: -1 });
+        const filter = req.user.role === 'admin' ? {} : { user: req.user._id };
+        const suppliers = await Supplier.find(filter).sort({ createdAt: -1 });
         res.json(suppliers);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -30,6 +31,7 @@ const createSupplier = async (req, res) => {
             gstNumber: gstNumber || '',
             category: category || 'General',
             status: status || 'active',
+            user: req.user._id,
         });
         res.status(201).json(supplier);
     } catch (error) {
@@ -43,9 +45,12 @@ const updateSupplier = async (req, res) => {
     const { name, phone, email, company, address, gstNumber, category, status } = req.body;
 
     try {
-        const supplier = await Supplier.findById(req.params.id);
+        const query = { _id: req.params.id };
+        if (req.user.role !== 'admin') query.user = req.user._id;
+
+        const supplier = await Supplier.findOne(query);
         if (!supplier) {
-            return res.status(404).json({ message: 'Supplier not found' });
+            return res.status(404).json({ message: 'Supplier not found or unauthorized' });
         }
 
         supplier.name = name || supplier.name;
@@ -68,9 +73,12 @@ const updateSupplier = async (req, res) => {
 // @route   DELETE /api/suppliers/:id
 const deleteSupplier = async (req, res) => {
     try {
-        const supplier = await Supplier.findByIdAndDelete(req.params.id);
+        const query = { _id: req.params.id };
+        if (req.user.role !== 'admin') query.user = req.user._id;
+
+        const supplier = await Supplier.findOneAndDelete(query);
         if (!supplier) {
-            return res.status(404).json({ message: 'Supplier not found' });
+            return res.status(404).json({ message: 'Supplier not found or unauthorized' });
         }
 
         res.json({ message: 'Supplier removed' });

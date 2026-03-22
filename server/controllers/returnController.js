@@ -41,7 +41,8 @@ const getPurchasedItemMap = (invoice) => {
 // @route   GET /api/returns
 const getReturns = async (req, res) => {
     try {
-        const returns = await Return.find({})
+        const filter = req.user.role === 'admin' ? {} : { user: req.user._id };
+        const returns = await Return.find(filter)
             .sort({ timestamp: -1 })
             .populate('invoiceId', 'invoiceNumber timestamp')
             .limit(200);
@@ -55,21 +56,26 @@ const getReturns = async (req, res) => {
 // @desc    Find invoice details for return by invoice number or id
 // @route   GET /api/returns/invoice/:query
 const getInvoiceForReturn = async (req, res) => {
-    const query = (req.params.query || '').trim();
+    const dbQuery = (req.params.query || '').trim();
 
-    if (!query) {
+    if (!dbQuery) {
         return res.status(400).json({ message: 'Invoice id or invoice number is required' });
     }
 
     try {
-        let invoice = await Invoice.findOne({ invoiceNumber: query }).populate('customer', 'name phone');
+        const query = { invoiceNumber: dbQuery };
+        if (req.user.role !== 'admin') query.user = req.user._id;
 
-        if (!invoice && mongoose.Types.ObjectId.isValid(query)) {
-            invoice = await Invoice.findById(query).populate('customer', 'name phone');
+        let invoice = await Invoice.findOne(query).populate('customer', 'name phone');
+
+        if (!invoice && mongoose.Types.ObjectId.isValid(dbQuery)) {
+            const idQuery = { _id: dbQuery };
+            if (req.user.role !== 'admin') idQuery.user = req.user._id;
+            invoice = await Invoice.findOne(idQuery).populate('customer', 'name phone');
         }
 
         if (!invoice) {
-            return res.status(404).json({ message: 'Invoice not found' });
+            return res.status(404).json({ message: 'Invoice not found or unauthorized' });
         }
 
         const priorReturns = await Return.find({ invoiceId: invoice._id });
@@ -91,9 +97,12 @@ const createReturn = async (req, res) => {
     }
 
     try {
-        const invoice = await Invoice.findById(invoiceId);
+        const query = { _id: invoiceId };
+        if (req.user.role !== 'admin') query.user = req.user._id;
+
+        const invoice = await Invoice.findOne(query);
         if (!invoice) {
-            return res.status(404).json({ message: 'Invoice not found' });
+            return res.status(404).json({ message: 'Invoice not found or unauthorized' });
         }
 
         const purchasedMap = getPurchasedItemMap(invoice);
@@ -158,6 +167,7 @@ const createReturn = async (req, res) => {
             items: returnItems,
             reason: reason || '',
             refundAmount,
+            user: req.user._id,
         });
 
         if (invoice.customer) {

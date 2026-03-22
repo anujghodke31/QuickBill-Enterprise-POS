@@ -40,4 +40,12 @@ const orderSchema = new mongoose.Schema({
     },
 }, { timestamps: true });
 
+orderSchema.add({
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: false
+    }
+});
+
 module.exports = mongoose.model('Order', orderSchema);

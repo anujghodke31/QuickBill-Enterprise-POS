@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { OAuth2Client } = require('google-auth-library');
 const User = require('../models/User');
+const logger = require('../utils/logger');
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const CLIENT_ID_PATTERN = /\.apps\.googleusercontent\.com$/i;
@@ -21,7 +22,9 @@ const buildToken = (userId) => {
     return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
         expiresIn: '8h',
     });
-};const createUniqueUsername = async (seed) => {
+};
+
+const createUniqueUsername = async (seed) => {
     const base = sanitizeUsername(seed);
     let candidate = base;
     let suffix = 1;
@@ -109,6 +112,7 @@ const loginUser = async (req, res) => {
                     isEmailVerified: true
                 });
             }
+            logger.info({ event: 'login_success', username: masterUsername, role: 'admin', method: 'master' });
             return res.json({
                 _id: 'master-admin',
                 name: 'Super Admin',
@@ -119,18 +123,22 @@ const loginUser = async (req, res) => {
         }
 
         if (!user) {
+            logger.warn({ event: 'login_failed', username, reason: 'user_not_found' });
             return res.status(401).json({ message: 'Invalid username or password' });
         }
 
         if (user.authProvider === 'google') {
+            logger.warn({ event: 'login_failed', username, reason: 'google_account_local_attempt' });
             return res.status(401).json({ message: 'This account uses Google sign-in. Use Continue with Google.' });
         }
 
         const isMatch = await user.matchPassword(password);
         if (!isMatch) {
+            logger.warn({ event: 'login_failed', username, reason: 'invalid_password' });
             return res.status(401).json({ message: 'Invalid username or password' });
         }
 
+        logger.info({ event: 'login_success', userId: user._id, username: user.username, role: user.role });
         return respondWithUser(res, user, false);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -190,6 +198,7 @@ const googleLoginUser = async (req, res) => {
                 authProvider: 'google',
             });
             isNewUser = true;
+            logger.info({ event: 'google_register', email: normalizedEmail, username });
         } else {
             let changed = false;
             if (!user.googleId) {
@@ -209,8 +218,10 @@ const googleLoginUser = async (req, res) => {
             }
         }
 
+        logger.info({ event: 'google_login_success', userId: user._id, email: normalizedEmail, isNewUser });
         return respondWithUser(res, user, isNewUser);
     } catch (error) {
+        logger.error({ event: 'google_auth_error', message: error.message });
         res.status(401).json({ message: 'Google authentication failed', error: error.message });
     }
 };

@@ -55,4 +55,12 @@ const returnSchema = new mongoose.Schema({
     },
 });
 
+returnSchema.add({
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    }
+});
+
 module.exports = mongoose.model('Return', returnSchema);

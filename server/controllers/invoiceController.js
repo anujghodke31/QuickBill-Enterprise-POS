@@ -146,6 +146,7 @@ const createInvoice = async (req, res) => {
             customer: customerId || null,
             paymentMethod: finalPaymentMethod,
             paymentDetails,
+            user: req.user._id,
         });
 
         const createdInvoice = await invoice.save();
@@ -170,7 +171,8 @@ const createInvoice = async (req, res) => {
 // @route   GET /api/invoices
 const getInvoices = async (req, res) => {
     try {
-        const invoices = await Invoice.find({})
+        const filter = req.user.role === 'admin' ? {} : { user: req.user._id };
+        const invoices = await Invoice.find(filter)
             .populate('customer', 'name phone')
             .sort({ timestamp: -1 })
             .limit(100);
@@ -206,9 +208,12 @@ const getLoyaltyStatus = async (req, res) => {
 // @route   GET /api/invoices/:id/receipt
 const getInvoiceReceipt = async (req, res) => {
     try {
-        const invoice = await Invoice.findById(req.params.id).populate('customer', 'name phone');
+        const query = { _id: req.params.id };
+        if (req.user.role !== 'admin') query.user = req.user._id;
+
+        const invoice = await Invoice.findOne(query).populate('customer', 'name phone');
         if (!invoice) {
-            return res.status(404).json({ message: 'Invoice not found' });
+            return res.status(404).json({ message: 'Invoice not found or unauthorized' });
         }
 
         const fileName = `receipt-${invoice.invoiceNumber || invoice._id}.pdf`;

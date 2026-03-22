@@ -4,7 +4,8 @@ const Customer = require('../models/Customer');
 // @route   GET /api/customers
 const getCustomers = async (req, res) => {
     try {
-        const customers = await Customer.find({}).sort({ createdAt: -1 });
+        const filter = req.user.role === 'admin' ? {} : { user: req.user._id };
+        const customers = await Customer.find(filter).sort({ createdAt: -1 });
         res.json(customers);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -26,7 +27,7 @@ const createCustomer = async (req, res) => {
             return res.status(400).json({ message: 'Customer with this phone already exists' });
         }
 
-        const customer = await Customer.create({ name, phone, email });
+        const customer = await Customer.create({ name, phone, email, user: req.user._id });
         res.status(201).json(customer);
     } catch (error) {
         res.status(400).json({ message: error.message });
@@ -37,9 +38,12 @@ const createCustomer = async (req, res) => {
 // @route   PUT /api/customers/:id
 const updateCustomer = async (req, res) => {
     try {
-        const customer = await Customer.findById(req.params.id);
+        const query = { _id: req.params.id };
+        if (req.user.role !== 'admin') query.user = req.user._id;
+        
+        const customer = await Customer.findOne(query);
         if (!customer) {
-            return res.status(404).json({ message: 'Customer not found' });
+            return res.status(404).json({ message: 'Customer not found or unauthorized' });
         }
 
         const { name, phone, email } = req.body;
@@ -58,9 +62,12 @@ const updateCustomer = async (req, res) => {
 // @route   DELETE /api/customers/:id
 const deleteCustomer = async (req, res) => {
     try {
-        const customer = await Customer.findByIdAndDelete(req.params.id);
+        const query = { _id: req.params.id };
+        if (req.user.role !== 'admin') query.user = req.user._id;
+
+        const customer = await Customer.findOneAndDelete(query);
         if (!customer) {
-            return res.status(404).json({ message: 'Customer not found' });
+            return res.status(404).json({ message: 'Customer not found or unauthorized' });
         }
         res.json({ message: 'Customer removed' });
     } catch (error) {

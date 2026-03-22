@@ -5,7 +5,8 @@ const Product = require('../models/Product');
 // @access  Admin
 const getProducts = async (req, res) => {
     try {
-        const products = await Product.find({}).sort({ name: 1 });
+        const filter = req.user.role === 'admin' ? {} : { user: req.user._id };
+        const products = await Product.find(filter).sort({ name: 1 });
         res.json(products);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -124,6 +125,7 @@ const createProduct = async (req, res) => {
             isPublished: isPublished || false,
             compareAtPrice: compareAtPrice || null,
             sku: sku || undefined,
+            user: req.user._id,
         });
 
         const createdProduct = await product.save();
@@ -144,7 +146,10 @@ const updateProduct = async (req, res) => {
     } = req.body;
 
     try {
-        const product = await Product.findById(req.params.id);
+        const query = { _id: req.params.id };
+        if (req.user.role !== 'admin') query.user = req.user._id;
+
+        const product = await Product.findOne(query);
 
         if (product) {
             product.name = name || product.name;
@@ -181,11 +186,15 @@ const getAlerts = async (req, res) => {
         const thirtyDaysLater = new Date();
         thirtyDaysLater.setDate(now.getDate() + 30);
 
+        const filter = req.user.role === 'admin' ? {} : { user: req.user._id };
+
         const expiringSoon = await Product.find({
+            ...filter,
             expiryDate: { $ne: null, $lte: thirtyDaysLater }
         }).sort({ expiryDate: 1 });
 
         const lowStock = await Product.find({
+            ...filter,
             $expr: { $lt: ['$stock', '$lowStockThreshold'] }
         }).sort({ stock: 1 });
 
