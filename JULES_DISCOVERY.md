@@ -1,15 +1,35 @@
 # Jules Discovery
 
-## 1. P0 Errors
+## 1. P0 Errors (Running Commands)
 
 **npm install at root:**
 ```
-11 vulnerabilities (8 moderate, 3 high)
+added 240 packages, and audited 241 packages in 8s
+
+34 packages are looking for funding
+  run `npm fund` for details
+
+4 moderate severity vulnerabilities
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
 ```
 
 **npm install in client/:**
 ```
+added 247 packages, and audited 248 packages in 18s
+
+36 packages are looking for funding
+  run `npm fund` for details
+
 10 vulnerabilities (4 moderate, 5 high, 1 critical)
+
+To address all issues, run:
+  npm audit fix
+
+Run `npm audit` for details.
 ```
 
 **node server/seed.js:**
@@ -20,19 +40,13 @@
 ```
 
 **npm run dev:**
-```
-Error: Cannot find module 'bcryptjs'
-Require stack:
-- /app/server/models/User.js
-- /app/server/middleware/authMiddleware.js
-- /app/server/routes/productRoutes.js
-- /app/server/index.js
-```
+If dependencies are not installed, the server fails with `Error: Cannot find module 'bcryptjs'`. Once installed, `npm run dev:server` starts correctly on port 3000, though with a punycode deprecation warning.
 
 **docker build:**
 ```
-ERROR: failed to build: failed to solve: node:18-alpine: failed to resolve source metadata for docker.io/library/node:18-alpine: failed to copy: httpReadSeeker: failed open: unexpected status from GET request to https://registry-1.docker.io/v2/library/node/manifests/sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e: 429 Too Many Requests
+ERROR: failed to build: failed to solve: mount source: "overlay", target: "/var/lib/docker/buildkit/containerd-overlayfs/cachemounts/buildkit958790317", fstype: overlay, flags: 0, data: "workdir=/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/10/work,upperdir=/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/10/fs,lowerdir=/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/7/fs:/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/6/fs:/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/5/fs:/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/4/fs,index=off,redirect_dir=off", err: invalid argument
 ```
+*(Note: Initial builds fail with 429 Too Many Requests if Docker Hub rate limits are hit).*
 
 ## 2. Dependency Advisories
 
@@ -48,62 +62,58 @@ ERROR: failed to build: failed to solve: node:18-alpine: failed to resolve sourc
 
 ## 3. Dual Frontend Status
 The `client/` directory exists and is a Vite/React application.
-**Recommendation:** The problem description mentions "Treat reconciling this dual-frontend situation as a P0 task." and that the main repo is mid-migration to the Vite client. Since `client/` is already partially wired up in `server/index.js` to serve the static built files in production (`app.use(express.static(clientDist));`), I recommend keeping the Vite application in `client/` as the canonical frontend going forward. We will need to make sure the vanilla JS frontend is fully removed and all references to it are updated, or if both are required for some reason, they are completely segregated. Based on typical migrations, replacing the vanilla one is the goal. For now, since the README only details the vanilla one, we will delete the vanilla one (`index.html`, `app.js`, `style.css`) and make `client/` the main one. I will verify this with the user.
+**Recommendation:** The problem description mentions "Treat reconciling this dual-frontend situation as a P0 task." and the backend already maps `app.use(express.static(clientDist))` in production. I recommend keeping the Vite application in `client/` as the canonical frontend. We will need to remove the vanilla JS frontend (`index.html`, `app.js`, `style.css` at the root) and update the README to reflect `client/` as the single canonical frontend.
 
 ## 4. Customer Model Status
-The `Customer` model exists in `server/models/Customer.js`. The routes exist in `server/routes/customerRoutes.js` and `server/controllers/customerController.js` and they are already mounted in `server/index.js`. Thus, the routes are wired.
+The `Customer` model exists in `server/models/Customer.js`. The routes exist in `server/routes/customerRoutes.js` and `server/controllers/customerController.js` and they are already mounted in `server/index.js` under `/api/customers`.
+**Recommendation:** The routes are wired. Keep the Customer management feature claim in the README.
 
 ## 5. Currency Math
-The following files define `Number` fields for money and will need to be refactored to use integer minor units (paise), instead of JS floating point arithmetic.
+The following files define `Number` fields for money (floating point math hazard) and must be refactored to use integer minor units (paise):
 
-`server/models/Customer.js`:
-- `totalSpent` (Number) - Line 23
+- `server/models/Customer.js`
+  - Line 23: `totalSpent` (Number)
+- `server/models/Invoice.js`
+  - Line 18: `price` (Number)
+  - Line 20: `subTotal` (Number)
+  - Line 27: `taxAmount` (Number)
+  - Line 31: `discountAmount` (Number)
+  - Line 22: `total` (Number)
+  - Line 40: `cashGiven` (Number)
+  - Line 41: `changeReturned` (Number)
+- `server/models/Product.js`
+  - Line 26: `price` (Number)
+  - Line 31: `costPrice` (Number)
+  - Line 36: `discount` (Number)
+- `server/models/Return.js`
+  - Line 20: `refundAmount` (Number)
+  - Line 48: `restockingFee` (Number)
+- `server/models/Order.js`
+  - Line 18: `price` (Number)
+  - Line 22: `totalAmount` (Number)
 
-`server/models/Invoice.js`:
-- `price` (Number) - Line 18
-- `subTotal` (Number) - Line 20
-- `taxAmount` (Number) - Line 27
-- `discountAmount` (Number) - Line 31
-- `total` (Number) - Line 22
-- `cashGiven` (Number) - Line 40
-- `changeReturned` (Number) - Line 41
-
-`server/models/Product.js`:
-- `price` (Number) - Line 26
-- `costPrice` (Number) - Line 31
-- `discount` (Number) - Line 36
-
-`server/models/Return.js`:
-- `refundAmount` (Number) - Line 20
-- `restockingFee` (Number) - Line 48
-
-`server/models/Order.js`:
-- `price` (Number) - Line 18
-- `totalAmount` (Number) - Line 22
-
-Note: Code in `server/controllers/invoiceController.js` likely does floating-point math when saving an invoice. We need to refactor it to do calculations in minor units.
+*(Note: `server/controllers/invoiceController.js` and other controllers doing money math will also need updates).*
 
 ## 6. Input Validation
-Currently, routes receive `req.body` but do not seem to use `express-validator` to strictly validate inputs before controller logic execution. We need to add `express-validator` checks to `server/routes/*.js`.
-Files needing validation:
-- `server/controllers/employeeController.js` - `req.body` is extracted at lines 23, 53.
-- `server/controllers/returnController.js` - `req.body` is extracted at line 93.
-- `server/controllers/orderController.js` - `req.body` is extracted at lines 7, 95.
-- `server/controllers/authController.js` - `req.body` is extracted at lines 55, 95, 151, 230, 253, 272.
-- `server/controllers/invoiceController.js` - `req.body` is extracted at line 54.
-- `server/controllers/productController.js` - `req.body` is extracted at lines 110, 146.
-- `server/controllers/supplierController.js` - `req.body` is extracted at lines 18, 45.
-- `server/controllers/customerController.js` - `req.body` is extracted at lines 18, 49.
+Currently, routes receive `req.body` but do not use `express-validator` to strictly validate inputs before controller logic execution.
+Files needing `express-validator` and `ObjectId` validation checks:
+- `server/controllers/employeeController.js` (lines 23, 53, 60)
+- `server/controllers/returnController.js` (line 93)
+- `server/controllers/orderController.js` (lines 7, 76, 95)
+- `server/controllers/authController.js` (lines 55, 95, 151, 230, 253, 272)
+- `server/controllers/invoiceController.js` (line 54)
+- `server/controllers/productController.js` (lines 110, 146)
+- `server/controllers/supplierController.js` (lines 18, 45)
+- `server/controllers/customerController.js` (lines 18, 41, 49)
 
-ObjectId validation is also missing for `req.params.id` across various controllers. (e.g. `server/controllers/employeeController.js` line 60, `server/controllers/orderController.js` line 76, `server/controllers/customerController.js` line 41).
-
-## 7. Proposed PRs
-1. **P0 - Fix Server Boot**: Update `server/models/User.js` to require `bcrypt` instead of `bcryptjs` (which is missing, but `bcrypt` is in package.json). Fix seeder `connect ECONNREFUSED` issue (and make it idempotent). Pin Node engines in package.json.
-2. **P0 - Docker and Client**: Fix docker build 429 error by changing the base image or using a different registry mirror if possible. Decide on the frontend and delete the old vanilla files.
-3. **P0/P1 - Route Error Handling & Validation**: Add `express-validator` to all public POST/PUT routes. Add MongoDB ObjectId guards on all `/:id` routes.
-4. **P1 - Security & Auth**: Fix bcrypt rounds, JWT TTL, rate limiting, helmet CSP, etc.
-5. **P1 - Money Math**: Convert all money-related fields to integer minor units (paise).
+## 7. Proposed Follow-up PRs
+1. **P0 - Fix Server Boot & Environment:** Pin Node engines in package.json. Make `node server/seed.js` idempotent using `updateOne` with `upsert`. Fix unhandled deprecation warnings if possible.
+2. **P0 - Reconcile Dual Frontend:** Delete `index.html`, `app.js`, and `style.css` at the root. Document `client/` as the canonical frontend in `README.md`.
+3. **P0 - Docker Setup:** Add `.dockerignore` to exclude `node_modules` and `.env`. Refactor `Dockerfile` to use a multi-stage build, build `client/`, and use a non-root `node` user.
+4. **P1 - Add express-validator & ObjectId Guards:** Add strictly enforced input validation and MongoDB ObjectId guards across all public POST/PUT/GET-by-ID routes.
+5. **P1 - Authentication & Security Hardening:** Update bcrypt to 12 rounds, tighten JWT TTL/mechanisms, configure explicit CORS allow-list, configure strict Helmet CSP.
+6. **P1 - Money Math:** Convert all money-related `Number` fields in schemas to integer minor units (paise) and refactor calculations in controllers (e.g., checkout/invoices).
 
 ## 8. Ambiguities
-- For the dual frontend situation, should we completely delete `index.html`, `app.js`, and `style.css` at the root and focus solely on `client/`?
-- The Docker build fails with a 429 Too Many Requests from Docker Hub. Should I just change the base image from `node:18-alpine` to something like `public.ecr.aws/docker/library/node:18-alpine` to bypass the Docker Hub rate limit?
+- **Docker Build Error:** The docker build command fails with an `overlayfs` error in the current sandbox environment (`mount source: "overlay", target: ... err: invalid argument`). This is likely an environment issue rather than a code issue. I will proceed with creating a standard multi-stage Dockerfile but may not be able to build it successfully without a clean Docker daemon.
+- **Frontend Segregation:** Should we entirely remove the vanilla frontend immediately, or is there a transition period needed? I assume immediate deletion is preferred to leave `client/` as the single source of truth based on the priority instructions.
