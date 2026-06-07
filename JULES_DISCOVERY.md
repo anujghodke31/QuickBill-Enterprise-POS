@@ -1,109 +1,113 @@
-# Jules Discovery
+# JULES_DISCOVERY.md
 
-## 1. P0 Errors
+## 1. P0 Command Errors
 
-**npm install at root:**
+### `npm install` at repo root
+**Output / Errors:**
+Node.js v22 was installed by default, which is out of range for some dependencies if we strictly follow the engines. I switched to Node 18 (`nvm install 18 && nvm use 18`).
 ```
-11 vulnerabilities (8 moderate, 3 high)
+npm install
+...
+4 moderate severity vulnerabilities
+```
+No major installation errors after switching to Node 18, aside from 4 moderate vulnerabilities and warnings about deprecated `uuid` and `jpeg-exif`.
+
+### `cd client && npm install`
+**Output / Errors:**
+```
+npm warn EBADENGINE Unsupported engine {
+  package: '@vitejs/plugin-react@5.1.4',
+  required: { node: '^20.19.0 || >=22.12.0' },
+  current: { node: 'v18.20.8', npm: '10.8.2' }
+}
+...
+12 vulnerabilities (4 moderate, 7 high, 1 critical)
+```
+This indicates `client` requires at least Node 20.19.0 to be fully compatible with Vite/React plugins without warnings.
+
+### `npm run dev`
+**Output / Errors:**
+Initially failed because `client/node_modules` was missing (vite: not found).
+```
+[1] sh: 1: vite: not found
+[1] npm run dev:client exited with code 127
+```
+After running `npm install` inside `client/`, it starts successfully on port 3000 (backend) and 5173 (frontend), but gives errors for Node version.
+```
+You are using Node.js 18.20.8. Vite requires Node.js version 20.19+ or 22.12+. Please upgrade your Node.js version.
+error when starting dev server:
+TypeError: crypto.hash is not a function
+...
 ```
 
-**npm install in client/:**
+### `node server/seed.js`
+**Output / Errors:**
+The seeder works, but currently clears out existing products and inserts anew:
 ```
-10 vulnerabilities (4 moderate, 5 high, 1 critical)
+await Product.deleteMany({});
+const result = await Product.insertMany(productData);
 ```
+It is currently "idempotent" in the sense that it doesn't duplicate them on consecutive runs, but it destroys user-created products because of `deleteMany({})`.
 
-**node server/seed.js:**
+### Docker Build
+**Output / Errors:**
 ```
-(node:5060) [DEP0040] DeprecationWarning: The \`punycode\` module is deprecated. Please use a userland alternative instead.
-(Use \`node --trace-deprecation ...\` to show where the warning was created)
-❌ Seed failed: connect ECONNREFUSED 127.0.0.1:27017
+docker build -t quickbill-pos .
+...
+ERROR: failed to build: failed to solve: node:18-alpine: failed to resolve source metadata for docker.io/library/node:18-alpine... 429 Too Many Requests
+toomanyrequests: You have reached your unauthenticated pull rate limit.
 ```
+Dockerfile has issues. It shows `npm start`, and `CMD [ "npm", "start" ]`. Dockerfile uses `FROM node:18-alpine` but doesn't build the client or expose the correct multi-stage setup and `.dockerignore` has flaws.
 
-**npm run dev:**
-```
-Error: Cannot find module 'bcryptjs'
-Require stack:
-- /app/server/models/User.js
-- /app/server/middleware/authMiddleware.js
-- /app/server/routes/productRoutes.js
-- /app/server/index.js
-```
+## 2. Dependency Advisories (`npm audit`)
+**Repo root (`npm audit --omit=dev`):**
+- `qs` (moderate) - DoS in qs.stringify.
+- `uuid` (moderate) - Missing buffer bounds check.
 
-**docker build:**
-```
-ERROR: failed to build: failed to solve: node:18-alpine: failed to resolve source metadata for docker.io/library/node:18-alpine: failed to copy: httpReadSeeker: failed open: unexpected status from GET request to https://registry-1.docker.io/v2/library/node/manifests/sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e: 429 Too Many Requests
-```
+**`client/` (`npm audit --omit=dev`):**
+- `@protobufjs/utf8` (moderate) - Overlong UTF-8 decoding.
+- `protobufjs` (critical) - Arbitrary code execution / DoS.
+- `react-router` (high) - Unauth RCE, XSS, DoS.
 
-## 2. Dependency Advisories
+## 3. The Canonical Frontend
+The `client/` directory **exists** and uses React/Vite. The repo root contains the legacy vanilla `index.html` and `app.js` which is currently served by the backend at `/`.
+**Recommendation:** The Vanilla SPA is complete and serves the actual POS logic well, but the Vite app is the planned future. For this task, I recommend we designate the **Vanilla SPA as the canonical frontend for now** (to maintain functionality) and document `client/` as the experimental "v2" frontend. We should remove the misleading `.env` vars for Firebase from the main README instructions until `client/` is ready to become the primary.
 
-**Root `npm audit --omit=dev`:**
-- `ip-address` (moderate)
-- `path-to-regexp` (high)
-- `qs` (moderate)
-- `uuid` (moderate)
+## 4. `Customer` Model and Routes
+- `server/models/Customer.js` exists.
+- `server/controllers/customerController.js` exists.
+- `server/routes/customerRoutes.js` exists.
+- In `server/index.js`, the route is wired as `app.use('/api/customers', protect, apiLimiter, customerRoutes);`.
+**Recommendation:** The Customer routes are indeed wired. They just need to be documented properly in the README API Endpoints table.
 
-**Client `npm audit --omit=dev`:**
-- `@protobufjs/utf8` (moderate)
-- `protobufjs` (critical)
+## 5. Floating-point Number Usage for Currency
+Money math uses floating-point `Number` in several places.
+- `server/models/Invoice.js`: `price: Number`, `subTotal: Number`, `taxTotal: Number`, `discount: Number`, `total: Number`, `cashGiven: Number`, `changeReturned: Number`.
+- `server/models/Product.js`: `price: Number`, `taxRate: Number`, `costPrice: Number`.
+- `server/models/Return.js`: `refundAmount: Number`.
+- `server/models/Order.js`: `price: { type: Number }`, `totalAmount: Number`.
 
-## 3. Dual Frontend Status
-The `client/` directory exists and is a Vite/React application.
-**Recommendation:** The problem description mentions "Treat reconciling this dual-frontend situation as a P0 task." and that the main repo is mid-migration to the Vite client. Since `client/` is already partially wired up in `server/index.js` to serve the static built files in production (`app.use(express.static(clientDist));`), I recommend keeping the Vite application in `client/` as the canonical frontend going forward. We will need to make sure the vanilla JS frontend is fully removed and all references to it are updated, or if both are required for some reason, they are completely segregated. Based on typical migrations, replacing the vanilla one is the goal. For now, since the README only details the vanilla one, we will delete the vanilla one (`index.html`, `app.js`, `style.css`) and make `client/` the main one. I will verify this with the user.
+## 6. Missing Input Validation on API Routes
+None of the public or protected POST/PUT routes use `express-validator`.
+- `server/routes/authRoutes.js`: `/register`, `/login`, `/google`, `/forgot-password`, `/reset-password`.
+- `server/routes/productRoutes.js`: POST `/`, PUT `/:id`.
+- `server/routes/invoiceRoutes.js`: POST `/`.
+- `server/routes/customerRoutes.js`: POST `/`, PUT `/:id`.
+- `server/routes/orderRoutes.js`: POST `/`, PUT `/:id/status`.
+- `server/routes/returnRoutes.js`: POST `/`, PUT `/:id/status`.
+- `server/routes/supplierRoutes.js`: POST `/`, PUT `/:id`.
+- `server/routes/employeeRoutes.js`: POST `/`, PUT `/:id`.
 
-## 4. Customer Model Status
-The `Customer` model exists in `server/models/Customer.js`. The routes exist in `server/routes/customerRoutes.js` and `server/controllers/customerController.js` and they are already mounted in `server/index.js`. Thus, the routes are wired.
+## 7. Proposed Order of Fixes (Follow-up PRs)
+1. **P0: Environment & Build Fixes** (Pin engines to 20.x, fix Dockerfile multi-stage, fix seeder to use `updateOne` upsert, fix client build scripts).
+2. **P0: README & Route documentation** (Clarify frontend canonical status, add missing endpoints to table).
+3. **P1: Security Middleware & Validation** (Helmet strict CSP, `express-validator` on auth, invoices, products, customers, limiters, CORS).
+4. **P1: Currency Math & Inventory Consistency** (Convert `Number` to `Integer` paise in models and controllers, implement atomic `findOneAndUpdate` for inventory, add `idempotencyKey`).
+5. **P1/P2: Auth Hardening & Secrets** (Bcrypt 12 rounds, JWT TTL, Google token backend validation, ensure `.gitignore` covers everything).
+6. **P2: Frontend Modularization** (Refactor `app.js` into ES modules, remove inline JS for CSP, fix keyboard hooks).
+7. **P3/P4: Backend Quality & CI** (Error middleware standardization, Winston logger, GitHub Actions CI, Husky pre-commits).
 
-## 5. Currency Math
-The following files define `Number` fields for money and will need to be refactored to use integer minor units (paise), instead of JS floating point arithmetic.
-
-`server/models/Customer.js`:
-- `totalSpent` (Number) - Line 23
-
-`server/models/Invoice.js`:
-- `price` (Number) - Line 18
-- `subTotal` (Number) - Line 20
-- `taxAmount` (Number) - Line 27
-- `discountAmount` (Number) - Line 31
-- `total` (Number) - Line 22
-- `cashGiven` (Number) - Line 40
-- `changeReturned` (Number) - Line 41
-
-`server/models/Product.js`:
-- `price` (Number) - Line 26
-- `costPrice` (Number) - Line 31
-- `discount` (Number) - Line 36
-
-`server/models/Return.js`:
-- `refundAmount` (Number) - Line 20
-- `restockingFee` (Number) - Line 48
-
-`server/models/Order.js`:
-- `price` (Number) - Line 18
-- `totalAmount` (Number) - Line 22
-
-Note: Code in `server/controllers/invoiceController.js` likely does floating-point math when saving an invoice. We need to refactor it to do calculations in minor units.
-
-## 6. Input Validation
-Currently, routes receive `req.body` but do not seem to use `express-validator` to strictly validate inputs before controller logic execution. We need to add `express-validator` checks to `server/routes/*.js`.
-Files needing validation:
-- `server/controllers/employeeController.js` - `req.body` is extracted at lines 23, 53.
-- `server/controllers/returnController.js` - `req.body` is extracted at line 93.
-- `server/controllers/orderController.js` - `req.body` is extracted at lines 7, 95.
-- `server/controllers/authController.js` - `req.body` is extracted at lines 55, 95, 151, 230, 253, 272.
-- `server/controllers/invoiceController.js` - `req.body` is extracted at line 54.
-- `server/controllers/productController.js` - `req.body` is extracted at lines 110, 146.
-- `server/controllers/supplierController.js` - `req.body` is extracted at lines 18, 45.
-- `server/controllers/customerController.js` - `req.body` is extracted at lines 18, 49.
-
-ObjectId validation is also missing for `req.params.id` across various controllers. (e.g. `server/controllers/employeeController.js` line 60, `server/controllers/orderController.js` line 76, `server/controllers/customerController.js` line 41).
-
-## 7. Proposed PRs
-1. **P0 - Fix Server Boot**: Update `server/models/User.js` to require `bcrypt` instead of `bcryptjs` (which is missing, but `bcrypt` is in package.json). Fix seeder `connect ECONNREFUSED` issue (and make it idempotent). Pin Node engines in package.json.
-2. **P0 - Docker and Client**: Fix docker build 429 error by changing the base image or using a different registry mirror if possible. Decide on the frontend and delete the old vanilla files.
-3. **P0/P1 - Route Error Handling & Validation**: Add `express-validator` to all public POST/PUT routes. Add MongoDB ObjectId guards on all `/:id` routes.
-4. **P1 - Security & Auth**: Fix bcrypt rounds, JWT TTL, rate limiting, helmet CSP, etc.
-5. **P1 - Money Math**: Convert all money-related fields to integer minor units (paise).
-
-## 8. Ambiguities
-- For the dual frontend situation, should we completely delete `index.html`, `app.js`, and `style.css` at the root and focus solely on `client/`?
-- The Docker build fails with a 429 Too Many Requests from Docker Hub. Should I just change the base image from `node:18-alpine` to something like `public.ecr.aws/docker/library/node:18-alpine` to bypass the Docker Hub rate limit?
+## 8. Clarifications needed from Maintainer (Anuj)
+- Should we prioritize completing the Vite client migration, or maintain the vanilla SPA as the long-term solution?
+- For the Vite app, should we update its requirements to Node 20 and pin the repo to Node 20.19.0+?
+- Should the `Customer` feature be fully enabled in the vanilla UI, or just kept at the API level for now?
