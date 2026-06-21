@@ -4,12 +4,12 @@
 
 **npm install at root:**
 ```
-11 vulnerabilities (8 moderate, 3 high)
+6 vulnerabilities (4 moderate, 2 critical)
 ```
 
 **npm install in client/:**
 ```
-10 vulnerabilities (4 moderate, 5 high, 1 critical)
+16 vulnerabilities (2 low, 5 moderate, 8 high, 1 critical)
 ```
 
 **node server/seed.js:**
@@ -20,38 +20,32 @@
 ```
 
 **npm run dev:**
-```
-Error: Cannot find module 'bcryptjs'
-Require stack:
-- /app/server/models/User.js
-- /app/server/middleware/authMiddleware.js
-- /app/server/routes/productRoutes.js
-- /app/server/index.js
-```
+The server starts successfully, but the client dev server script errors with `sh: 1: vite: not found` if `npm install` hasn't been run inside the `client/` folder.
+After running `npm install` in `client/`, `npm run dev` successfully boots both backend and frontend servers on ports 3000 and 5173, respectively.
 
 **docker build:**
 ```
-ERROR: failed to build: failed to solve: node:18-alpine: failed to resolve source metadata for docker.io/library/node:18-alpine: failed to copy: httpReadSeeker: failed open: unexpected status from GET request to https://registry-1.docker.io/v2/library/node/manifests/sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e: 429 Too Many Requests
+ERROR: failed to build: failed to solve: mount source: "overlay", target: "/var/lib/docker/buildkit/containerd-overlayfs/cachemounts/buildkit...", fstype: overlay, flags: 0, data: "workdir=/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/8/work,upperdir=...,lowerdir=...,index=off,redirect_dir=off", err: invalid argument
 ```
 
 ## 2. Dependency Advisories
 
 **Root `npm audit --omit=dev`:**
-- `ip-address` (moderate)
-- `path-to-regexp` (high)
 - `qs` (moderate)
 - `uuid` (moderate)
 
 **Client `npm audit --omit=dev`:**
+- `@grpc/grpc-js` (high)
 - `@protobufjs/utf8` (moderate)
 - `protobufjs` (critical)
+- `react-router` (high)
 
 ## 3. Dual Frontend Status
-The `client/` directory exists and is a Vite/React application.
-**Recommendation:** The problem description mentions "Treat reconciling this dual-frontend situation as a P0 task." and that the main repo is mid-migration to the Vite client. Since `client/` is already partially wired up in `server/index.js` to serve the static built files in production (`app.use(express.static(clientDist));`), I recommend keeping the Vite application in `client/` as the canonical frontend going forward. We will need to make sure the vanilla JS frontend is fully removed and all references to it are updated, or if both are required for some reason, they are completely segregated. Based on typical migrations, replacing the vanilla one is the goal. For now, since the README only details the vanilla one, we will delete the vanilla one (`index.html`, `app.js`, `style.css`) and make `client/` the main one. I will verify this with the user.
+The `client/` directory exists and is a Vite/React application. It builds successfully into `dist/`.
+**Recommendation:** We should adopt the Vite application in `client/` as the canonical frontend, as it seems to be the intended direction (the README states the repo is mid-migration, and `server/index.js` already hosts `client/dist` in production). The root vanilla JS frontend files (`index.html`, `app.js`, `style.css`) should be safely removed to eliminate the dual-frontend split.
 
 ## 4. Customer Model Status
-The `Customer` model exists in `server/models/Customer.js`. The routes exist in `server/routes/customerRoutes.js` and `server/controllers/customerController.js` and they are already mounted in `server/index.js`. Thus, the routes are wired.
+The `Customer` model exists in `server/models/Customer.js`. The routes exist in `server/routes/customerRoutes.js` and `server/controllers/customerController.js`, and they are already mounted in `server/index.js` (at `/api/customers`). Thus, the routes are wired.
 
 ## 5. Currency Math
 The following files define `Number` fields for money and will need to be refactored to use integer minor units (paise), instead of JS floating point arithmetic.
@@ -98,12 +92,12 @@ Files needing validation:
 ObjectId validation is also missing for `req.params.id` across various controllers. (e.g. `server/controllers/employeeController.js` line 60, `server/controllers/orderController.js` line 76, `server/controllers/customerController.js` line 41).
 
 ## 7. Proposed PRs
-1. **P0 - Fix Server Boot**: Update `server/models/User.js` to require `bcrypt` instead of `bcryptjs` (which is missing, but `bcrypt` is in package.json). Fix seeder `connect ECONNREFUSED` issue (and make it idempotent). Pin Node engines in package.json.
-2. **P0 - Docker and Client**: Fix docker build 429 error by changing the base image or using a different registry mirror if possible. Decide on the frontend and delete the old vanilla files.
-3. **P0/P1 - Route Error Handling & Validation**: Add `express-validator` to all public POST/PUT routes. Add MongoDB ObjectId guards on all `/:id` routes.
-4. **P1 - Security & Auth**: Fix bcrypt rounds, JWT TTL, rate limiting, helmet CSP, etc.
-5. **P1 - Money Math**: Convert all money-related fields to integer minor units (paise).
+1. **P0 - Fix Docker, Seed & Env Setup**: Pin Node 20 engines in `package.json`. Address Docker build mount overlay cache issue. Fix `seed.js` idempotency and connection issues.
+2. **P0 - Consolidate Frontend**: Remove vanilla SPA files at root, document `client/` as canonical, update README env vars to match `client/`.
+3. **P1 - API Hardening**: Implement `express-validator` for all public POST/PUT requests and add MongoDB ObjectId guards to all `/:id` routes.
+4. **P1 - Security Defaults**: Enhance bcrypt rounds, adjust JWT expiration/refresh mechanisms, add `express-mongo-sanitize`, and finalize strict Helmet configurations.
+5. **P1 - Integer Math**: Convert all currency fields in schemas and controllers to use integer minor units (paise) to prevent floating-point anomalies.
 
 ## 8. Ambiguities
-- For the dual frontend situation, should we completely delete `index.html`, `app.js`, and `style.css` at the root and focus solely on `client/`?
-- The Docker build fails with a 429 Too Many Requests from Docker Hub. Should I just change the base image from `node:18-alpine` to something like `public.ecr.aws/docker/library/node:18-alpine` to bypass the Docker Hub rate limit?
+- The user instruction mentions fixing `seed.js` idempotency and connection failures, but `connect ECONNREFUSED` usually implies MongoDB simply isn't running locally rather than a flaw in the seeder itself. I will assume the seeder requires a robust fallback mechanism or documentation to ensure a Mongo process is up.
+- Does the maintainer prefer we keep both frontends and split routes? My recommendation is to drop the root SPA entirely. I await confirmation.
