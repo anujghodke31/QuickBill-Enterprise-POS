@@ -13,11 +13,6 @@ added 240 packages, and audited 241 packages in 7s
   run `npm fund` for details
 
 6 vulnerabilities (4 moderate, 2 critical)
-
-To address all issues, run:
-  npm audit fix
-
-Run `npm audit` for details.
 ```
 
 **npm install in client/:**
@@ -28,11 +23,6 @@ added 247 packages, and audited 248 packages in 16s
   run `npm fund` for details
 
 16 vulnerabilities (2 low, 5 moderate, 8 high, 1 critical)
-
-To address all issues, run:
-  npm audit fix
-
-Run `npm audit` for details.
 ```
 
 **node server/seed.js:**
@@ -46,73 +36,41 @@ Run `npm audit` for details.
 ```
 > quickbill-pos@2.0.0 dev
 > concurrently "npm run dev:server" "npm run dev:client"
-
-[0]
-[0] > quickbill-pos@2.0.0 dev:server
-[0] > nodemon server/index.js
-[0]
-[1]
-[1] > quickbill-pos@2.0.0 dev:client
-[1] > cd client && npm run dev
-[1]
-[0] [nodemon] 3.1.14
-[0] [nodemon] to restart at any time, enter `rs`
-[0] [nodemon] watching path(s): *.*
-[0] [nodemon] watching extensions: js,mjs,cjs,json
-[0] [nodemon] starting `node server/index.js`
-[1]
-[1] > client@0.0.0 dev
-[1] > vite
-[1]
-[1]
-[1]   VITE v7.3.1  ready in 337 ms
-[1]
-[1]   ➜  Local:   http://localhost:5173/
-[1]   ➜  Network: use --host to expose
-[0] (node:7584) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
-[0] (Use `node --trace-deprecation ...` to show where the warning was created)
-[0] info: [object Object] {"service":"quickbill-api","timestamp":"2026-06-20T23:59:32.871Z"}
-[0] Server running on port 3000
+...
+[1]   VITE v7.3.1  ready in 364 ms
+...
+[0] error: ENOENT: no such file or directory, stat '/app/client/dist/index.html'
 ```
-Note: The missing `bcryptjs` error reported in the original discovery was not reproduced on running `npm install`, but might happen before running `npm install`.
+Note: fails to serve the frontend via the backend on port 3000 because `client/dist/index.html` does not exist.
 
 **docker build:**
 ```
-#6 [2/5] WORKDIR /usr/src/app
-#6 ERROR: mount source: "overlay", target: "/var/lib/docker/buildkit/containerd-overlayfs/cachemounts/buildkit1663625115", fstype: overlay, flags: 0, data: "workdir=/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/8/work,upperdir=/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/8/fs,lowerdir=/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/7/fs:/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/6/fs:/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/5/fs:/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/4/fs,index=off,redirect_dir=off", err: invalid argument
-------
- > [2/5] WORKDIR /usr/src/app:
-------
-Dockerfile:4
---------------------
-   2 |
-   3 |     # Create app directory
-   4 | >>> WORKDIR /usr/src/app
-   5 |
-   6 |     # Install app dependencies
---------------------
-ERROR: failed to build: failed to solve: mount source: "overlay", target: "/var/lib/docker/buildkit/containerd-overlayfs/cachemounts/buildkit1663625115", fstype: overlay, flags: 0, data: "workdir=/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/8/work,upperdir=/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/8/fs,lowerdir=/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/7/fs:/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/6/fs:/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/5/fs:/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/4/fs,index=off,redirect_dir=off", err: invalid argument
+#5 [2/5] WORKDIR /usr/src/app
+#5 ERROR: mount source: "overlay", target: "/var/lib/docker/buildkit/containerd-overlayfs/cachemounts/buildkit1917783858", fstype: overlay, flags: 0, data: "workdir=/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/8/work,upperdir=/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/8/fs,lowerdir=/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/7/fs:/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/6/fs:/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/5/fs:/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/4/fs,index=off,redirect_dir=off", err: invalid argument
 ```
+Note: The docker build fails when setting `WORKDIR`. This is often an issue with how docker interacts with overlayfs.
 
 ## 2. Dependency Advisories
 
 **Root `npm audit --omit=dev`:**
 - `qs` (moderate)
 - `uuid` (moderate)
+- Total: 6 vulnerabilities (4 moderate, 2 critical)
 
 **Client `npm audit --omit=dev`:**
-- (Audit report is not detailed, but shows 2 low, 5 moderate, 8 high, 1 critical vulnerability). Needs `npm audit fix`.
+- Total: 16 vulnerabilities (2 low, 5 moderate, 8 high, 1 critical)
 
 ## 3. Dual Frontend Status
 The `client/` directory exists and is a Vite/React application. `server/index.js` already explicitly maps static file serving to `client/dist`.
-**Recommendation:** We should definitely use `client/` as the canonical frontend. The legacy vanilla SPA files (`index.html`, `app.js`, `style.css`) at the root should be completely removed to prevent confusion. The `README.md` must be updated to remove references to the vanilla JS and document building/running the Vite application.
+**Recommendation:** We should definitively use `client/` as the canonical frontend. The legacy vanilla SPA files (`index.html`, `app.js`, `style.css`, `replace_colors.js`) at the root should be completely removed. The `README.md` must be updated to remove references to the vanilla JS, document building/running the Vite application, and clarify where env vars go.
 
 ## 4. Customer Model Status
 The `Customer` model exists in `server/models/Customer.js`.
-The routes for the customer model exist in `server/routes/customerRoutes.js`, and these routes are explicitly wired in `server/index.js` (`app.use('/api/customers', protect, apiLimiter, customerRoutes);`). Thus, the `Customer` model has wired routes and the feature works, but we should make sure it meets all the validation requirements.
+The routes for the customer model exist in `server/routes/customerRoutes.js`, and these routes are explicitly wired in `server/index.js` (`app.use('/api/customers', protect, apiLimiter, customerRoutes);`).
+**Recommendation:** Keep the feature as-is, but verify it meets all validation requirements and add tests for it.
 
 ## 5. Currency Math
-The following files define `Number` fields for money and will need to be refactored to use integer minor units (paise), instead of JS floating point arithmetic.
+The following files define `Number` fields for money and will need to be refactored to use integer minor units (paise).
 
 **`server/models/Customer.js`:**
 - Line 23: `totalSpent` (Number)
@@ -132,7 +90,6 @@ The following files define `Number` fields for money and will need to be refacto
 - Line 36: `discount` (Number)
 
 **`server/models/Return.js`:**
-- Line 15: `quantity` (Number) - Wait, quantity isn't currency but `refundAmount` is.
 - Line 20: `refundAmount` (Number)
 - Line 48: `restockingFee` (Number)
 
@@ -141,10 +98,10 @@ The following files define `Number` fields for money and will need to be refacto
 - Line 22: `totalAmount` (Number)
 
 ## 6. Input Validation
-Currently, routes receive `req.body` but do not seem to use `express-validator` to strictly validate inputs before controller logic execution. We need to add `express-validator` checks to `server/routes/*.js`.
+Currently, routes receive `req.body` but do not seem to use `express-validator` to strictly validate inputs before controller logic execution.
 
 Files needing validation for `POST`/`PUT` routes:
-- `server/routes/authRoutes.js` (`/register`, `/login`, `/google`, `/verify-email`, `/forgot-password`, `/reset-password`)
+- `server/routes/authRoutes.js`
 - `server/routes/customerRoutes.js`
 - `server/routes/employeeRoutes.js`
 - `server/routes/invoiceRoutes.js`
@@ -156,13 +113,13 @@ Files needing validation for `POST`/`PUT` routes:
 Additionally, `ObjectId` validation is missing for `/:id` parameters across these routers.
 
 ## 7. Proposed PRs
-1. **P0 - Dependency & Environment Setup**: Update `server/models/User.js` to correctly use bcrypt, add `.nvmrc` pinning Node 20, update package.json engines.
-2. **P0 - Fix Docker build & Seeder**: Fix docker build 429 error and layer issues. Make `server/seed.js` idempotent using upsert logic.
-3. **P0 - Reconcile Dual Frontend**: Remove vanilla SPA files (`index.html`, `app.js`, `style.css`), update `README.md` to reflect `client/` as the canonical frontend.
+1. **P0 - Fix MongoDB Seeder**: Make `server/seed.js` idempotent using bulkWrite upsert logic on `barcode` instead of `deleteMany` & `insertMany`.
+2. **P0 - Fix Environment setup & Reconcile Dual Frontend**: Add `.nvmrc` pinning Node 20, update package.json engines. Remove vanilla SPA files (`index.html`, `app.js`, `style.css`, `replace_colors.js`), update `README.md` to reflect `client/` as the canonical frontend. Make the node start script build `client/` or configure `concurrently` to serve Vite.
+3. **P0 - Fix Docker build**: Fix docker build overlay error. Implement multi-stage build running non-root.
 4. **P0/P1 - Route Validation & Error Handling**: Add `express-validator` to all public POST/PUT routes. Add MongoDB ObjectId guards on all `/:id` routes.
-5. **P1 - Auth Security**: Update `bcrypt` rounds to $\ge 12$, set up JWT TTL rules, strict Helmet CSP, rate limits.
+5. **P1 - Auth Security**: Update `bcrypt` rounds to >= 12, set up JWT TTL rules, strict Helmet CSP, rate limits.
 6. **P1 - Integer Minor Units**: Convert all money-related fields from JS floating-point arithmetic to integer minor units (paise). Add transactions and stock atomic decrements for checkout.
 
 ## 8. Ambiguities
-- For the dual frontend situation, should we completely delete `index.html`, `app.js`, and `style.css` at the root? My recommendation is YES, since `client/` exists.
-- The Docker build fails with a docker daemon overlay error. I suspect it's environmental, but I will review the `Dockerfile` to ensure there are no glaring syntax issues. Should I also try to clear the builder cache or change the base image?
+- The Docker build fails with a docker daemon overlay error. I suspect it's environmental or related to caching, but I will review the `Dockerfile` to ensure there are no glaring syntax issues. Is there a specific base image I should use?
+- For local dev mode, the express server looks for `client/dist/index.html`. Since we use Vite, should the express server proxy to the vite server for `/` or do we expect developers to run the build in `client/` before running the server locally?
