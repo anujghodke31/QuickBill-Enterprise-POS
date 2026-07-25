@@ -4,20 +4,15 @@
 
 **npm install at root:**
 ```
-npm warn deprecated jpeg-exif@1.1.4: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
-npm warn deprecated uuid@9.0.1: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+npm warn deprecated jpeg-exif@1.1.4: Package no longer supported.
+npm warn deprecated uuid@9.0.1: uuid@10 and below is no longer supported.
 
 added 240 packages, and audited 241 packages in 7s
 
 34 packages are looking for funding
   run `npm fund` for details
 
-6 vulnerabilities (4 moderate, 2 critical)
-
-To address all issues, run:
-  npm audit fix
-
-Run `npm audit` for details.
+10 vulnerabilities (1 low, 6 moderate, 1 high, 2 critical)
 ```
 
 **npm install in client/:**
@@ -27,18 +22,12 @@ added 247 packages, and audited 248 packages in 16s
 36 packages are looking for funding
   run `npm fund` for details
 
-16 vulnerabilities (2 low, 5 moderate, 8 high, 1 critical)
-
-To address all issues, run:
-  npm audit fix
-
-Run `npm audit` for details.
+17 vulnerabilities (2 low, 2 moderate, 11 high, 2 critical)
 ```
 
 **node server/seed.js:**
 ```
 (node:9542) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
-(Use `node --trace-deprecation ...` to show where the warning was created)
 ❌ Seed failed: connect ECONNREFUSED 127.0.0.1:27017
 ```
 
@@ -50,119 +39,76 @@ Run `npm audit` for details.
 [0]
 [0] > quickbill-pos@2.0.0 dev:server
 [0] > nodemon server/index.js
-[0]
 [1]
 [1] > quickbill-pos@2.0.0 dev:client
 [1] > cd client && npm run dev
-[1]
 [0] [nodemon] 3.1.14
-[0] [nodemon] to restart at any time, enter `rs`
-[0] [nodemon] watching path(s): *.*
-[0] [nodemon] watching extensions: js,mjs,cjs,json
 [0] [nodemon] starting `node server/index.js`
-[1]
-[1] > client@0.0.0 dev
-[1] > vite
-[1]
-[1]
-[1]   VITE v7.3.1  ready in 337 ms
-[1]
-[1]   ➜  Local:   http://localhost:5173/
-[1]   ➜  Network: use --host to expose
-[0] (node:7584) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
-[0] (Use `node --trace-deprecation ...` to show where the warning was created)
+[1] sh: 1: vite: not found
+[1] npm run dev:client exited with code 127
+[0] (node:7584) [DEP0040] DeprecationWarning: The `punycode` module is deprecated.
 [0] info: [object Object] {"service":"quickbill-api","timestamp":"2026-06-20T23:59:32.871Z"}
 [0] Server running on port 3000
 ```
-Note: The missing `bcryptjs` error reported in the original discovery was not reproduced on running `npm install`, but might happen before running `npm install`.
+Note: `client` fails to start because Vite is missing (if `npm install` hasn't been run in `client/`).
 
 **docker build:**
 ```
-#6 [2/5] WORKDIR /usr/src/app
-#6 ERROR: mount source: "overlay", target: "/var/lib/docker/buildkit/containerd-overlayfs/cachemounts/buildkit1663625115", fstype: overlay, flags: 0, data: "workdir=/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/8/work,upperdir=/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/8/fs,lowerdir=/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/7/fs:/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/6/fs:/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/5/fs:/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/4/fs,index=off,redirect_dir=off", err: invalid argument
-------
- > [2/5] WORKDIR /usr/src/app:
-------
-Dockerfile:4
---------------------
-   2 |
-   3 |     # Create app directory
-   4 | >>> WORKDIR /usr/src/app
-   5 |
-   6 |     # Install app dependencies
---------------------
-ERROR: failed to build: failed to solve: mount source: "overlay", target: "/var/lib/docker/buildkit/containerd-overlayfs/cachemounts/buildkit1663625115", fstype: overlay, flags: 0, data: "workdir=/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/8/work,upperdir=/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/8/fs,lowerdir=/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/7/fs:/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/6/fs:/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/5/fs:/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/4/fs,index=off,redirect_dir=off", err: invalid argument
+ERROR: failed to build: failed to solve: mount source: "overlay", target: "/var/lib/docker/buildkit/containerd-overlayfs/cachemounts/buildkit3908803349", fstype: overlay, flags: 0, data: "workdir=...,index=off,redirect_dir=off", err: invalid argument
 ```
+*(There is also no `.dockerignore` file, causing huge contexts.)*
 
 ## 2. Dependency Advisories
 
 **Root `npm audit --omit=dev`:**
+- `body-parser` (moderate)
+- `brace-expansion` (high)
+- `mongoose` (moderate)
+- `morgan` (moderate)
 - `qs` (moderate)
+- `shell-quote` (critical)
 - `uuid` (moderate)
 
 **Client `npm audit --omit=dev`:**
-- (Audit report is not detailed, but shows 2 low, 5 moderate, 8 high, 1 critical vulnerability). Needs `npm audit fix`.
+- 17 vulnerabilities (2 low, 2 moderate, 11 high, 2 critical).
 
 ## 3. Dual Frontend Status
-The `client/` directory exists and is a Vite/React application. `server/index.js` already explicitly maps static file serving to `client/dist`.
-**Recommendation:** We should definitely use `client/` as the canonical frontend. The legacy vanilla SPA files (`index.html`, `app.js`, `style.css`) at the root should be completely removed to prevent confusion. The `README.md` must be updated to remove references to the vanilla JS and document building/running the Vite application.
+The `client/` directory exists and contains a Vite/React application. However, based on the project's memories and guidelines: "The canonical frontend has been designated as the legacy vanilla HTML/JS SPA, rather than the Vite application located in 'client/'."
+**Recommendation:** The canonical frontend should be the vanilla HTML/JS SPA (`index.html`, `app.js`, `style.css`). The `client/` directory should be removed. The `README.md` must be updated to remove references to `client/.env` and `VITE_FIREBASE_*` to prevent contributor confusion. The `server/index.js` which currently statically serves `client/dist` must be updated to serve the legacy root frontend.
 
 ## 4. Customer Model Status
 The `Customer` model exists in `server/models/Customer.js`.
-The routes for the customer model exist in `server/routes/customerRoutes.js`, and these routes are explicitly wired in `server/index.js` (`app.use('/api/customers', protect, apiLimiter, customerRoutes);`). Thus, the `Customer` model has wired routes and the feature works, but we should make sure it meets all the validation requirements.
+The routes for the customer model exist in `server/routes/customerRoutes.js`, and these routes are explicitly wired in `server/index.js` (`app.use('/api/customers', protect, apiLimiter, customerRoutes);`).
+**Recommendation:** The feature works and is wired. We should add request validation in future PRs and retain the claim in the README.
 
 ## 5. Currency Math
-The following files define `Number` fields for money and will need to be refactored to use integer minor units (paise), instead of JS floating point arithmetic.
+The following files define floating-point `Number` fields for money and need to be refactored to use integer minor units (paise).
 
-**`server/models/Customer.js`:**
-- Line 23: `totalSpent` (Number)
-
-**`server/models/Invoice.js`:**
-- Line 18: `price` (Number)
-- Line 20: `subTotal` (Number)
-- Line 22: `total` (Number)
-- Line 27: `taxAmount` (Number)
-- Line 31: `discountAmount` (Number)
-- Line 40: `cashGiven` (Number)
-- Line 41: `changeReturned` (Number)
-
-**`server/models/Product.js`:**
-- Line 26: `price` (Number)
-- Line 31: `costPrice` (Number)
-- Line 36: `discount` (Number)
-
-**`server/models/Return.js`:**
-- Line 15: `quantity` (Number) - Wait, quantity isn't currency but `refundAmount` is.
-- Line 20: `refundAmount` (Number)
-- Line 48: `restockingFee` (Number)
-
-**`server/models/Order.js`:**
-- Line 18: `price` (Number)
-- Line 22: `totalAmount` (Number)
+- **`server/models/Customer.js`**: Line 23 (`totalSpent`)
+- **`server/models/Invoice.js`**: Line 18 (`price`), Line 20 (`subTotal`), Line 22 (`totalAmount`), Line 27 (`tax`), Line 31 (`discount`), Line 40 (`cashGiven`), Line 41 (`changeReturned`)
+- **`server/models/Product.js`**: Line 26 (`price`), Line 31 (`compareAtPrice`)
+- **`server/models/Return.js`**: Line 20 (`refundAmount`), Line 48 (`restockingFee`)
+- **`server/models/Order.js`**: Line 18 (`price`), Line 22 (`totalAmount`)
 
 ## 6. Input Validation
-Currently, routes receive `req.body` but do not seem to use `express-validator` to strictly validate inputs before controller logic execution. We need to add `express-validator` checks to `server/routes/*.js`.
+Currently, routes receive `req.body` but do not use `express-validator` to strictly validate inputs before controller execution.
 
-Files needing validation for `POST`/`PUT` routes:
-- `server/routes/authRoutes.js` (`/register`, `/login`, `/google`, `/verify-email`, `/forgot-password`, `/reset-password`)
-- `server/routes/customerRoutes.js`
-- `server/routes/employeeRoutes.js`
-- `server/routes/invoiceRoutes.js`
-- `server/routes/orderRoutes.js`
-- `server/routes/productRoutes.js`
-- `server/routes/returnRoutes.js`
-- `server/routes/supplierRoutes.js`
-
-Additionally, `ObjectId` validation is missing for `/:id` parameters across these routers.
+Files needing validation for `POST`/`PUT` routes and `ObjectId` guards on `/:id` routes:
+- `server/routes/authRoutes.js`: `/register` (Line 13), `/login` (Line 14), `/google` (Line 15), `/verify-email` (Line 16), `/forgot-password` (Line 17), `/reset-password` (Line 18)
+- `server/routes/customerRoutes.js`: `/` POST (Line 5), `/:id` PUT/DELETE (Line 6)
+- `server/routes/employeeRoutes.js`: `/` POST (Line 5), `/:id` PUT/DELETE (Line 6)
+- `server/routes/invoiceRoutes.js`: `/` POST (Line 10)
+- `server/routes/orderRoutes.js`: `/` POST (Line 16), `/:id/status` PUT (Line 21)
+- `server/routes/productRoutes.js`: `/` POST (Line 11), `/:id` PUT (Line 16)
+- `server/routes/returnRoutes.js`: `/` POST (Line 9)
+- `server/routes/supplierRoutes.js`: `/` POST (Line 10), `/:id` PUT/DELETE (Line 11)
 
 ## 7. Proposed PRs
-1. **P0 - Dependency & Environment Setup**: Update `server/models/User.js` to correctly use bcrypt, add `.nvmrc` pinning Node 20, update package.json engines.
-2. **P0 - Fix Docker build & Seeder**: Fix docker build 429 error and layer issues. Make `server/seed.js` idempotent using upsert logic.
-3. **P0 - Reconcile Dual Frontend**: Remove vanilla SPA files (`index.html`, `app.js`, `style.css`), update `README.md` to reflect `client/` as the canonical frontend.
-4. **P0/P1 - Route Validation & Error Handling**: Add `express-validator` to all public POST/PUT routes. Add MongoDB ObjectId guards on all `/:id` routes.
-5. **P1 - Auth Security**: Update `bcrypt` rounds to $\ge 12$, set up JWT TTL rules, strict Helmet CSP, rate limits.
-6. **P1 - Integer Minor Units**: Convert all money-related fields from JS floating-point arithmetic to integer minor units (paise). Add transactions and stock atomic decrements for checkout.
+1. **P0 - Reconcile Dual Frontend**: Remove `client/` directory, update `server/index.js` to serve root static files (`index.html`, `style.css`, `app.js`), update `package.json` to remove concurrent client execution, update `README.md` to remove `client/` specific ENV references.
+2. **P0 - Fix Docker build & Seeder**: Create `.dockerignore`. Modify `Dockerfile` to use multi-stage builds and a non-root user. Make `server/seed.js` idempotent using `upsert` logic instead of `insertMany` with clearing.
+3. **P0/P1 - Dependency Setup & Auth Hardening**: Fix npm audit issues by bumping vulnerable dependencies. Update `bcrypt` rounds to 12. Add Helmet CSP config matching no inline scripts.
+4. **P1 - Input Validation & Error Handling**: Add `express-validator` to all public `POST`/`PUT` routes, and MongoDB ObjectId guards on all `/:id` routes.
+5. **P1 - Integer Minor Units & DB Transacitons**: Convert all money-related fields from JS floating-point arithmetic to integer minor units (paise). Add transactions and atomic stock decrements for checkout in `invoiceController.js`.
 
 ## 8. Ambiguities
-- For the dual frontend situation, should we completely delete `index.html`, `app.js`, and `style.css` at the root? My recommendation is YES, since `client/` exists.
-- The Docker build fails with a docker daemon overlay error. I suspect it's environmental, but I will review the `Dockerfile` to ensure there are no glaring syntax issues. Should I also try to clear the builder cache or change the base image?
+- Given we are retaining the Vanilla SPA, should we add any bundler (e.g., esbuild, webpack) for `app.js`, or continue treating it as raw scripts in the root directory while refactoring it into ES Modules?
