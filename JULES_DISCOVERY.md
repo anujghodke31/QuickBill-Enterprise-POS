@@ -105,7 +105,7 @@ ERROR: failed to build: failed to solve: mount source: "overlay", target: "/var/
 
 ## 3. Dual Frontend Status
 The `client/` directory exists and is a Vite/React application. `server/index.js` already explicitly maps static file serving to `client/dist`.
-**Recommendation:** We should definitely use `client/` as the canonical frontend. The legacy vanilla SPA files (`index.html`, `app.js`, `style.css`) at the root should be completely removed to prevent confusion. The `README.md` must be updated to remove references to the vanilla JS and document building/running the Vite application.
+**Recommendation:** We should use the legacy vanilla HTML/JS SPA files (`index.html`, `app.js`, `style.css`) at the root as the canonical frontend. The `client/` directory should be completely removed to prevent confusion. The `README.md` must be updated to remove references to the Vite application and `client/.env`.
 
 ## 4. Customer Model Status
 The `Customer` model exists in `server/models/Customer.js`.
@@ -158,11 +158,10 @@ Additionally, `ObjectId` validation is missing for `/:id` parameters across thes
 ## 7. Proposed PRs
 1. **P0 - Dependency & Environment Setup**: Update `server/models/User.js` to correctly use bcrypt, add `.nvmrc` pinning Node 20, update package.json engines.
 2. **P0 - Fix Docker build & Seeder**: Fix docker build 429 error and layer issues. Make `server/seed.js` idempotent using upsert logic.
-3. **P0 - Reconcile Dual Frontend**: Remove vanilla SPA files (`index.html`, `app.js`, `style.css`), update `README.md` to reflect `client/` as the canonical frontend.
+3. **P0 - Reconcile Dual Frontend**: Remove `client/` directory, update `README.md` to reflect the vanilla HTML/JS SPA as the canonical frontend and remove Vite/Firebase env var instructions.
 4. **P0/P1 - Route Validation & Error Handling**: Add `express-validator` to all public POST/PUT routes. Add MongoDB ObjectId guards on all `/:id` routes.
 5. **P1 - Auth Security**: Update `bcrypt` rounds to $\ge 12$, set up JWT TTL rules, strict Helmet CSP, rate limits.
 6. **P1 - Integer Minor Units**: Convert all money-related fields from JS floating-point arithmetic to integer minor units (paise). Add transactions and stock atomic decrements for checkout.
 
 ## 8. Ambiguities
-- For the dual frontend situation, should we completely delete `index.html`, `app.js`, and `style.css` at the root? My recommendation is YES, since `client/` exists.
 - The Docker build fails with a docker daemon overlay error. I suspect it's environmental, but I will review the `Dockerfile` to ensure there are no glaring syntax issues. Should I also try to clear the builder cache or change the base image?
