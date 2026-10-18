@@ -419,6 +419,8 @@ export interface AiStatusDTO {
   /** Claude-backed features (copilot, bill scan, forecast briefings). */
   llm: boolean;
   model: string | null;
+  /** Whether bills can be uploaded as PDFs; Anthropic-compatible gateways take images only. */
+  pdf: boolean;
   /** Local embedding model used by semantic search. */
   embeddings: boolean;
 }

@@ -17,7 +17,7 @@ import {
   createPurchaseOrderTx,
   receivePurchaseOrderTx,
 } from '../../purchasing/purchase-orders.service';
-import { describeClaudeError, fallbackParams, getClaude, MODEL } from '../claude';
+import { describeClaudeError, fallbackParams, getClaude, MODEL, PDF_INPUT } from '../claude';
 import { embed, scheduleEmbedding, toVectorLiteral } from '../embeddings';
 import { invalidateForecast } from '../forecast/forecast.service';
 
@@ -152,6 +152,11 @@ export async function scanBill(
 ): Promise<BillScanDTO> {
   if (!(ACCEPTED_TYPES as readonly string[]).includes(file.mimetype)) {
     throw unprocessable('Upload a JPG, PNG, WebP or PDF file');
+  }
+  if (file.mimetype === 'application/pdf' && !PDF_INPUT) {
+    throw unprocessable(
+      'The AI service in use cannot read PDFs. Upload a photo or screenshot of the bill instead.',
+    );
   }
 
   let extraction: Extraction;

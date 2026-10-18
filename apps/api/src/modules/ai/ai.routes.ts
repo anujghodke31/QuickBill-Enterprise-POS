@@ -15,7 +15,7 @@ import { openSse } from '../../lib/sse';
 import { authenticate, currentUser, MANAGEMENT, requireRole } from '../../middleware/auth';
 import { aiLimiter } from '../../middleware/rate-limit';
 import * as billScan from './bill-scan/bill-scan.service';
-import { describeClaudeError, getClaude, MODEL } from './claude';
+import { describeClaudeError, getClaude, MODEL, PDF_INPUT } from './claude';
 import * as copilot from './copilot/copilot.service';
 import { embeddingsAvailable, embedProducts } from './embeddings';
 import { streamForecastBriefing } from './forecast/briefing';
@@ -31,6 +31,7 @@ aiRouter.get('/status', (_req, res) => {
   res.json({
     llm: env.llmEnabled,
     model: env.llmEnabled ? MODEL : null,
+    pdf: PDF_INPUT,
     embeddings: embeddingsAvailable(),
   } satisfies AiStatusDTO);
 });

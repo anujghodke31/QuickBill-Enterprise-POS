@@ -40,11 +40,15 @@ const MAX_BYTES = 10 * 1024 * 1024;
 
 function UploadArea({
   disabled,
+  pdf,
   onScanned,
 }: {
   disabled: boolean;
+  /** False when the AI service takes images only. */
+  pdf: boolean;
   onScanned: (scan: BillScanDTO) => void;
 }) {
+  const accept = pdf ? ACCEPT : ACCEPT.filter((type) => type !== 'application/pdf');
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
@@ -55,12 +59,20 @@ function UploadArea({
 
   const choose = (f: File | undefined) => {
     if (!f) return;
-    if (!ACCEPT.includes(f.type)) {
-      setProblem('That file type is not supported. Use a JPG, PNG or WebP photo, or a PDF.');
+    if (!accept.includes(f.type)) {
+      setProblem(
+        pdf
+          ? 'That file type is not supported. Use a JPG, PNG or WebP photo, or a PDF.'
+          : 'That file type is not supported. Use a JPG, PNG or WebP photo or screenshot.',
+      );
       return;
     }
     if (f.size > MAX_BYTES) {
-      setProblem('That file is larger than 10 MB. Take a smaller photo or export a lighter PDF.');
+      setProblem(
+        pdf
+          ? 'That file is larger than 10 MB. Take a smaller photo or export a lighter PDF.'
+          : 'That file is larger than 10 MB. Take a smaller photo.',
+      );
       return;
     }
     setProblem(null);
@@ -98,7 +110,7 @@ function UploadArea({
       <input
         ref={input}
         type="file"
-        accept={ACCEPT.join(',')}
+        accept={accept.join(',')}
         className="sr-only"
         onChange={(e) => {
           choose(e.target.files?.[0]);
@@ -155,7 +167,11 @@ function UploadArea({
           <span className="type-heading mt-3 text-lg">
             Drop a supplier bill here, or choose a file
           </span>
-          <span className="mt-1 text-sm text-ink-soft">A clear photo or a PDF, up to 10 MB</span>
+          <span className="mt-1 text-sm text-ink-soft">
+            {pdf
+              ? 'A clear photo or a PDF, up to 10 MB'
+              : 'A clear photo or screenshot, up to 10 MB'}
+          </span>
         </button>
       )}
       {problem && (
@@ -166,7 +182,8 @@ function UploadArea({
       {!file && (
         <p className="mt-4 text-[13px] text-ink-faint">
           No bill to hand? The repository includes one at{' '}
-          <code className="font-mono">docs/sample-bills/western-fmcg-invoice.pdf</code>.
+          <code className="font-mono">docs/sample-bills/western-fmcg-invoice.pdf</code>
+          {pdf ? '.' : '. Open it and upload a screenshot.'}
         </p>
       )}
     </Panel>
@@ -704,6 +721,7 @@ export default function BillScanPage() {
           {llmOff && <AiSetupNotice feature="Bill scanning" />}
           <UploadArea
             disabled={llmOff || status.isPending}
+            pdf={status.data?.pdf ?? true}
             onScanned={(result) => {
               qc.setQueryData(['bill-scan', result.id], result);
               void qc.invalidateQueries({ queryKey: ['bill-scans'] });

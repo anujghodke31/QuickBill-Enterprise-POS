@@ -124,15 +124,15 @@ export async function runCopilotTurn(opts: {
     { role: 'user', content: opts.message },
   ];
 
+  let completed = false;
   try {
-    const completed = await runLoop(messages, send, signal);
-    if (!completed) return;
-  } catch (err) {
-    // Don't leave an empty conversation behind when its very first turn fails.
-    if (!existing)
+    completed = await runLoop(messages, send, signal);
+  } finally {
+    // Don't leave an empty conversation behind when its very first turn fails or is refused.
+    if (!completed && !existing)
       await prisma.aiConversation.delete({ where: { id: conversation.id } }).catch(() => {});
-    throw err;
   }
+  if (!completed) return;
 
   await prisma.aiConversation.update({
     where: { id: conversation.id },
