@@ -105,6 +105,7 @@ aiRouter.post('/forecast/briefing', aiLimiter, async (req, res) => {
 // ── Bill scanning ───────────────────────────────────────────────────────────
 
 aiRouter.post('/bill-scans', aiLimiter, upload.single('file'), async (req, res) => {
+  getClaude(); // Reject before recording a failed scan when AI is not configured.
   if (!req.file) throw badRequest('Attach a bill image or PDF as "file"');
   res.status(201).json(await billScan.scanBill(req.file, currentUser(req).id));
 });

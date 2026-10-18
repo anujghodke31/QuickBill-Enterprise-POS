@@ -2,10 +2,17 @@ import { ipKeyGenerator, rateLimit } from 'express-rate-limit';
 import { env } from '../config/env';
 import { AppError } from '../lib/errors';
 
-function limiter(windowMs: number, limit: number, message: string, perUser = false) {
+function limiter(
+  windowMs: number,
+  limit: number,
+  message: string,
+  perUser = false,
+  failuresOnly = false,
+) {
   return rateLimit({
     windowMs,
     limit,
+    skipSuccessfulRequests: failuresOnly,
     standardHeaders: 'draft-8',
     legacyHeaders: false,
     skip: () => env.isTest,
@@ -15,10 +22,13 @@ function limiter(windowMs: number, limit: number, message: string, perUser = fal
   });
 }
 
+/** Counts only failed sign-ins, so brute force is slowed without locking out busy tills. */
 export const authLimiter = limiter(
   15 * 60 * 1000,
   20,
   'Too many sign-in attempts. Please wait a few minutes and try again.',
+  false,
+  true,
 );
 
 export const apiLimiter = limiter(60 * 1000, 600, 'Too many requests. Please slow down.');

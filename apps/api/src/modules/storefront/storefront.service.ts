@@ -63,8 +63,14 @@ export async function searchProducts(query: StorefrontQuery): Promise<StoreSearc
   if (!query.q) {
     const where: Prisma.ProductWhereInput = {
       ...publicWhere,
-      ...(filters.category ? { category: { slug: filters.category } } : {}),
-      ...(filters.department ? { category: { department: filters.department } } : {}),
+      ...(filters.category || filters.department
+        ? {
+            category: {
+              ...(filters.category ? { slug: filters.category } : {}),
+              ...(filters.department ? { department: filters.department } : {}),
+            },
+          }
+        : {}),
       ...(filters.minPrice !== undefined || filters.maxPrice !== undefined
         ? { price: { gte: filters.minPrice, lte: filters.maxPrice } }
         : {}),

@@ -83,9 +83,12 @@ export function createApp() {
   app.use('/api/v1', api);
   app.use('/api', notFoundHandler);
 
-  // In production the API also serves the built web app.
-  const webDist = path.resolve(process.cwd(), env.isProd ? 'public' : '../web/dist');
-  if (env.isProd && fs.existsSync(webDist)) {
+  // In production the API also serves the built web app: from ./public inside the
+  // Docker image, or straight from the monorepo build when started with `npm start`.
+  const webDist = ['public', '../web/dist']
+    .map((dir) => path.resolve(process.cwd(), dir))
+    .find((dir) => fs.existsSync(path.join(dir, 'index.html')));
+  if (env.isProd && webDist) {
     app.use(express.static(webDist, { maxAge: '1y', index: false }));
     app.get(/^(?!\/api).*/, (_req, res) => {
       res.setHeader('Cache-Control', 'no-cache');

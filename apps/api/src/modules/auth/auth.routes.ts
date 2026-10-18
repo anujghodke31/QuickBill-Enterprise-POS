@@ -24,11 +24,15 @@ authRouter.post('/register', authLimiter, async (req, res) => {
 });
 
 authRouter.post('/refresh', async (req, res) => {
+  const presented: string | undefined = req.cookies?.[REFRESH_COOKIE];
   try {
-    const session = await auth.refresh(req.cookies?.[REFRESH_COOKIE], req.get('user-agent'));
+    const session = await auth.refresh(presented, req.get('user-agent'));
     sendSession(res, session);
   } catch (err) {
-    res.clearCookie(REFRESH_COOKIE, { ...refreshCookieOptions(), maxAge: undefined });
+    // Only clear a cookie this request actually sent; otherwise a slow failed refresh
+    // could delete a cookie that a login set a moment later.
+    if (presented)
+      res.clearCookie(REFRESH_COOKIE, { ...refreshCookieOptions(), maxAge: undefined });
     throw err;
   }
 });

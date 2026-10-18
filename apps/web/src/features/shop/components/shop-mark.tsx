@@ -1,0 +1,12 @@
+import { cn } from '@/lib/cn';
+
+export function ShopMark({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 32 32" className={cn('size-8 shrink-0', className)} aria-hidden>
+      <rect width="32" height="32" rx="8" fill="#0F6B73" />
+      <path d="M9 7h14v18l-2.33-1.5L18.33 25 16 23.5 13.67 25l-2.34-1.5L9 25z" fill="#fff" />
+      <rect x="12" y="11" width="8" height="2" rx="1" fill="#E8A317" />
+      <rect x="12" y="15" width="6" height="2" rx="1" fill="#0F6B73" />
+    </svg>
+  );
+}
