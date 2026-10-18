@@ -5,11 +5,10 @@ const protect = async (req, res, next) => {
     let token;
 
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        token = req.headers.authorization.split(' ')[1];
+        
         try {
-            token = req.headers.authorization.split(' ')[1];
-
             if (!process.env.JWT_SECRET) {
-                console.error('JWT_SECRET is not defined');
                 return res.status(500).json({ message: 'Server configuration error' });
             }
 
@@ -19,7 +18,7 @@ const protect = async (req, res, next) => {
                 req.user = {
                     _id: 'master-admin',
                     name: 'Super Admin',
-                    role: 'admin'
+                    role: 'superadmin' // Master is superadmin
                 };
                 return next();
             }
@@ -31,22 +30,23 @@ const protect = async (req, res, next) => {
 
             next();
         } catch (error) {
-            console.error(error);
-            res.status(401).json({ message: 'Not authorized, token failed or expired' });
+            return res.status(401).json({ message: 'Not authorized, token failed or expired' });
         }
-    }
-
-    if (!token) {
+    } else {
         res.status(401).json({ message: 'Not authorized, no token' });
     }
 };
 
-const admin = (req, res, next) => {
-    if (req.user && req.user.role === 'admin') {
+const authorizeRoles = (...roles) => {
+    return (req, res, next) => {
+        if (!req.user || !roles.includes(req.user.role)) {
+            return res.status(403).json({ 
+                success: false, 
+                message: `Access Denied: Role '${req.user?.role}' is not authorized to access this resource.` 
+            });
+        }
         next();
-    } else {
-        res.status(401).json({ message: 'Not authorized as an admin' });
-    }
+    };
 };
 
-module.exports = { protect, admin };
+module.exports = { protect, authorizeRoles };

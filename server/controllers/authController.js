@@ -20,7 +20,25 @@ const buildToken = (userId) => {
         throw new Error('JWT_SECRET is required to generate tokens');
     }
     return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
-        expiresIn: '8h',
+        expiresIn: '15m',
+    });
+};
+
+const buildRefreshToken = (userId) => {
+    if (!process.env.JWT_SECRET) {
+        throw new Error('JWT_SECRET is required to generate tokens');
+    }
+    return jwt.sign({ id: userId }, process.env.JWT_SECRET, {
+        expiresIn: '7d',
+    });
+};
+
+const setRefreshTokenCookie = (res, token) => {
+    res.cookie('refreshToken', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 };
 
@@ -37,20 +55,30 @@ const createUniqueUsername = async (seed) => {
     return candidate;
 };
 
-const respondWithUser = (res, user, isNewUser = false) => {
+const respondWithUser = async (res, user, isNewUser = false) => {
+    const accessToken = buildToken(user._id);
+    const refreshToken = buildRefreshToken(user._id);
+
+    user.refreshTokens = user.refreshTokens || [];
+    user.refreshTokens.push(refreshToken);
+    if (user.refreshTokens.length > 5) {
+        user.refreshTokens = user.refreshTokens.slice(-5);
+    }
+    await user.save();
+
+    setRefreshTokenCookie(res, refreshToken);
+
     return res.json({
         _id: user._id,
         name: user.name,
         email: user.email || null,
         username: user.username,
         role: user.role,
-        token: buildToken(user._id),
+        token: accessToken,
         isNewUser,
     });
 };
 
-// @desc    Register a new user/employee
-// @route   POST /api/auth/register
 const registerUser = async (req, res) => {
     const { name, username, password, role } = req.body;
 
@@ -73,7 +101,7 @@ const registerUser = async (req, res) => {
             role: role === 'admin' ? 'admin' : 'cashier',
             authProvider: 'local',
             emailVerificationToken,
-            emailVerificationExpires: Date.now() + 24 * 60 * 60 * 1000 // 24 hours
+            emailVerificationExpires: Date.now() + 24 * 60 * 60 * 1000
         });
 
         res.status(201).json({
@@ -82,22 +110,19 @@ const registerUser = async (req, res) => {
             username: user.username,
             role: user.role,
             message: 'User registered. Please verify your email.',
-            emailVerificationToken // For demonstration, return the token so the client can simulate verifying
+            emailVerificationToken
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
-// @desc    Auth user
-// @route   POST /api/auth/login
 const loginUser = async (req, res) => {
     const { username, password } = req.body;
 
     try {
         const user = await User.findOne({ username });
 
-        // Master admin fallback using environment variables
         const masterUsername = process.env.MASTER_ADMIN_USERNAME;
         const masterPassword = process.env.MASTER_ADMIN_PASSWORD;
 
@@ -113,12 +138,17 @@ const loginUser = async (req, res) => {
                 });
             }
             logger.info({ event: 'login_success', username: masterUsername, role: 'admin', method: 'master' });
+            
+            const accessToken = buildToken('master-admin');
+            const refreshToken = buildRefreshToken('master-admin');
+            setRefreshTokenCookie(res, refreshToken);
+            
             return res.json({
                 _id: 'master-admin',
                 name: 'Super Admin',
                 username: masterUsername,
                 role: 'admin',
-                token: buildToken('master-admin'),
+                token: accessToken,
             });
         }
 
@@ -139,14 +169,12 @@ const loginUser = async (req, res) => {
         }
 
         logger.info({ event: 'login_success', userId: user._id, username: user.username, role: user.role });
-        return respondWithUser(res, user, false);
+        return await respondWithUser(res, user, false);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 };
 
-// @desc    Auth/Register user via Google
-// @route   POST /api/auth/google
 const googleLoginUser = async (req, res) => {
     const { credential, role } = req.body;
 
@@ -219,11 +247,68 @@ const googleLoginUser = async (req, res) => {
         }
 
         logger.info({ event: 'google_login_success', userId: user._id, email: normalizedEmail, isNewUser });
-        return respondWithUser(res, user, isNewUser);
+        return await respondWithUser(res, user, isNewUser);
     } catch (error) {
         logger.error({ event: 'google_auth_error', message: error.message });
         res.status(401).json({ message: 'Google authentication failed', error: error.message });
     }
+};
+
+const refreshToken = async (req, res) => {
+    const { refreshToken: token } = req.cookies;
+
+    if (!token) return res.status(401).json({ message: 'No refresh token provided' });
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        
+        // Handle Master Admin fallback
+        if (decoded.id === 'master-admin') {
+            const newAccessToken = buildToken('master-admin');
+            return res.json({ token: newAccessToken });
+        }
+
+        const user = await User.findById(decoded.id);
+
+        if (!user || !user.refreshTokens.includes(token)) {
+            res.clearCookie('refreshToken');
+            return res.status(403).json({ message: 'Invalid refresh token' });
+        }
+
+        const newAccessToken = buildToken(user._id);
+        const newRefreshToken = buildRefreshToken(user._id);
+
+        user.refreshTokens = user.refreshTokens.map(rt => (rt === token ? newRefreshToken : rt));
+        await user.save();
+
+        setRefreshTokenCookie(res, newRefreshToken);
+        res.json({ token: newAccessToken });
+    } catch (error) {
+        res.clearCookie('refreshToken');
+        res.status(403).json({ message: 'Expired or invalid refresh token' });
+    }
+};
+
+const logoutUser = async (req, res) => {
+    const { refreshToken: token } = req.cookies;
+    
+    if (token) {
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            if (decoded.id !== 'master-admin') {
+                const user = await User.findById(decoded.id);
+                if (user) {
+                    user.refreshTokens = user.refreshTokens.filter(rt => rt !== token);
+                    await user.save();
+                }
+            }
+        } catch (error) {
+            // Ignore error
+        }
+    }
+
+    res.clearCookie('refreshToken');
+    res.status(200).json({ message: 'Logged out successfully' });
 };
 
 const verifyEmail = async (req, res) => {
@@ -259,10 +344,10 @@ const requestPasswordReset = async (req, res) => {
 
         const resetToken = crypto.randomBytes(32).toString('hex');
         user.resetPasswordToken = resetToken;
-        user.resetPasswordExpires = Date.now() + 15 * 60 * 1000; // 15 minutes
+        user.resetPasswordExpires = Date.now() + 15 * 60 * 1000;
         await user.save();
 
-        res.json({ message: 'Password reset token generated', resetToken }); // Return token for dev
+        res.json({ message: 'Password reset token generated', resetToken }); 
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -295,6 +380,8 @@ module.exports = {
     registerUser,
     loginUser,
     googleLoginUser,
+    refreshToken,
+    logoutUser,
     verifyEmail,
     requestPasswordReset,
     resetPassword

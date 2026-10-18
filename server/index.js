@@ -1,9 +1,12 @@
 const express = require('express');
 const cors = require('cors');
+const http = require('http');
+const { Server } = require('socket.io');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const path = require('path');
 const fs = require('fs');
+const cookieParser = require('cookie-parser');
 const connectDB = require('./config/db');
 const { errorHandler } = require('./middleware/errorMiddleware');
 const productRoutes = require('./routes/productRoutes');
@@ -26,14 +29,12 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const IS_PROD = process.env.NODE_ENV === 'production';
 
-// ── Ensure logs directory exists ────────────────────────────────────────────
+// Ensure logs directory exists
 const logsDir = path.join(__dirname, '../logs');
 if (!fs.existsSync(logsDir)) fs.mkdirSync(logsDir, { recursive: true });
 
-// ── Connect to Database ─────────────────────────────────────────────────────
 connectDB();
 
-// ── Security: Enforce HTTPS in production ──────────────────────────────────
 if (IS_PROD) {
     app.set('trust proxy', 1);
     app.use((req, res, next) => {
@@ -44,23 +45,27 @@ if (IS_PROD) {
     });
 }
 
-// ── Security: HTTP headers via Helmet ───────────────────────────────────────
+// ── Phase 1.5: Strict Helmet Content Security Policy ─────────────────────────
 app.use(helmet({
-    contentSecurityPolicy: IS_PROD ? undefined : false, // Relax CSP in dev for HMR
-    crossOriginEmbedderPolicy: false, // Allow Google fonts / Firebase
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://apis.google.com", "https://www.gstatic.com"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+            fontSrc: ["'self'", "https://fonts.gstatic.com"],
+            connectSrc: ["'self'", "https://identitytoolkit.googleapis.com", "https://securetoken.googleapis.com"],
+            imgSrc: ["'self'", "data:", "https://images.unsplash.com", "https://firebasestorage.googleapis.com"],
+            workerSrc: ["'self'", "blob:"],
+        }
+    },
+    crossOriginEmbedderPolicy: false,
 }));
 
-// ── CORS — locked to allowed origins in production ──────────────────────────
-const allowedOrigins = (process.env.ALLOWED_ORIGINS || '')
-    .split(',')
-    .map(o => o.trim())
-    .filter(Boolean);
-
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(o => o.trim()).filter(Boolean);
 app.use(cors({
     origin: IS_PROD
         ? (origin, cb) => {
             if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
-            logger.warn({ event: 'cors_blocked', origin });
             cb(new Error('Not allowed by CORS'));
         }
         : '*',
@@ -69,22 +74,19 @@ app.use(cors({
     credentials: true,
 }));
 
-// ── Body parsers ─────────────────────────────────────────────────────────────
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: false, limit: '1mb' }));
+app.use(cookieParser());
 
-// ── Sanitize Data (NoSQL Injection & XSS) ────────────────────────────────────
-app.use(mongoSanitize()); // Prevent NoSQL operator injections (strips $ and .)
-app.use(xssClean);        // Prevent XSS attacks by filtering script tags recursively
+app.use(mongoSanitize()); 
+app.use(xssClean);        
 
-// ── HTTP access logging via Morgan → Winston ─────────────────────────────────
 const morganStream = { write: (msg) => logger.info(msg.trim()) };
 app.use(morgan(IS_PROD ? 'combined' : 'dev', { stream: morganStream }));
 
-// ── Suspicious traffic detector ───────────────────────────────────────────────
 const requestCounts = new Map();
-const WINDOW_MS = 60 * 1000;  // 1 minute
-const ALERT_THRESHOLD = 200;   // Requests per window per IP before logging alert
+const WINDOW_MS = 60 * 1000;  
+const ALERT_THRESHOLD = 200;   
 
 app.use((req, _res, next) => {
     const ip = req.ip || req.connection.remoteAddress;
@@ -100,39 +102,59 @@ app.use((req, _res, next) => {
     requestCounts.set(ip, entry);
 
     if (entry.count === ALERT_THRESHOLD) {
-        logger.warn({
-            event: 'high_request_volume',
-            ip,
-            count: entry.count,
-            window: `${WINDOW_MS / 1000}s`,
-            path: req.path,
-        });
+        logger.warn({ event: 'high_request_volume', ip, count: entry.count, window: `${WINDOW_MS / 1000}s`, path: req.path });
     }
     next();
 });
 
-// ── API Routes ───────────────────────────────────────────────────────────────
-app.use('/api/products', productRoutes);
-app.use('/api/invoices', protect, apiLimiter, invoiceRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api/customers', protect, apiLimiter, customerRoutes);
-app.use('/api/employees', protect, apiLimiter, employeeRoutes);
-app.use('/api/suppliers', protect, apiLimiter, supplierRoutes);
-app.use('/api/returns', protect, apiLimiter, returnRoutes);
-app.use('/api/orders', orderRoutes);
+// ── Phase 1.3 API Versioning Redirect Middleware ─────────────────────────────
+app.use((req, res, next) => {
+    if (req.originalUrl.startsWith('/api/') && !req.originalUrl.startsWith('/api/v1/')) {
+        const newUrl = req.originalUrl.replace('/api/', '/api/v1/');
+        return res.redirect(308, newUrl);
+    }
+    next();
+});
 
-// ── Serve React build in production ─────────────────────────────────────────
+// Mount routes at /api/v1
+app.use('/api/v1/products', productRoutes);
+app.use('/api/v1/invoices', protect, apiLimiter, invoiceRoutes);
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/customers', protect, apiLimiter, customerRoutes);
+app.use('/api/v1/employees', protect, apiLimiter, employeeRoutes);
+app.use('/api/v1/suppliers', protect, apiLimiter, supplierRoutes);
+app.use('/api/v1/returns', protect, apiLimiter, returnRoutes);
+app.use('/api/v1/orders', orderRoutes);
+
 const clientDist = path.join(__dirname, '../client/dist');
 app.use(express.static(clientDist));
 
 app.get('*', (req, res) => {
-    res.sendFile(path.join(clientDist, 'index.html'));
+    const indexPath = path.join(clientDist, 'index.html');
+    if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+    } else {
+        res.status(404).json({ message: 'API works, but client/dist is missing. Did you run npm run build?' });
+    }
 });
 
-// ── Error Handler ────────────────────────────────────────────────────────────
 app.use(errorHandler);
 
-app.listen(PORT, () => {
+// ── Phase 5.2 Real-time Dashboard with Socket.io ─────────────────────────────
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: IS_PROD ? allowedOrigins : '*',
+        methods: ['GET', 'POST']
+    }
+});
+app.set('io', io);
+
+io.on('connection', (socket) => {
+    logger.debug({ event: 'socket_connection_established', id: socket.id });
+});
+
+server.listen(PORT, () => {
     logger.info({ event: 'server_start', port: PORT, env: process.env.NODE_ENV || 'development' });
     console.log(`Server running on port ${PORT}`);
 });

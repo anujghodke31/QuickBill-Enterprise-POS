@@ -44,6 +44,10 @@ const userSchema = new mongoose.Schema({
         enum: ['local', 'google'],
         default: 'local'
     },
+    refreshTokens: {
+        type: [String],
+        default: []
+    },
     createdAt: {
         type: Date,
         default: Date.now

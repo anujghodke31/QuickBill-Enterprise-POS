@@ -27,6 +27,12 @@ const productSchema = new mongoose.Schema({
         required: true,
         min: 0
     },
+    costPrice: {
+        type: Number,
+        required: true,
+        default: 0,
+        min: 0
+    },
     compareAtPrice: {
         type: Number,
         default: null,

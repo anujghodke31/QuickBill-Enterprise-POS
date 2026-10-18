@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { CartProvider } from './context/CartContext'
 
@@ -14,6 +14,7 @@ import Employees from './pages/Employees'
 import Suppliers from './pages/Suppliers'
 import Returns from './pages/Returns'
 import Orders from './pages/Orders'
+import ProtectedRoute from './components/ProtectedRoute'
 
 // Storefront
 import StorefrontLayout from './components/StorefrontLayout'
@@ -28,21 +29,35 @@ import CustomerAccount from './pages/storefront/CustomerAccount'
 import './components/Toast.css'
 import './App.css'
 
+function Unauthorized() {
+    return (
+        <div style={{ padding: '2rem', textAlign: 'center' }}>
+            <h1>Access Denied</h1>
+            <p>You do not have permission to view this page.</p>
+        </div>
+    )
+}
+
 function AdminLayout({ onLogout }) {
   return (
     <div className="app-layout">
       <Sidebar onLogout={onLogout} />
       <main className="main-content">
         <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/pos" element={<POS />} />
-          <Route path="/inventory" element={<Inventory />} />
-          <Route path="/customers" element={<Customers />} />
-          <Route path="/employees" element={<Employees />} />
-          <Route path="/suppliers" element={<Suppliers />} />
-          <Route path="/returns" element={<Returns />} />
-          <Route path="/orders" element={<Orders />} />
-          <Route path="/reports" element={<Reports />} />
+          {/* Admin / Full Access */}
+          <Route path="/" element={<ProtectedRoute allowedRoles={['admin']}><Dashboard /></ProtectedRoute>} />
+          <Route path="/inventory" element={<ProtectedRoute allowedRoles={['admin']}><Inventory /></ProtectedRoute>} />
+          <Route path="/customers" element={<ProtectedRoute allowedRoles={['admin']}><Customers /></ProtectedRoute>} />
+          <Route path="/employees" element={<ProtectedRoute allowedRoles={['admin']}><Employees /></ProtectedRoute>} />
+          <Route path="/suppliers" element={<ProtectedRoute allowedRoles={['admin']}><Suppliers /></ProtectedRoute>} />
+          <Route path="/returns" element={<ProtectedRoute allowedRoles={['admin', 'cashier']}><Returns /></ProtectedRoute>} />
+          <Route path="/reports" element={<ProtectedRoute allowedRoles={['admin']}><Reports /></ProtectedRoute>} />
+          
+          {/* Cashiers and above can access POS and Orders */}
+          <Route path="/pos" element={<ProtectedRoute allowedRoles={['admin', 'cashier']}><POS /></ProtectedRoute>} />
+          <Route path="/orders" element={<ProtectedRoute allowedRoles={['admin', 'cashier']}><Orders /></ProtectedRoute>} />
+          
+          <Route path="/unauthorized" element={<Unauthorized />} />
           <Route path="*" element={<Navigate to="/admin" replace />} />
         </Routes>
       </main>
@@ -54,6 +69,15 @@ export default function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
     return localStorage.getItem('quickbill_auth') === 'true'
   })
+
+  useEffect(() => {
+     // Validate JWT presence globally
+     const token = localStorage.getItem('quickbill_token');
+     if (!token && isLoggedIn) {
+        setIsLoggedIn(false);
+        localStorage.removeItem('quickbill_auth');
+     }
+  }, [isLoggedIn])
 
   const handleLogin = (response) => {
     localStorage.setItem('quickbill_auth', 'true')
@@ -87,6 +111,7 @@ export default function App() {
         <Route path="/admin/login" element={
           isLoggedIn ? <Navigate to="/admin" replace /> : <Login onLogin={handleLogin} />
         } />
+        
         <Route path="/admin/*" element={
           isLoggedIn ? <AdminLayout onLogout={handleLogout} /> : <Navigate to="/admin/login" replace />
         } />

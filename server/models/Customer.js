@@ -19,6 +19,16 @@ const customerSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    totalPointsEarned: {
+        type: Number,
+        default: 0
+    },
+    pointsHistory: [{
+        date: { type: Date, default: Date.now },
+        points: Number,
+        reason: String,
+        orderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Order' }
+    }],
     totalSpent: {
         type: Number,
         default: 0
