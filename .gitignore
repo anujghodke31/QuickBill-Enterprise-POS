@@ -1,6 +1,19 @@
 node_modules/
-.env
-.DS_Store
+dist/
+coverage/
 *.log
 logs/
-client/dist/
+.DS_Store
+*.tsbuildinfo
+
+# Environment files (only the examples are committed)
+.env
+.env.*
+!.env.example
+
+# Generated
+apps/api/src/generated/
+apps/api/uploads/
+.cache/
+playwright-report/
+test-results/
