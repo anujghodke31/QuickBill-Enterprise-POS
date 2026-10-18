@@ -1,29 +1,43 @@
-# QuickBill Contributor Guidelines
+# Contributing to QuickBill
 
-Welcome to the QuickBill POS project! Follow these standards to ensure a smooth collaboration.
+## Branch names
 
-## Branch Naming Convention
-Please prefix your branches strictly with the following types:
-- `feature/` - For new features or substantial improvements (e.g. `feature/barcode-scanner`)
-- `bugfix/` - For fixing non-critical errors (e.g. `bugfix/cart-calculation-error`)
-- `hotfix/` - For critical, production-breaking fixes (e.g. `hotfix/login-crash`)
-- `chore/` - For maintenance tasks, updating docs, or bumping dependencies (e.g. `chore/update-readme`)
+Prefix branches with their type:
 
-## Commit Format (Conventional Commits)
-We enforce conventional commits across all our PRs.
-- `feat: Added new customer loyalty system`
-- `fix: Resolved undefined crash on product null data`
-- `docs: Updated API documentation for endpoints`
-- `style: Formatted components using Prettier`
-- `refactor: Simplified authentication middleware`
+- `feature/` for new features or substantial improvements (`feature/barcode-scanner`)
+- `bugfix/` for non-critical fixes (`bugfix/cart-calculation-error`)
+- `hotfix/` for production-breaking fixes (`hotfix/login-crash`)
+- `chore/` for maintenance, docs and dependency bumps (`chore/update-readme`)
 
-## Pull Request Checklist
-1. Your code has been ran through `npm run lint` and `npm run format`.
-2. Your branch strictly targets `main`.
-3. You have attached screenshots if you modified the UI.
-4. You have commented on functions explicitly (JSDoc) if they span over 5 lines.
+## Commit messages
 
-## Review Process
-- PRs require at least 1 approving review from a core maintainer.
-- CI/CD checks (Lint, Build Verification) must securely pass.
-- Do not blindly force-push branch history without prior warning if the PR is already under active review.
+Use [Conventional Commits](https://www.conventionalcommits.org/):
+
+- `feat: add loyalty point redemption at the till`
+- `fix: stop negative stock on concurrent checkouts`
+- `docs: document the copilot tool contract`
+- `refactor: move analytics SQL into one module`
+
+## Before opening a pull request
+
+Run the same checks CI runs, from the repository root:
+
+```bash
+npm run format      # Prettier
+npm run lint        # ESLint (typescript-eslint, react-hooks)
+npm run typecheck   # tsc for api, web and shared
+npm test            # Vitest: unit tests + API integration tests (needs Postgres running)
+npm run build
+```
+
+Also:
+
+1. Add or update tests for behaviour you change, especially anything that touches money, stock or auth.
+2. Add a Prisma migration (`npm run db:migrate`) for every schema change; never edit an applied migration.
+3. Attach screenshots for UI changes.
+
+## Review
+
+- Pull requests need one approving review.
+- CI (lint, typecheck, tests, build, Docker image) must pass.
+- Avoid force-pushing a branch that is under active review.

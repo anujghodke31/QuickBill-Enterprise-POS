@@ -1,181 +1,241 @@
-# 🛒 QuickBill — Enterprise POS System
+# QuickBill
 
-A full-stack **Point of Sale (POS)** application built for retail store management. Designed with a premium dark-themed UI and powered by a robust **MERN stack** (MongoDB, Express, React, Node.js).
+**The till, the stockroom and the online shop of a neighbourhood grocery store — with AI that reads the numbers for you.**
 
-![Node.js](https://img.shields.io/badge/Node.js-18+-339933?logo=node.js&logoColor=white)
-![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
-![Express](https://img.shields.io/badge/Express-4.x-000000?logo=express&logoColor=white)
-![MongoDB](https://img.shields.io/badge/MongoDB-7.x-47A248?logo=mongodb&logoColor=white)
-![License](https://img.shields.io/badge/License-MIT-blue)
+QuickBill is a full-stack retail platform for an Indian grocery store: a keyboard-first point of sale, a
+back office for stock, purchasing and customers, and a customer-facing online shop. On top of the
+operational core sit four AI features: an analytics copilot built on Claude tool use, a supplier-bill
+scanner using Claude vision, semantic product search, and statistical reorder forecasting.
 
-[**Live Demo (Coming Soon)**](https://quickbill.example.com) • [**API Documentation**](./API.md)
+![Back-office dashboard](docs/screenshots/dashboard.png)
+
+| Point of sale                                            | Sale complete                                           |
+| -------------------------------------------------------- | ------------------------------------------------------- |
+| ![POS with a bill in progress](docs/screenshots/pos.png) | ![Receipt after payment](docs/screenshots/pos-paid.png) |
+
+| Online shop                                        | Search by intent                                                                   |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| ![Storefront home](docs/screenshots/shop-home.png) | ![Search results for "something for a headache"](docs/screenshots/shop-search.png) |
+
+| Frequently bought together                                              | Reorder forecast                                   |
+| ----------------------------------------------------------------------- | -------------------------------------------------- |
+| ![Product page with recommendations](docs/screenshots/shop-product.png) | ![Reorder forecast](docs/screenshots/forecast.png) |
 
 ---
 
-> **Demo Credentials:**
-> - **Super Admin:** `username: admin` | `password: quickbill2024`
-> - **Cashier:** `username: cashier` | `password: quickbill2024`
+## What it does
 
-![Dashboard Screenshot](/docs/assets/dashboard-placeholder.png)
+**Point of sale** — barcode-scanner and keyboard driven (F2 find, F4 customer, F9 charge), GST-inclusive
+pricing with the tax breakdown on every bill, UPI / cash / card with change calculation, loyalty points
+(earn ₹100 → 1 point, redeem up to half a bill), returns pro-rated for discounts, and a thermal-receipt PDF.
 
-## ✨ Features
+**Back office** — dashboard, bills, online-order fulfilment with an enforced status flow, products and
+categories, an append-only stock ledger, purchase orders and goods receiving, suppliers, customers and
+staff with role-based access (admin, manager, cashier).
 
-- **Storefront & POS Terminal** — Modern React-based storefront, product search, categories, cart, and smooth checkout process.
-- **Admin Dashboard** — Today's sales, transaction count, recent orders, and graphical sales insights using Chart.js.
-- **Inventory Management** — Full CRUD for products, bulk import/export capabilities, and low-stock alerts.
-- **Order & Invoice Management** — Complete order history, invoice generation, and status tracking.
-- **Customer & Employee Management** — Track customer details, create and manage employee accounts with specific roles.
-- **Supplier & Return Management** — Manage supplier contacts and handle customer returns efficiently.
-- **Authentication & Security** — Robust JWT-based authentication paired with Firebase Google Sign-in. Built-in security middlewares (Helmet, XSS protection, Rate Limiting).
-- **Responsive & Premium UI** — Carefully crafted dark-mode styling with vanilla CSS for optimal performance across all device sizes.
-- **Receipt Printing** — Export transactions as PDF receipts (via PDFKit).
+**Online shop** — browse by aisle, search by intent, product pages with recommendations, cart,
+guest or signed-in checkout (cash on delivery or a simulated online payment), order tracking, and an
+account page. Shoppers who sign up with the phone number they use in store keep their loyalty points.
 
-## 🛠️ Tech Stack
+### AI features
 
-| Layer | Technology |
-|-------|-----------|
-| **Frontend** | React 19, Vite, React Router v7, Lucide React (Icons), Vanilla CSS |
-| **Backend** | Node.js, Express.js |
-| **Database** | MongoDB with Mongoose ODM |
-| **Charts** | Chart.js with react-chartjs-2 |
-| **Security** | Helmet, express-mongo-sanitize, xss, express-rate-limit |
-| **Authentication** | JWT, bcrypt, Firebase Auth, Google Auth Library |
+| Feature                   | What the user sees                                                                                                                                         | How it works                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Analytics copilot**     | Ask "How did this week compare with last week?" and get an answer with charts, streamed live.                                                              | Claude (Opus 5.5) runs a manual tool-use loop over **nine read-only, parameterised analytics tools** (sales summary, top products, customer segments, inventory views, the forecast, …) plus a `show_chart` tool rendered client-side. Streaming over SSE, parallel tool calls, Zod validation of every tool input, conversation history stored append-only so thinking blocks replay correctly. There is deliberately **no free-form SQL tool**. |
+| **Supplier bill scanner** | Photograph a supplier invoice; review the extracted lines, matched to your products, then receive the stock in one click.                                  | Claude vision with **structured outputs** (Zod schema) reads the bill. Each line is matched to the catalogue by a blend of trigram similarity and embedding similarity; GSTIN or fuzzy name matching finds the supplier. Confirming creates any new products, a received purchase order and stock movements in one transaction.                                                                                                                   |
+| **Search by intent**      | "something for a headache" finds paracetamol; "parle biscuts" still finds Parle-G.                                                                         | **Hybrid retrieval**: Postgres full-text search with stemming, `pg_trgm` for typos, and **pgvector** cosine search over sentence embeddings computed **locally** (all-MiniLM-L6-v2 via transformers.js, no API key). Results are merged with **Reciprocal Rank Fusion**.                                                                                                                                                                          |
+| **Recommendations**       | "Frequently bought together" and "You might also like" on product pages; "Picked for you" for signed-in shoppers.                                          | **Market-basket analysis** over POS bills and online orders ranked by **lift** (so milk doesn't top every list); nearest neighbours in embedding space; a shopper's taste centroid for personal picks.                                                                                                                                                                                                                                            |
+| **Reorder forecasting**   | A risk-ranked list of what will run out before the next delivery, with suggested quantities, one-click draft purchase orders, and an optional AI briefing. | Weekday seasonality + **Holt's linear exponential smoothing**, safety stock from forecast error at a 95 % service level, lead times per supplier, and **inventory position** (on hand + on order). The maths is deterministic and unit-tested; Claude only narrates it and never does the arithmetic.                                                                                                                                             |
 
-## 🏗️ Architecture Flow
+Without an `ANTHROPIC_API_KEY`, everything except the copilot, bill scanner and forecast briefing still
+works, and those screens explain how to switch them on.
+
+---
+
+## Architecture
 
 ```mermaid
-graph TD;
-    Client[React Storefront / POS Dashboard] -->|REST API /api/v1| Node[Express Backend Server];
-    Client -->|Socket.io Real-time| Node;
-    Node -->|Mongoose ODM| DB[(MongoDB)];
-    Node -->|ioredis TTL Caching| Cache[(Redis Cache)];
-    Node -->|SMTP Nodemailer| Email[Admin Email Alerts];
+flowchart LR
+  subgraph Browser
+    Shop[Online shop]
+    BO[Back office + POS]
+  end
+  subgraph API["API (Express 5, TypeScript)"]
+    Auth[Auth + RBAC]
+    Sales[Sales / returns / orders]
+    Stock[Stock ledger]
+    Analytics[Analytics SQL]
+    AI[AI services]
+  end
+  subgraph Data
+    PG[(PostgreSQL 17<br/>pgvector + pg_trgm)]
+  end
+  Claude[[Claude API]]
+  Emb[[Local embeddings<br/>transformers.js]]
+
+  Shop & BO -- "REST + SSE (/api/v1)" --> API
+  Sales --> Stock --> PG
+  Analytics --> PG
+  AI -- copilot tools --> Analytics
+  AI -- vision, tool use, narration --> Claude
+  AI --> Emb
+  AI --> PG
 ```
 
-## 🚀 Getting Started
-
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) v18+
-- [MongoDB](https://www.mongodb.com/) running locally, or a MongoDB Atlas URI
-
-### Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/your-username/quickbill-pos.git
-cd quickbill-pos
-
-# Install backend dependencies
-npm install
-
-# Install frontend dependencies
-cd client
-npm install
-cd ..
-
-# Set up environment variables
-# 1. Backend (.env in the root)
-cp .env.example .env
-
-# Configure the following inside root .env:
-# MONGO_URI=mongodb://127.0.0.1:27017/quickbill
-# JWT_SECRET=your_jwt_secret
-# GOOGLE_CLIENT_ID=your_google_client_id
-
-# 2. Frontend (.env in the /client directory)
-cp client/.env.example client/.env
-
-# Configure the following inside client/.env:
-# VITE_FIREBASE_API_KEY=your_firebase_api_key
-# VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-# VITE_FIREBASE_PROJECT_ID=your_project_id
-# VITE_FIREBASE_APP_ID=your_firebase_app_id
-# VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-# VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-
-### Required Environment Variables
-
-| Variable | Description | Default / Example |
-|----------|-------------|-------------------|
-| `PORT` | API Server port | `3000` |
-| `MONGO_URI` | MongoDB connection string | `mongodb://localhost:27017/quickbill` |
-| `REDIS_URL` | Redis connection for cache | `redis://localhost:6379` |
-| `JWT_SECRET` | Secret for short-lived access | `super_secret_key` |
-| `JWT_REFRESH_SECRET`| Secret for long-lived session | `refresh_super_secret` |
-| `SMTP_USER` | Email used for NodeMailer | `admin@quickbill.com` |
-| `SMTP_PASS` | SMTP App Password | `1234abcd` |
-| `ADMIN_EMAIL` | Destination for stock alerts | `ceo@quickbill.com` |
-
-# Seed the database with sample products and categories
-npm run seed
-
-# Start the development servers (runs both backend and frontend concurrently)
-npm run dev
+```
+apps/
+  api/            Express 5 + Prisma 7 · modules: auth, catalog, inventory, sales, returns, orders,
+                  purchasing, customers, staff, analytics, storefront, ai (copilot, bill-scan,
+                  forecast, search, recommendations)
+    prisma/       schema, migrations, deterministic 90-day seed simulation
+    test/         integration tests against a real Postgres
+  web/            React 19 + Vite · features: shop, admin (POS, dashboard, AI pages, operations), auth
+packages/
+  shared/         Zod schemas, DTO types, money helpers — shared by API and web
+e2e/              Playwright end-to-end tests
 ```
 
-Open [http://localhost:5173](http://localhost:5173) (or your Vite dev server port) in your browser.
+### Engineering decisions worth knowing
 
-### Docker
+- **Money is integer paise** everywhere (`₹1 = 100`), so totals never drift. Prices are GST-inclusive
+  like an Indian MRP; the GST component is derived per line, and bill-level discounts are spread across
+  lines so the tax figure stays correct. Slabs follow the 2025 GST 2.0 reform (0 / 5 / 18 / 40 %).
+- **Stock can't be oversold.** Every stock change goes through one function that runs a conditional
+  `UPDATE … SET stock = stock + Δ WHERE stock + Δ >= 0 RETURNING stock` inside the sale's transaction and
+  writes to an append-only ledger. An integration test fires six concurrent checkouts at the last unit
+  and asserts exactly one succeeds.
+- **Retries are safe.** POS checkouts carry an idempotency key, so a retried request after a network blip
+  returns the original sale instead of charging twice.
+- **Invoice numbers are gap-free** (`S-26-000124`), allocated from a counter row inside the same
+  transaction — GST invoices in India must be sequential.
+- **Auth:** Argon2id hashing, constant-time login responses, 15-minute JWT access tokens kept in memory,
+  7-day refresh tokens in an `httpOnly` `SameSite=Strict` cookie, stored as HMAC digests, rotated on every
+  use, with reuse detection that revokes the whole token family.
+- **Public responses are shaped explicitly.** The storefront never sees cost prices, suppliers or exact
+  stock; every response goes through a typed mapper rather than returning database rows.
+- **Analytics are hand-written, parameterised SQL** over a unified view of in-store bills and online
+  orders, bucketed in the store's timezone. The copilot calls the same functions as the dashboard.
+- **AI calls are bounded:** per-user rate limits, request aborts when the browser disconnects, server-side
+  refusal fallbacks, and a copilot turn is only persisted once it completes cleanly.
 
-The fastest way to spin up the entire cluster (MongoDB, Redis, Node API, Nginx Client):
+### Fixed from the previous version
 
-```bash
-docker compose up -d --build
-```
-
-## 📁 Project Structure
-
-```text
-quickbill-pos/
-├── client/                     # React Frontend Setup
-│   ├── public/
-│   ├── src/
-│   │   ├── components/         # Reusable UI components
-│   │   ├── config/             # Firebase and other configurations
-│   │   ├── context/            # Global React Contexts
-│   │   ├── hooks/              # Custom React hooks
-│   │   ├── pages/              # Page components (Admin, Storefront, Auth)
-│   │   ├── utils/              # Frontend utilities and API handlers
-│   │   ├── App.jsx             # Main Application Router
-│   │   └── main.jsx            # React Top-Level Entry
-│   ├── vite.config.js          
-│   └── package.json            
-├── server/                     # Node.js Backend Setup
-│   ├── config/                 # DB configuration
-│   ├── controllers/            # Route business logic handlers
-│   ├── middleware/             # Auth wrapper, error handlers
-│   ├── models/                 # Mongoose DB schemas
-│   ├── routes/                 # Express API routes
-│   ├── utils/                  # Backend utilities (e.g. catchAsync, error classes)
-│   ├── index.js                # Express App Setup
-│   └── seed.js                 # Seeder file for Dummy data
-├── package.json                # Root package for backend dependencies & workspace scripts
-└── .env                        # Root Environment variables
-```
-
-## 📜 Core API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| `POST` | `/api/auth/register` | Register a new user |
-| `POST` | `/api/auth/login` | Email/Password Login |
-| `POST` | `/api/auth/google` | Google Firebase Auth verification |
-| `GET`  | `/api/products` | Get all products (supports pagination & filtering) |
-| `GET`  | `/api/products/:id` | Get product details |
-| `POST` | `/api/orders` | Create a new order (Checkout) |
-| `GET`  | `/api/invoices/:id` | Get PDF/Document for a specific invoice |
-
-*(Other modules route via `/api/customers`, `/api/employees`, `/api/returns`, `/api/suppliers`, adhering to RESTful standards for full CRUD operations.)*
-
-## 🤝 Contributing
-
-Contributions, issues, and feature requests are welcome! Feel free to open a PR.
-
-## 📄 License
-
-This project is [MIT](LICENSE) licensed.
+The revamp replaced a JavaScript/MongoDB app that could not start (three missing dependencies) and had
+an unauthenticated endpoint returning any customer's orders by email, regex injection in product search,
+non-atomic stock decrements, a token refresh that redirected to a missing route, broken product images
+(49 of 66 links returned 404) and no tests. The old code remains in git history.
 
 ---
 
-<p align="center">Made with ❤️ by <strong>Anuj Ghodke</strong></p>
+## Tech stack
+
+| Layer    | Choices                                                                                                                                         |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Frontend | React 19, TypeScript, Vite 8, Tailwind CSS 4, Radix UI, TanStack Query, React Router 7, React Hook Form + Zod, Recharts, cmdk, Zustand          |
+| Backend  | Node 24, Express 5, TypeScript, Prisma 7 (driver adapters), Zod 4, Pino, Helmet, express-rate-limit, PDFKit                                     |
+| Data     | PostgreSQL 17 with pgvector and pg_trgm                                                                                                         |
+| AI       | Claude API (`@anthropic-ai/sdk`: tool use, vision, structured outputs, streaming, Message Batches), transformers.js (local sentence embeddings) |
+| Quality  | Vitest + Supertest (unit and integration), Playwright (end-to-end), ESLint, Prettier, GitHub Actions, Docker                                    |
+
+---
+
+## Running it locally
+
+**Prerequisites:** Node 22.12+ (24 recommended) and Docker.
+
+```bash
+npm install                                  # installs all workspaces and generates the Prisma client
+cp apps/api/.env.example apps/api/.env       # then set the two JWT secrets (command in the file)
+npm run db:up                                # Postgres 17 + pgvector in Docker
+npm run db:deploy                            # apply migrations
+npm run db:seed                              # catalogue + 90 days of simulated trading (~20 s)
+npm run dev                                  # API on :4000, web on :5173
+```
+
+Open http://localhost:5173 for the shop and http://localhost:5173/admin for the back office.
+
+| Role    | Email                   | Password    |
+| ------- | ----------------------- | ----------- |
+| Admin   | `admin@quickbill.dev`   | `Demo@1234` |
+| Manager | `manager@quickbill.dev` | `Demo@1234` |
+| Cashier | `priya@quickbill.dev`   | `Demo@1234` |
+| Shopper | `shopper@quickbill.dev` | `Demo@1234` |
+
+The sign-in page also lists these on a receipt — click "use" to fill them in.
+
+**Turn on the Claude features:** add `ANTHROPIC_API_KEY=...` to `apps/api/.env` and restart. The model
+defaults to `claude-opus-5-5` and can be changed with `ANTHROPIC_MODEL`. To try the bill scanner, upload
+[`docs/sample-bills/western-fmcg-invoice.pdf`](docs/sample-bills/western-fmcg-invoice.pdf)
+(regenerate it with `npm run ai:sample-bill -w @quickbill/api`).
+
+Optional AI maintenance scripts (in `apps/api`):
+
+```bash
+npm run ai:embed            # embed products missing a vector (--all to rebuild)
+npm run ai:enrich           # Claude Message Batches: better search tags + descriptions (--dry-run)
+```
+
+### The seed
+
+`npm run db:seed` builds a believable store rather than random rows: 151 products across 19 categories
+and 9 suppliers, ~230 customers, and a day-by-day simulation of 90 days of trading — weekday and hourly
+patterns, a festive ramp, basket affinities (bread with butter, chips with cola), stock-outs when
+deliveries slip, weekly reorder-point tuning, purchase orders arriving after each supplier's lead time,
+returns and online orders through their whole lifecycle. It is deterministic, so every run produces the
+same data and the stock ledger always reconciles with on-hand stock.
+
+---
+
+## Testing
+
+```bash
+npm test             # Vitest: shared helpers, forecasting model, POS maths, cart store,
+                     # and API integration tests against a separate quickbill_test database
+npm run test:e2e     # Playwright against the production build (run `npm run build` first)
+npm run lint && npm run typecheck
+```
+
+The API integration suite covers the auth lifecycle (including refresh-token reuse detection), role
+checks, checkout pricing, GST and loyalty, the concurrent-checkout race, idempotent retries, returns,
+online orders, and that public endpoints never leak cost data. The end-to-end suite rings up a cash sale
+at the till, completes a guest checkout, checks role redirects, and searches by intent.
+
+CI (GitHub Actions) runs formatting, lint, type checks, unit and integration tests with a Postgres
+service, the production build, the Playwright suite against a freshly seeded database, and a Docker
+image build.
+
+---
+
+## Deploying
+
+The Dockerfile builds one image that serves both the API and the web app and applies pending migrations
+on start:
+
+```bash
+docker compose --profile full up --build     # app on http://localhost:3000 with its own Postgres
+```
+
+Any host that runs containers works (Render, Railway, Fly.io) with a managed Postgres that supports
+pgvector (Neon, Supabase, RDS). Set `DATABASE_URL`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`,
+`APP_ORIGIN` and optionally `ANTHROPIC_API_KEY`, then run `npm run db:seed` once for demo data.
+
+---
+
+## Design
+
+The interface is drawn from the store's own world. The palette takes its colours from Indian retail —
+ink, peacock blue, turmeric, chilli and leaf — and one typeface, Anek Latin (by Ek Type), is used
+across its width axis: condensed and heavy like a shop signboard for headings, normal width for the UI.
+The POS bill is printed on till-roll paper, and products without photography get a drawn packshot
+coloured by department instead of a broken image. Chart colours are validated for colour-vision
+deficiency, chroma and contrast.
+
+---
+
+## Roadmap
+
+- Payment gateway (Razorpay) with webhook-confirmed payments instead of the simulated online payment
+- Multiple stores and a central warehouse, with stock transfers
+- Offline-first POS (service worker + queued sales) for flaky connections
+- Copilot evaluations: a fixed question set with expected figures, run in CI against the seed
+- HNSW index on product embeddings once the catalogue grows beyond a few thousand items
