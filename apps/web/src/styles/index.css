@@ -1,0 +1,148 @@
+@import 'tailwindcss';
+
+/*
+ * QuickBill design tokens.
+ * Palette drawn from Indian retail: ballpoint/stamp ink, peacock blue, turmeric,
+ * chilli and leaf. One type family (Anek Latin) used across its width axis;
+ * IBM Plex Mono appears only on printed-receipt surfaces.
+ */
+@theme {
+  --font-sans: 'Anek Latin', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', monospace;
+
+  --color-ink: #1d1b2f;
+  --color-ink-soft: #4a4860;
+  --color-ink-faint: #85839a;
+  --color-paper: #f4f5f7;
+  --color-surface: #ffffff;
+  --color-line: #e3e4ea;
+  --color-line-strong: #cdd0d9;
+
+  --color-peacock-50: #e7f3f4;
+  --color-peacock-100: #cfe7e9;
+  --color-peacock-200: #9fd0d4;
+  --color-peacock-500: #16848d;
+  --color-peacock-600: #0f6b73;
+  --color-peacock-700: #0b555c;
+  --color-peacock-800: #083f45;
+
+  --color-turmeric-50: #fdf6e3;
+  --color-turmeric-100: #fbebc1;
+  --color-turmeric-300: #f3c75c;
+  --color-turmeric-500: #e8a317;
+  --color-turmeric-600: #c4860c;
+  --color-turmeric-800: #7a5207;
+
+  --color-chilli-50: #fbece9;
+  --color-chilli-100: #f6d5cf;
+  --color-chilli-500: #d9573f;
+  --color-chilli-600: #c2412d;
+  --color-chilli-700: #9e3222;
+
+  --color-leaf-50: #e8f4ed;
+  --color-leaf-100: #cde8d7;
+  --color-leaf-500: #38a169;
+  --color-leaf-600: #2f855a;
+  --color-leaf-700: #276749;
+
+  --color-aubergine-50: #f0eaf6;
+  --color-aubergine-100: #e0d3ec;
+  --color-aubergine-600: #5b3b7a;
+
+  --shadow-lift: 0 1px 2px rgb(29 27 47 / 0.06), 0 8px 24px -12px rgb(29 27 47 / 0.18);
+  --shadow-float: 0 12px 40px -12px rgb(29 27 47 / 0.35);
+
+  --animate-print: print 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animate-fade-in: fade-in 160ms ease-out;
+
+  @keyframes print {
+    from {
+      clip-path: inset(0 0 100% 0);
+      transform: translateY(-12px);
+    }
+    to {
+      clip-path: inset(0 0 0 0);
+      transform: translateY(0);
+    }
+  }
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-paper text-ink font-sans antialiased;
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-peacock-500);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--color-turmeric-100);
+  }
+  input[type='number']::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+  }
+}
+
+@layer components {
+  /* Signboard headings: condensed and heavy. */
+  .type-display {
+    font-stretch: 78%;
+    font-weight: 750;
+    letter-spacing: -0.01em;
+    line-height: 0.95;
+  }
+  .type-heading {
+    font-stretch: 88%;
+    font-weight: 680;
+    letter-spacing: -0.005em;
+    line-height: 1.1;
+  }
+
+  /* Thermal-receipt paper with a perforated top and bottom edge. */
+  .receipt {
+    --tooth: 7px;
+    background: #fff;
+    -webkit-mask:
+      conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom /
+        calc(var(--tooth) * 2) 51% repeat-x,
+      conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) top /
+        calc(var(--tooth) * 2) 51% repeat-x;
+    mask:
+      conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom /
+        calc(var(--tooth) * 2) 51% repeat-x,
+      conic-gradient(from 135deg at top, #0000, #000 1deg 89deg, #0000 90deg) top /
+        calc(var(--tooth) * 2) 51% repeat-x;
+    padding-block: calc(var(--tooth) + 10px);
+  }
+  .receipt-rule {
+    border-top: 1.5px dashed var(--color-line-strong);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}

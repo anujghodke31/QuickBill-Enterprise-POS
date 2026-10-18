@@ -3,6 +3,7 @@
 ## 1. P0 Errors
 
 **npm install at root:**
+
 ```
 npm warn deprecated jpeg-exif@1.1.4: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 npm warn deprecated uuid@9.0.1: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
@@ -21,6 +22,7 @@ Run `npm audit` for details.
 ```
 
 **npm install in client/:**
+
 ```
 added 247 packages, and audited 248 packages in 16s
 
@@ -36,6 +38,7 @@ Run `npm audit` for details.
 ```
 
 **node server/seed.js:**
+
 ```
 (node:9542) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
 (Use `node --trace-deprecation ...` to show where the warning was created)
@@ -43,6 +46,7 @@ Run `npm audit` for details.
 ```
 
 **npm run dev:**
+
 ```
 > quickbill-pos@2.0.0 dev
 > concurrently "npm run dev:server" "npm run dev:client"
@@ -74,9 +78,11 @@ Run `npm audit` for details.
 [0] info: [object Object] {"service":"quickbill-api","timestamp":"2026-06-20T23:59:32.871Z"}
 [0] Server running on port 3000
 ```
+
 Note: The missing `bcryptjs` error reported in the original discovery was not reproduced on running `npm install`, but might happen before running `npm install`.
 
 **docker build:**
+
 ```
 #6 [2/5] WORKDIR /usr/src/app
 #6 ERROR: mount source: "overlay", target: "/var/lib/docker/buildkit/containerd-overlayfs/cachemounts/buildkit1663625115", fstype: overlay, flags: 0, data: "workdir=/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/8/work,upperdir=/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/8/fs,lowerdir=/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/7/fs:/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/6/fs:/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/5/fs:/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs/snapshots/4/fs,index=off,redirect_dir=off", err: invalid argument
@@ -97,27 +103,34 @@ ERROR: failed to build: failed to solve: mount source: "overlay", target: "/var/
 ## 2. Dependency Advisories
 
 **Root `npm audit --omit=dev`:**
+
 - `qs` (moderate)
 - `uuid` (moderate)
 
 **Client `npm audit --omit=dev`:**
+
 - (Audit report is not detailed, but shows 2 low, 5 moderate, 8 high, 1 critical vulnerability). Needs `npm audit fix`.
 
 ## 3. Dual Frontend Status
+
 The `client/` directory exists and is a Vite/React application. `server/index.js` already explicitly maps static file serving to `client/dist`.
 **Recommendation:** We should definitely use `client/` as the canonical frontend. The legacy vanilla SPA files (`index.html`, `app.js`, `style.css`) at the root should be completely removed to prevent confusion. The `README.md` must be updated to remove references to the vanilla JS and document building/running the Vite application.
 
 ## 4. Customer Model Status
+
 The `Customer` model exists in `server/models/Customer.js`.
 The routes for the customer model exist in `server/routes/customerRoutes.js`, and these routes are explicitly wired in `server/index.js` (`app.use('/api/customers', protect, apiLimiter, customerRoutes);`). Thus, the `Customer` model has wired routes and the feature works, but we should make sure it meets all the validation requirements.
 
 ## 5. Currency Math
+
 The following files define `Number` fields for money and will need to be refactored to use integer minor units (paise), instead of JS floating point arithmetic.
 
 **`server/models/Customer.js`:**
+
 - Line 23: `totalSpent` (Number)
 
 **`server/models/Invoice.js`:**
+
 - Line 18: `price` (Number)
 - Line 20: `subTotal` (Number)
 - Line 22: `total` (Number)
@@ -127,23 +140,28 @@ The following files define `Number` fields for money and will need to be refacto
 - Line 41: `changeReturned` (Number)
 
 **`server/models/Product.js`:**
+
 - Line 26: `price` (Number)
 - Line 31: `costPrice` (Number)
 - Line 36: `discount` (Number)
 
 **`server/models/Return.js`:**
+
 - Line 15: `quantity` (Number) - Wait, quantity isn't currency but `refundAmount` is.
 - Line 20: `refundAmount` (Number)
 - Line 48: `restockingFee` (Number)
 
 **`server/models/Order.js`:**
+
 - Line 18: `price` (Number)
 - Line 22: `totalAmount` (Number)
 
 ## 6. Input Validation
+
 Currently, routes receive `req.body` but do not seem to use `express-validator` to strictly validate inputs before controller logic execution. We need to add `express-validator` checks to `server/routes/*.js`.
 
 Files needing validation for `POST`/`PUT` routes:
+
 - `server/routes/authRoutes.js` (`/register`, `/login`, `/google`, `/verify-email`, `/forgot-password`, `/reset-password`)
 - `server/routes/customerRoutes.js`
 - `server/routes/employeeRoutes.js`
@@ -156,6 +174,7 @@ Files needing validation for `POST`/`PUT` routes:
 Additionally, `ObjectId` validation is missing for `/:id` parameters across these routers.
 
 ## 7. Proposed PRs
+
 1. **P0 - Dependency & Environment Setup**: Update `server/models/User.js` to correctly use bcrypt, add `.nvmrc` pinning Node 20, update package.json engines.
 2. **P0 - Fix Docker build & Seeder**: Fix docker build 429 error and layer issues. Make `server/seed.js` idempotent using upsert logic.
 3. **P0 - Reconcile Dual Frontend**: Remove vanilla SPA files (`index.html`, `app.js`, `style.css`), update `README.md` to reflect `client/` as the canonical frontend.
@@ -164,5 +183,6 @@ Additionally, `ObjectId` validation is missing for `/:id` parameters across thes
 6. **P1 - Integer Minor Units**: Convert all money-related fields from JS floating-point arithmetic to integer minor units (paise). Add transactions and stock atomic decrements for checkout.
 
 ## 8. Ambiguities
+
 - For the dual frontend situation, should we completely delete `index.html`, `app.js`, and `style.css` at the root? My recommendation is YES, since `client/` exists.
 - The Docker build fails with a docker daemon overlay error. I suspect it's environmental, but I will review the `Dockerfile` to ensure there are no glaring syntax issues. Should I also try to clear the builder cache or change the base image?
