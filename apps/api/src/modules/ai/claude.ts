@@ -4,6 +4,21 @@ import { serviceUnavailable } from '../../lib/errors';
 
 export const MODEL = env.ANTHROPIC_MODEL;
 
+/**
+ * Anthropic-compatible gateways (such as CallMissed) accept images but not PDF
+ * documents, so PDF bills are only offered when talking to Anthropic directly.
+ */
+export function readsPdf(baseUrl: string | undefined): boolean {
+  if (!baseUrl) return true;
+  try {
+    return /(^|\.)anthropic\.com$/.test(new URL(baseUrl).hostname);
+  } catch {
+    return false;
+  }
+}
+
+export const PDF_INPUT = readsPdf(env.ANTHROPIC_BASE_URL);
+
 let client: Anthropic | undefined;
 
 export function getClaude(): Anthropic {

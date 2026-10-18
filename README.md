@@ -164,7 +164,10 @@ Open http://localhost:5173 for the shop and http://localhost:5173/admin for the 
 The sign-in page also lists these on a receipt — click "use" to fill them in.
 
 **Turn on the Claude features:** add `ANTHROPIC_API_KEY=...` to `apps/api/.env` and restart. The model
-defaults to `claude-opus-5-5` and can be changed with `ANTHROPIC_MODEL`. To try the bill scanner, upload
+defaults to `claude-opus-5-5` and can be changed with `ANTHROPIC_MODEL`. To go through
+[CallMissed](https://callmissed.com) instead, which serves the same Claude models behind an Anthropic-compatible API,
+also set `ANTHROPIC_BASE_URL=https://api.callmissed.com` and use your `cm_` key as `ANTHROPIC_API_KEY`
+(Claude models need its Pro plan, and the bill scanner then takes photos rather than PDFs). To try the bill scanner, upload
 [`docs/sample-bills/western-fmcg-invoice.pdf`](docs/sample-bills/western-fmcg-invoice.pdf)
 (regenerate it with `npm run ai:sample-bill -w @quickbill/api`).
 

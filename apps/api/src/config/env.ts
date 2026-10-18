@@ -27,6 +27,8 @@ const schema = z.object({
   ANTHROPIC_API_KEY: z.string().optional(),
   ANTHROPIC_AUTH_TOKEN: z.string().optional(),
   ANTHROPIC_MODEL: z.string().default('claude-opus-5-5'),
+  /** An Anthropic-compatible gateway such as https://api.callmissed.com. The SDK reads it too. */
+  ANTHROPIC_BASE_URL: z.string().optional(),
   EMBEDDINGS_ENABLED: z
     .enum(['true', 'false'])
     .default('true')
