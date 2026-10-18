@@ -15,6 +15,7 @@ import { slugify } from '../src/lib/text';
 import { embeddingsAvailable, embedProducts } from '../src/modules/ai/embeddings';
 import { hashPassword } from '../src/modules/auth/auth.service';
 import { CATALOG, PAIRS, SUPPLIERS, type CatalogItem, type Role } from './seed/catalog';
+import { productImageUrl, productSlug } from './seed/images';
 import {
   BUILDINGS,
   FIRST_NAMES,
@@ -213,10 +214,9 @@ async function main() {
         sku: `QB-${code}${String(i + 1).padStart(3, '0')}`,
         barcode: ean13(seq),
         name: item.name,
-        slug: slugify(`${item.name} ${item.unit}`),
-        description:
-          item.desc ??
-          `${item.name} (${item.unit}) from ${item.brand}. ${cat.blurb} Popular for ${item.tags.slice(0, 3).join(', ')}.`,
+        slug: productSlug(item),
+        description: item.desc,
+        imageUrl: productImageUrl(productSlug(item)),
         brand: item.brand,
         unit: item.unit,
         categoryId: category.id,

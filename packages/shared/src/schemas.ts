@@ -107,7 +107,17 @@ export const productInputSchema = z.object({
   taxRate: gstRate.default(0),
   stock: z.number().int().min(0).max(1_000_000).default(0),
   reorderPoint: z.number().int().min(0).max(100_000).default(10),
-  imageUrl: z.url().max(1000).optional().nullable(),
+  // A full URL, or a path on this site such as /images/products/amul-butter-100-g.webp
+  imageUrl: z
+    .string()
+    .trim()
+    .max(1000)
+    .refine(
+      (v) => /^\/[\w./-]+$/.test(v) || /^https?:\/\/\S+$/i.test(v),
+      'Enter a full URL or a site path',
+    )
+    .optional()
+    .nullable(),
   tags: z.array(trimmed(40).min(1)).max(20).default([]),
   isPublished: z.boolean().default(true),
   expiryDate: z.coerce.date().optional().nullable(),

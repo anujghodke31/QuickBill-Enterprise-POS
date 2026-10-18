@@ -15,7 +15,10 @@ export interface CatalogItem {
   role?: Role;
   /** Shelf life in days for packaged goods (sets an expiry date). */
   life?: number;
-  desc?: string;
+  /** Shopper-facing description, also used for search embeddings. */
+  desc: string;
+  /** Unbranded visual description used to generate the product photo. */
+  look: string;
 }
 
 export type Role =
@@ -195,6 +198,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['milk', 'toned milk', 'tea', 'daily essentials'],
         pop: 40,
         role: 'milk',
+        desc: 'Pasteurised toned milk with 3% fat for everyday tea, coffee and cooking. Keep refrigerated and use within two days of opening.',
+        look: 'a 500 ml pillow-shaped plastic pouch of fresh milk, white with a blue stripe',
       },
       {
         name: 'Amul Gold Full Cream Milk',
@@ -205,6 +210,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['milk', 'full cream', 'kids', 'daily essentials'],
         pop: 16,
         role: 'milk',
+        desc: 'Rich full cream milk with 6% fat for thicker chai, kheer and growing kids. Boil before use and keep refrigerated.',
+        look: 'a 1 litre plastic pouch of full cream milk with a golden-yellow band',
       },
       {
         name: 'Gokul Cow Milk',
@@ -215,6 +222,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['milk', 'cow milk', 'daily essentials'],
         pop: 18,
         role: 'milk',
+        desc: 'Fresh cow milk from the Gokul dairy cooperative in Kolhapur, delivered every morning. Light and easy to digest.',
+        look: 'a 500 ml milk pouch with a green band beside a steel glass of milk',
       },
       {
         name: 'Amul Masti Dahi',
@@ -224,6 +233,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         gst: 0,
         tags: ['curd', 'dahi', 'raita', 'probiotic', 'digestion'],
         pop: 12,
+        desc: 'Thick set curd made from pasteurised toned milk. Eat it plain, whisk it into raita or use it in marinades.',
+        look: 'a 400 g round plastic cup of thick white set curd with the lid peeled back',
       },
       {
         name: 'Amul Malai Paneer',
@@ -233,6 +244,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         gst: 0,
         tags: ['paneer', 'cottage cheese', 'protein', 'curry'],
         pop: 7,
+        desc: 'Soft, fresh paneer for palak paneer, tikka and bhurji. It holds its shape when cooked; refrigerate after opening.',
+        look: 'a 200 g block of fresh white paneer with a few cubes cut beside it',
       },
       {
         name: 'Amul Butter',
@@ -244,6 +257,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 9,
         role: 'spread',
         life: 180,
+        desc: 'Classic salted table butter for toast, parathas and pav bhaji. Store in the fridge.',
+        look: 'a 100 g block of salted butter in a plain yellow paper wrapper, partly unwrapped',
       },
       {
         name: 'Amul Cheese Slices',
@@ -256,6 +271,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 3,
         role: 'spread',
         life: 180,
+        desc: 'Ten processed cheese slices that melt evenly in sandwiches and burgers. Each slice is wrapped to stay fresh.',
+        look: 'a stack of individually wrapped yellow processed cheese slices, one slice peeled open',
       },
       {
         name: 'Eggoz Farm Fresh Eggs',
@@ -266,6 +283,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['eggs', 'protein', 'breakfast', 'omelette', 'gym'],
         pop: 10,
         role: 'eggs',
+        desc: 'Six farm-fresh brown eggs, cleaned and graded. Good for omelettes, bhurji and baking; keep refrigerated.',
+        look: 'six brown eggs in a moulded paper egg tray',
       },
       {
         name: 'Amul Fresh Cream',
@@ -276,6 +295,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['cream', 'desserts', 'cooking', 'gravy'],
         pop: 2,
         life: 90,
+        desc: 'Low-fat fresh cream for creamy gravies, desserts and soups. Shake well before use and refrigerate after opening.',
+        look: 'a 250 ml carton of fresh cream beside a small bowl of thick white cream',
       },
     ],
   },
@@ -294,6 +315,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['bread', 'brown bread', 'sandwich', 'toast', 'breakfast'],
         pop: 14,
         role: 'bread',
+        desc: 'Soft sliced bread made with whole wheat flour, for sandwiches and toast. Best eaten within three days.',
+        look: 'a sliced loaf of brown whole wheat bread in a clear plastic bag',
       },
       {
         name: 'Modern Soft White Bread',
@@ -304,6 +327,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['bread', 'white bread', 'sandwich', 'toast'],
         pop: 9,
         role: 'bread',
+        desc: 'Everyday soft white sandwich bread with a light crumb. Toasts evenly and suits tiffin sandwiches.',
+        look: 'a sliced loaf of soft white sandwich bread in a clear plastic bag',
       },
       {
         name: 'Harvest Gold Ladi Pav',
@@ -314,6 +339,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['pav', 'vada pav', 'pav bhaji', 'misal pav'],
         pop: 8,
         role: 'bread',
+        desc: 'Six soft, joined pav buns for vada pav, pav bhaji and misal pav. Warm them on a buttered tawa before serving.',
+        look: 'six soft golden-brown joined bread rolls (ladi pav) in a clear plastic bag',
       },
       {
         name: 'Britannia Premium Bake Rusk',
@@ -325,6 +352,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 4,
         role: 'teatime',
         life: 120,
+        desc: 'Crisp, lightly sweet twice-baked rusk, made for dunking in morning chai.',
+        look: 'golden twice-baked rusk toasts in a clear pack, a few rusks beside a cup of milky chai',
       },
       {
         name: 'Britannia Gobbles Fruit Cake',
@@ -335,6 +364,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['cake', 'snack', 'kids', 'tiffin'],
         pop: 2,
         life: 60,
+        desc: 'Moist fruit cake loaded with tutti-frutti and raisins. A ready snack for tiffin boxes and tea time.',
+        look: 'a rectangular fruit cake loaf studded with colourful tutti-frutti, one slice cut',
       },
     ],
   },
@@ -353,6 +384,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['onion', 'kanda', 'vegetables', 'cooking'],
         pop: 18,
         role: 'veg',
+        desc: 'Red onions from Nashik farms, the base of nearly every curry, sabzi and salad. Store in a cool, dry place.',
+        look: 'a small pile of fresh red onions',
       },
       {
         name: 'Tomato',
@@ -363,6 +396,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['tomato', 'vegetables', 'curry', 'salad'],
         pop: 15,
         role: 'veg',
+        desc: 'Ripe, firm tomatoes for curries, chutneys and salads. Keep at room temperature until fully ripe.',
+        look: 'ripe red tomatoes, a few still on the vine',
       },
       {
         name: 'Potato',
@@ -373,6 +408,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['potato', 'aloo', 'batata', 'vegetables'],
         pop: 16,
         role: 'veg',
+        desc: 'All-purpose potatoes for aloo sabzi, fries and batata vada. Store away from light so they do not sprout.',
+        look: 'a heap of fresh potatoes with light brown skin',
       },
       {
         name: 'Robusta Banana',
@@ -382,6 +419,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         gst: 0,
         tags: ['banana', 'fruit', 'energy', 'breakfast', 'gym'],
         pop: 9,
+        desc: 'A dozen ripe Robusta bananas, sweet and filling. A quick breakfast, pre-workout snack or milkshake base.',
+        look: 'a bunch of ripe yellow bananas',
       },
       {
         name: 'Shimla Apple',
@@ -391,6 +430,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         gst: 0,
         tags: ['apple', 'fruit', 'healthy', 'kids'],
         pop: 4,
+        desc: 'Crisp, juicy red apples from Himachal Pradesh. Wash before eating and keep in the fridge for longer freshness.',
+        look: 'shiny red apples, one cut in half',
       },
       {
         name: 'Coriander Bunch',
@@ -401,6 +442,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['coriander', 'dhania', 'kothimbir', 'herbs', 'garnish'],
         pop: 12,
         role: 'veg',
+        desc: 'A fragrant bunch of fresh coriander (kothimbir) for garnishing dal, chutneys and poha. Wrap it in a damp cloth to keep it fresh.',
+        look: 'a fresh bunch of green coriander leaves with stems',
       },
       {
         name: 'Green Chillies',
@@ -411,6 +454,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['green chilli', 'mirchi', 'spicy'],
         pop: 10,
         role: 'veg',
+        desc: 'Fresh, hot green chillies for tadkas, thecha and chutneys. Remove the seeds for less heat.',
+        look: 'a handful of fresh green chillies',
       },
       {
         name: 'Lemon',
@@ -421,6 +466,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['lemon', 'nimbu', 'vitamin c', 'lemonade'],
         pop: 7,
         role: 'veg',
+        desc: 'Juicy lemons for nimbu pani, dal and salads. Roll them on the counter before squeezing to get more juice.',
+        look: 'four fresh yellow lemons, one sliced in half',
       },
       {
         name: 'Ginger',
@@ -431,10 +478,12 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['ginger', 'adrak', 'tea', 'cold', 'cough'],
         pop: 6,
         role: 'veg',
+        desc: 'Fresh ginger for adrak chai, curries and home remedies for colds. Store unpeeled in the fridge.',
+        look: 'fresh ginger root pieces, one piece sliced',
       },
     ],
   },
-  'Atta, Rice & Grains': {
+  'Atta, Rice & Staples': {
     department: 'Food & Groceries',
     supplier: 'sahyadri',
     costRatio: 0.9,
@@ -451,6 +500,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 5,
         role: 'atta',
         life: 120,
+        desc: 'Whole wheat atta, stone-ground the chakki way, for soft rotis and parathas. Store airtight after opening.',
+        look: 'a 5 kg sealed plastic bag of whole wheat flour, with some flour in a steel bowl beside it',
       },
       {
         name: 'Fortune Chakki Fresh Atta',
@@ -463,6 +514,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 2,
         role: 'atta',
         life: 120,
+        desc: 'Chakki-ground whole wheat atta in a 10 kg family pack. Kneads into a soft dough for everyday rotis.',
+        look: 'a large 10 kg bag of whole wheat flour with a carry handle',
       },
       {
         name: 'India Gate Basmati Rice Classic',
@@ -474,6 +527,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 3,
         role: 'rice',
         life: 365,
+        desc: 'Aged long-grain basmati that cooks up fluffy and fragrant. Ideal for biryani, pulao and jeera rice.',
+        look: 'a 1 kg pouch of long-grain basmati rice with grains spilling onto the surface',
       },
       {
         name: 'Daawat Rozana Basmati Rice',
@@ -486,16 +541,21 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 2,
         role: 'rice',
         life: 365,
+        desc: 'Everyday basmati rice in a 5 kg value pack, for daily dal-chawal and khichdi without the premium price.',
+        look: 'a 5 kg bag of basmati rice beside a bowl of fluffy cooked rice',
       },
       {
         name: 'Kolam Rice',
         brand: 'Sahyadri',
         unit: '5 kg',
         mrp: 380,
-        gst: 0,
+        gst: 5,
         tags: ['kolam', 'rice', 'everyday rice', 'dal chawal'],
         pop: 2,
         role: 'rice',
+        life: 365,
+        desc: 'Short-grain Kolam rice, a soft and light Maharashtrian everyday staple. Packed by our distributor in Market Yard, Pune.',
+        look: 'a 5 kg bag of short-grain white rice with a scoop of grains in front',
       },
       {
         name: 'Pillsbury Maida',
@@ -506,6 +566,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['maida', 'refined flour', 'baking'],
         pop: 2,
         life: 180,
+        desc: 'Fine refined wheat flour for naans, samosa pastry, cakes and baking.',
+        look: 'a 1 kg paper pack of fine white flour with a small mound of flour beside it',
       },
       {
         name: 'Rajdhani Besan',
@@ -516,6 +578,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['besan', 'gram flour', 'pakoda', 'bhaji'],
         pop: 3,
         life: 180,
+        desc: 'Finely milled chickpea flour for pakodas, kadhi, dhokla and besan ladoo.',
+        look: 'a 500 g pack of pale yellow gram flour with some flour in a bowl',
       },
       {
         name: 'Thick Poha',
@@ -526,6 +590,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['poha', 'flattened rice', 'breakfast'],
         pop: 5,
         life: 180,
+        desc: 'Thick poha flakes that stay separate when cooked, for kanda poha and chivda. Rinse briefly before cooking.',
+        look: 'a 500 g pack of thick flattened rice flakes beside a plate of yellow kanda poha',
       },
       {
         name: 'Bombay Rava (Sooji)',
@@ -536,6 +602,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['rava', 'sooji', 'semolina', 'upma', 'sheera'],
         pop: 3,
         life: 180,
+        desc: 'Coarse semolina for upma, sheera, rava dosa and idli. Dry-roast it before use for the best flavour.',
+        look: 'a 500 g pack of coarse pale semolina with some in a glass jar',
       },
       {
         name: 'Tata Salt',
@@ -546,6 +614,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['salt', 'iodised salt', 'cooking'],
         pop: 7,
         role: 'salt',
+        desc: 'Fine, free-flowing iodised salt for everyday cooking.',
+        look: 'a 1 kg pouch of fine white salt with a small dish of salt',
       },
       {
         name: 'Madhur Pure Sugar',
@@ -556,6 +626,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['sugar', 'sweetener', 'tea', 'desserts'],
         pop: 8,
         role: 'sugar',
+        desc: 'Sulphur-free refined crystal sugar for chai, sweets and baking.',
+        look: 'a 1 kg pouch of white crystal sugar with a spoonful of sugar',
       },
     ],
   },
@@ -576,6 +648,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 5,
         role: 'dal',
         life: 270,
+        desc: 'Unpolished toor dal for everyday varan, sambar and dal tadka. Cooks quickly in a pressure cooker.',
+        look: 'a 1 kg pack of yellow split pigeon peas beside a bowl of cooked dal',
       },
       {
         name: 'Tata Sampann Moong Dal',
@@ -587,44 +661,58 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 3,
         role: 'dal',
         life: 270,
+        desc: 'Unpolished yellow moong dal, light on the stomach, for khichdi, dal fry and moong dal halwa.',
+        look: 'a 1 kg pack of small yellow split moong lentils',
       },
       {
         name: 'Chana Dal',
         brand: 'Sahyadri',
         unit: '1 kg',
         mrp: 110,
-        gst: 0,
+        gst: 5,
         tags: ['chana dal', 'bengal gram', 'dal'],
         pop: 3,
         role: 'dal',
+        life: 270,
+        desc: 'Split bengal gram for chana dal, puran poli and crunchy tadkas. Soak for an hour to cook faster.',
+        look: 'a 1 kg pack of yellow split bengal gram lentils',
       },
       {
         name: 'Masoor Dal',
         brand: 'Sahyadri',
         unit: '1 kg',
         mrp: 120,
-        gst: 0,
+        gst: 5,
         tags: ['masoor', 'red lentils', 'dal'],
         pop: 2,
         role: 'dal',
+        life: 270,
+        desc: 'Quick-cooking red lentils that need no soaking. Makes a smooth, comforting dal in under 20 minutes.',
+        look: 'a 1 kg pack of small orange split red lentils',
       },
       {
         name: 'Kabuli Chana',
         brand: 'Sahyadri',
         unit: '1 kg',
         mrp: 150,
-        gst: 0,
+        gst: 5,
         tags: ['chickpeas', 'chole', 'protein'],
         pop: 2,
+        life: 270,
+        desc: 'Large white chickpeas for chole, chana salad and hummus. Soak overnight before cooking.',
+        look: 'a 1 kg pack of large cream-coloured chickpeas',
       },
       {
         name: 'Rajma Chitra',
         brand: 'Sahyadri',
         unit: '1 kg',
         mrp: 170,
-        gst: 0,
+        gst: 5,
         tags: ['rajma', 'kidney beans', 'rajma chawal'],
         pop: 2,
+        life: 270,
+        desc: 'Speckled chitra rajma that cooks soft and creamy, for rajma chawal. Soak overnight before cooking.',
+        look: 'a 1 kg pack of speckled pinkish-brown kidney beans',
       },
     ],
   },
@@ -645,6 +733,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 6,
         role: 'oil',
         life: 270,
+        desc: 'Light refined sunflower oil for everyday cooking and deep frying.',
+        look: 'a 1 litre clear plastic bottle of golden sunflower oil',
       },
       {
         name: 'Saffola Gold Blended Oil',
@@ -656,6 +746,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 3,
         role: 'oil',
         life: 270,
+        desc: 'A blend of rice bran and sunflower oils for everyday cooking.',
+        look: 'a 1 litre plastic bottle of light golden cooking oil',
       },
       {
         name: 'Fortune Kachi Ghani Mustard Oil',
@@ -667,6 +759,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 2,
         role: 'oil',
         life: 270,
+        desc: 'Cold-pressed (kachi ghani) mustard oil with a sharp aroma, for pickles, fish curries and tadkas.',
+        look: 'a 1 litre plastic bottle of deep amber mustard oil',
       },
       {
         name: 'Gemini Refined Soyabean Oil',
@@ -679,6 +773,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 1,
         role: 'oil',
         life: 270,
+        desc: 'Refined soyabean oil in a 5 litre jar, for households and kitchens that cook in bulk.',
+        look: 'a 5 litre plastic jar of pale golden cooking oil with a handle',
       },
       {
         name: 'Amul Pure Ghee',
@@ -690,6 +786,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 2.5,
         role: 'ghee',
         life: 270,
+        desc: 'Pure ghee with a rich, nutty aroma for dal tadka, sweets and festive cooking.',
+        look: 'a 1 litre tin of golden granular ghee with a spoon resting on top',
       },
       {
         name: 'Gowardhan Cow Ghee',
@@ -701,6 +799,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 2,
         role: 'ghee',
         life: 270,
+        desc: 'Granular cow ghee made in Maharashtra. Spread it on hot rotis or use it for prasad and sweets.',
+        look: 'a 500 ml glass jar of golden cow ghee',
       },
       {
         name: 'Figaro Pure Olive Oil',
@@ -711,6 +811,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['olive oil', 'salad dressing', 'healthy'],
         pop: 0.15,
         life: 540,
+        desc: 'Pure olive oil for sautéing, salads and pasta. Store away from heat and light.',
+        look: 'a 500 ml metal tin of olive oil beside a small dish of oil',
       },
     ],
   },
@@ -729,6 +831,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['haldi', 'turmeric', 'immunity'],
         pop: 3,
         life: 365,
+        desc: 'Finely ground haldi with a deep yellow colour, essential for dals, sabzis and haldi doodh.',
+        look: 'a small spice carton beside a heap of bright yellow turmeric powder',
       },
       {
         name: 'MDH Deggi Mirch',
@@ -739,6 +843,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['chilli powder', 'kashmiri mirch', 'colour'],
         pop: 2,
         life: 365,
+        desc: 'A blend of mild red chillies that adds bright colour with gentle heat, for tandoori marinades and curries.',
+        look: 'a small spice carton beside a heap of vivid red chilli powder and dried red chillies',
       },
       {
         name: 'Everest Garam Masala',
@@ -749,6 +855,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['garam masala', 'curry', 'spice blend'],
         pop: 2,
         life: 365,
+        desc: 'An aromatic blend of roasted whole spices. Add a pinch at the end of cooking for the full aroma.',
+        look: 'a small spice carton beside brown garam masala powder and whole cinnamon, cloves and cardamom',
       },
       {
         name: 'Catch Jeera Whole',
@@ -759,6 +867,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['jeera', 'cumin', 'tadka'],
         pop: 2,
         life: 365,
+        desc: 'Whole cumin seeds for tadkas, jeera rice and roasted jeera powder.',
+        look: 'a small pouch of whole cumin seeds with seeds spilling out',
       },
       {
         name: 'MDH Chana Masala',
@@ -769,6 +879,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['chole masala', 'chana', 'spice blend'],
         pop: 1.5,
         life: 365,
+        desc: 'A tangy spice blend made for Punjabi-style chole and chana masala.',
+        look: 'a small spice carton beside a bowl of chickpea curry',
       },
       {
         name: 'Everest Pav Bhaji Masala',
@@ -779,6 +891,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['pav bhaji', 'street food', 'spice blend'],
         pop: 1.5,
         life: 365,
+        desc: 'The spice blend behind Mumbai street-style pav bhaji. Stir it into the mash with a generous knob of butter.',
+        look: 'a small spice carton beside a plate of pav bhaji with buttered buns',
       },
       {
         name: 'Badshah Kitchen King Masala',
@@ -789,6 +903,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['kitchen king', 'sabzi masala'],
         pop: 1,
         life: 365,
+        desc: 'An all-purpose masala for mixed vegetables, paneer dishes and dal.',
+        look: 'a small spice carton beside a heap of reddish-brown spice powder',
       },
       {
         name: 'Tata Sampann Hing',
@@ -799,14 +915,16 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['hing', 'asafoetida', 'digestion', 'tadka'],
         pop: 0.8,
         life: 540,
+        desc: 'Strong compounded asafoetida for tadkas. A small pinch is enough to flavour a whole pot of dal.',
+        look: 'a small round plastic jar of pale asafoetida powder',
       },
     ],
   },
-  'Breakfast & Spreads': {
+  'Breakfast, Spreads & Sauces': {
     department: 'Food & Groceries',
     supplier: 'western',
     costRatio: 0.84,
-    blurb: 'Cereals, oats and spreads for a quick start.',
+    blurb: 'Cereals, oats, spreads and sauces.',
     items: [
       {
         name: "Kellogg's Corn Flakes Original",
@@ -817,6 +935,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['cornflakes', 'cereal', 'breakfast', 'kids'],
         pop: 2,
         life: 270,
+        desc: 'Crisp, toasted corn flakes for a quick breakfast with cold milk. Fortified with iron and vitamins.',
+        look: 'a cereal box beside a bowl of golden corn flakes in milk',
       },
       {
         name: 'Saffola Masala Oats Classic',
@@ -827,6 +947,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['oats', 'healthy breakfast', 'fibre', 'weight loss'],
         pop: 2,
         life: 270,
+        desc: 'Savoury masala oats that cook in three minutes: a filling, fibre-rich breakfast or evening snack.',
+        look: 'a pouch of oats beside a bowl of savoury vegetable oats porridge',
       },
       {
         name: 'Quaker Rolled Oats',
@@ -838,6 +960,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['oats', 'porridge', 'healthy breakfast', 'high fibre', 'diabetic friendly'],
         pop: 1.5,
         life: 365,
+        desc: '100% whole grain rolled oats for porridge, overnight oats and smoothies. High in fibre.',
+        look: 'a 1 kg jar of rolled oats beside a bowl of oat porridge topped with banana slices',
       },
       {
         name: 'Kissan Mixed Fruit Jam',
@@ -849,6 +973,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 2,
         role: 'spread',
         life: 365,
+        desc: 'Sweet mixed fruit jam for toast, rotis and tiffin sandwiches.',
+        look: 'a 500 g glass jar of red fruit jam beside a slice of toast spread with jam',
       },
       {
         name: 'Pintola All Natural Peanut Butter Crunchy',
@@ -860,6 +986,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 1,
         role: 'spread',
         life: 270,
+        desc: 'Made only from roasted peanuts, with no added sugar or oil. Crunchy texture; stir well before use.',
+        look: 'a 350 g jar of crunchy peanut butter with a spoonful spread on toast and a few peanuts',
       },
       {
         name: 'Dabur Honey',
@@ -871,6 +999,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 1.5,
         role: 'fever',
         life: 540,
+        desc: 'Pure honey for warm lemon water, ginger tea and baking. Natural crystallisation is normal; warm the jar gently to liquefy.',
+        look: 'a 500 g squeeze bottle of golden honey with a wooden honey dipper',
       },
       {
         name: 'Kissan Fresh Tomato Ketchup',
@@ -882,6 +1012,21 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 3,
         role: 'sauce',
         life: 365,
+        desc: 'Thick tomato ketchup for samosas, fries, sandwiches and Maggi.',
+        look: 'a 950 g squeeze bottle of red tomato ketchup beside samosas',
+      },
+      {
+        name: "Ching's Schezwan Chutney",
+        brand: "Ching's",
+        unit: '250 g',
+        mrp: 99,
+        gst: 5,
+        tags: ['schezwan', 'indo chinese', 'chutney', 'spicy'],
+        pop: 1.2,
+        role: 'sauce',
+        life: 365,
+        desc: 'A fiery Indo-Chinese chutney for fried rice and noodles, and a dip for momos.',
+        look: 'a 250 g glass jar of thick red chilli sauce beside steamed momos',
       },
       {
         name: "Bagrry's Fruit & Nut Muesli",
@@ -892,6 +1037,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['muesli', 'healthy breakfast', 'dry fruits'],
         pop: 0.6,
         life: 270,
+        desc: 'Whole grain muesli with almonds, raisins and dried fruit. Add cold milk or yogurt for a no-cook breakfast.',
+        look: 'a pack of muesli beside a bowl of muesli with nuts and dried fruit in milk',
       },
     ],
   },
@@ -911,6 +1058,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 14,
         role: 'noodles',
         life: 270,
+        desc: 'Classic two-minute masala noodles with the tastemaker sachet inside. A hostel and late-night favourite.',
+        look: 'a single pack of instant noodles beside a bowl of curly masala noodles',
       },
       {
         name: 'Maggi Masala Noodles Family Pack',
@@ -922,6 +1071,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 5,
         role: 'noodles',
         life: 270,
+        desc: 'Four packs of masala instant noodles, each with its own tastemaker. Better value for families.',
+        look: 'a multipack of four instant noodle packs with a block of dry noodles shown',
       },
       {
         name: 'Sunfeast Yippee Magic Masala Noodles',
@@ -933,6 +1084,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 2,
         role: 'noodles',
         life: 270,
+        desc: 'Long, non-sticky instant noodles with a magic masala tastemaker. Four packs inside.',
+        look: 'a four-pack of instant noodles beside a bowl of long, separate masala noodles',
       },
       {
         name: 'Knorr Hot & Sour Veg Soup',
@@ -943,6 +1096,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['soup', 'instant soup', 'rainy day', 'cold'],
         pop: 1.5,
         life: 365,
+        desc: 'Makes four bowls of tangy Indo-Chinese hot and sour soup in five minutes. Just right for rainy evenings.',
+        look: 'a soup mix sachet beside a steaming bowl of hot and sour vegetable soup',
       },
       {
         name: 'MTR Ready to Eat Dal Makhani',
@@ -953,6 +1108,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['ready to eat', 'dal makhani', 'quick meal'],
         pop: 1.2,
         life: 365,
+        desc: 'Slow-cooked black dal in a creamy, buttery gravy. Heat the pouch in boiling water for five minutes and serve.',
+        look: 'a ready-to-eat retort pouch beside a bowl of creamy dark dal makhani',
       },
       {
         name: 'MTR Rava Idli Mix',
@@ -963,17 +1120,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['idli', 'breakfast mix', 'south indian'],
         pop: 1,
         life: 270,
-      },
-      {
-        name: "Ching's Schezwan Chutney",
-        brand: "Ching's",
-        unit: '250 g',
-        mrp: 99,
-        gst: 5,
-        tags: ['schezwan', 'indo chinese', 'chutney', 'spicy'],
-        pop: 1.2,
-        role: 'sauce',
-        life: 365,
+        desc: 'Instant mix for soft rava idlis, with no soaking or grinding. Just add curd and water.',
+        look: 'a pack of instant idli mix beside soft white rava idlis and coconut chutney',
       },
     ],
   },
@@ -993,6 +1141,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 12,
         role: 'chips',
         life: 120,
+        desc: 'Thin, crisp potato chips with just the right amount of salt.',
+        look: 'a snack bag of salted potato chips with golden chips spilling out',
       },
       {
         name: "Lay's India's Magic Masala",
@@ -1004,6 +1154,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 10,
         role: 'chips',
         life: 120,
+        desc: 'Potato chips tossed in a tangy, spicy Indian masala.',
+        look: 'a snack bag of potato chips dusted with red masala spice',
       },
       {
         name: 'Kurkure Masala Munch',
@@ -1015,6 +1167,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 9,
         role: 'chips',
         life: 120,
+        desc: 'Crunchy, twisted corn puffs with a chatpata masala coating.',
+        look: 'a snack bag of crunchy twisted orange corn puffs',
       },
       {
         name: "Haldiram's Aloo Bhujia",
@@ -1026,6 +1180,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 4,
         role: 'teatime',
         life: 150,
+        desc: 'Crisp potato and gram flour sev with a peppery kick, for tea time or topping bhel.',
+        look: 'a pouch of namkeen beside a bowl of thin crunchy golden potato sev',
       },
       {
         name: "Haldiram's Moong Dal Namkeen",
@@ -1037,6 +1193,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 3,
         role: 'teatime',
         life: 150,
+        desc: 'Crunchy fried moong dal, lightly salted. A classic tea-time namkeen.',
+        look: 'a pouch of namkeen beside a bowl of crunchy fried yellow lentils',
       },
       {
         name: 'Bikaji Bikaneri Bhujia',
@@ -1048,6 +1206,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 2,
         role: 'teatime',
         life: 150,
+        desc: 'Traditional thin bhujia from Bikaner, made with moth bean flour and spices.',
+        look: 'a pouch of namkeen beside a bowl of thin crunchy spiced sev',
       },
       {
         name: 'Act II Butter Lovers Popcorn',
@@ -1059,6 +1219,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 1.5,
         role: 'chips',
         life: 180,
+        desc: 'Microwave popcorn with extra butter flavour, ready in about three minutes. Three packs for movie night.',
+        look: 'microwave popcorn bags beside a bowl of fluffy buttery popcorn',
       },
       {
         name: 'Too Yumm Multigrain Chips',
@@ -1070,6 +1232,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 2,
         role: 'chips',
         life: 120,
+        desc: 'Baked multigrain chips, a lighter alternative to fried snacks.',
+        look: 'a snack bag of wavy multigrain chips',
       },
     ],
   },
@@ -1089,6 +1253,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 14,
         role: 'teatime',
         life: 180,
+        desc: "India's favourite glucose biscuit, made for dunking in chai.",
+        look: 'a stack of plain golden rectangular biscuits beside a cup of chai',
       },
       {
         name: 'Britannia Good Day Cashew Cookies',
@@ -1100,6 +1266,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 7,
         role: 'teatime',
         life: 180,
+        desc: 'Buttery cookies studded with cashew bits. A crowd-pleaser with evening tea.',
+        look: 'round golden butter cookies studded with cashew pieces',
       },
       {
         name: 'Sunfeast Dark Fantasy Choco Fills',
@@ -1110,6 +1278,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['chocolate cookies', 'dessert', 'kids'],
         pop: 3,
         life: 180,
+        desc: 'Dark cookies with a gooey chocolate centre. Warm one for ten seconds for a molten dessert.',
+        look: 'dark chocolate cookies, one broken open to show a molten chocolate filling',
       },
       {
         name: 'Britannia Marie Gold',
@@ -1121,16 +1291,20 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 6,
         role: 'teatime',
         life: 180,
+        desc: "Light, crisp tea biscuits that aren't too sweet, for a snack between meals.",
+        look: 'a stack of round light-coloured marie biscuits',
       },
       {
         name: 'Oreo Chocolate Cream Biscuits',
-        brand: 'Cadbury',
+        brand: 'Oreo',
         unit: '120 g',
         mrp: 40,
         gst: 5,
         tags: ['oreo', 'cookies', 'kids'],
         pop: 4,
         life: 180,
+        desc: 'Chocolate sandwich cookies with a chocolate creme filling. Twist, lick and dunk.',
+        look: 'dark chocolate sandwich cookies with a chocolate creme filling, one twisted open',
       },
       {
         name: 'Cadbury Dairy Milk',
@@ -1141,6 +1315,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['chocolate', 'sweet', 'gift'],
         pop: 8,
         life: 270,
+        desc: 'Smooth, creamy milk chocolate. A small treat or a quick gift.',
+        look: 'a milk chocolate bar partly unwrapped with a few squares broken off',
       },
       {
         name: 'Cadbury Celebrations Gift Pack',
@@ -1152,6 +1328,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 1.5,
         role: 'festive',
         life: 270,
+        desc: 'Assorted individually wrapped chocolates in a festive gift box. A popular Diwali and Raksha Bandhan gift.',
+        look: 'an open festive gift box filled with assorted foil-wrapped chocolates',
       },
       {
         name: 'Nestle KitKat 4 Finger',
@@ -1162,6 +1340,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['chocolate', 'wafer', 'snack'],
         pop: 5,
         life: 270,
+        desc: 'Four crisp wafer fingers covered in milk chocolate. Snap off a finger whenever you need a break.',
+        look: 'a four-finger chocolate-coated wafer bar with one finger snapped off',
       },
     ],
   },
@@ -1182,6 +1362,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 3,
         role: 'tea',
         life: 365,
+        desc: 'A blend of Assam CTC and long-leaf tea for a strong, aromatic cup of chai.',
+        look: 'a 500 g pack of black tea with loose tea leaves and a glass of masala chai',
       },
       {
         name: 'Brooke Bond Red Label Tea',
@@ -1193,6 +1375,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 4,
         role: 'tea',
         life: 365,
+        desc: 'Strong CTC tea that brews a rich, full-bodied cup with milk.',
+        look: 'a 250 g pack of granular black tea beside a cup of milky chai',
       },
       {
         name: 'Wagh Bakri Premium Leaf Tea',
@@ -1204,6 +1388,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 2,
         role: 'tea',
         life: 365,
+        desc: 'A strong Assam tea from one of Gujarat’s best-known tea houses, for a bold morning cup.',
+        look: 'a 500 g pack of dark tea granules beside a kulhad of chai',
       },
       {
         name: 'Nescafe Classic Instant Coffee',
@@ -1215,6 +1401,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 2.5,
         role: 'coffee',
         life: 540,
+        desc: 'Pure instant coffee with a strong aroma. Makes about 25 cups with hot milk or water.',
+        look: 'a 50 g glass jar of instant coffee granules beside a mug of coffee',
       },
       {
         name: 'Bru Instant Coffee',
@@ -1226,6 +1414,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 2,
         role: 'coffee',
         life: 540,
+        desc: 'Instant coffee blended with chicory for a filter-coffee taste. Froth it with hot milk, south Indian style.',
+        look: 'a 100 g jar of instant coffee beside a steel tumbler and dabarah of frothy coffee',
       },
       {
         name: 'Tetley Green Tea Lemon & Honey',
@@ -1236,6 +1426,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['green tea', 'weight loss', 'antioxidants', 'healthy'],
         pop: 1.5,
         life: 540,
+        desc: 'Green tea with natural lemon and honey flavours. Brew one bag in hot, not boiling, water for two minutes.',
+        look: 'a box of tea bags beside a glass cup of pale green tea with a lemon slice',
       },
       {
         name: 'Cadbury Bournvita Health Drink',
@@ -1246,6 +1438,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['bournvita', 'kids', 'health drink', 'chocolate milk'],
         pop: 1.5,
         life: 365,
+        desc: 'Chocolate malt drink powder with added vitamins and minerals. Stir into warm or cold milk.',
+        look: 'a 500 g jar of chocolate malt drink powder beside a glass of chocolate milk',
       },
     ],
   },
@@ -1265,6 +1459,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 7,
         role: 'cola',
         life: 180,
+        desc: 'Chilled cola in a 750 ml bottle. Contains caffeine.',
+        look: 'a 750 ml clear plastic bottle of dark cola with condensation droplets',
       },
       {
         name: 'Thums Up',
@@ -1276,6 +1472,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 7,
         role: 'cola',
         life: 180,
+        desc: "India's strong, fizzy cola with a sharp bite. Best served ice-cold. Contains caffeine.",
+        look: 'a 750 ml plastic bottle of dark fizzy cola beside a glass with ice',
       },
       {
         name: 'Sprite',
@@ -1287,6 +1485,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 5,
         role: 'cola',
         life: 180,
+        desc: 'A clear, caffeine-free lemon-lime soda.',
+        look: 'a 750 ml green-tinted plastic bottle of clear fizzy lemon soda',
       },
       {
         name: 'Real Fruit Power Mixed Fruit Juice',
@@ -1297,6 +1497,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['juice', 'fruit juice', 'kids', 'tiffin'],
         pop: 2,
         life: 180,
+        desc: 'A blend of nine fruit juices in a 1 litre pack. Shake well and refrigerate after opening.',
+        look: 'a 1 litre carton of juice beside a glass of orange juice and fresh fruit',
       },
       {
         name: 'Paper Boat Aam Panna',
@@ -1307,6 +1509,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['aam panna', 'summer drink', 'traditional'],
         pop: 2,
         life: 180,
+        desc: 'A tangy raw mango drink with roasted cumin and mint, the way it is made at home in summer.',
+        look: 'a 250 ml stand-up drink pouch beside a glass of pale green raw mango drink with mint',
       },
       {
         name: 'Bisleri Packaged Drinking Water',
@@ -1316,6 +1520,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         gst: 5,
         tags: ['water', 'mineral water', 'drinking water'],
         pop: 15,
+        desc: 'Purified packaged drinking water with added minerals, in a 1 litre bottle.',
+        look: 'a 1 litre clear plastic bottle of drinking water',
       },
       {
         name: 'Red Bull Energy Drink',
@@ -1326,6 +1532,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['energy drink', 'caffeine', 'exams', 'gym'],
         pop: 1.5,
         life: 365,
+        desc: 'A caffeinated energy drink. Not recommended for children, pregnant women or people sensitive to caffeine.',
+        look: 'a slim 250 ml aluminium drink can with condensation',
       },
     ],
   },
@@ -1345,6 +1553,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 1.5,
         role: 'festive',
         life: 270,
+        desc: 'Whole California almonds, crunchy and fresh. Soak a few overnight for a morning snack, or gift them at festivals.',
+        look: 'a resealable pouch of whole almonds beside a small bowl of almonds',
       },
       {
         name: 'Happilo Whole Cashews',
@@ -1356,6 +1566,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 1.2,
         role: 'festive',
         life: 270,
+        desc: 'Whole cashews for snacking, rich gravies and sweets.',
+        look: 'a resealable pouch of whole cashew nuts beside a small bowl of cashews',
       },
       {
         name: 'Kishmish (Raisins)',
@@ -1367,6 +1579,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 1,
         role: 'festive',
         life: 270,
+        desc: 'Seedless golden raisins for kheer, sheera and trail mix.',
+        look: 'a pack of golden raisins with some in a small bowl',
       },
       {
         name: "Haldiram's Soan Papdi",
@@ -1378,6 +1592,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 1.5,
         role: 'festive',
         life: 120,
+        desc: 'Flaky, melt-in-the-mouth soan papdi with cardamom and pistachio. A classic Diwali gift box.',
+        look: 'an open gift box of flaky cube-shaped soan papdi sweets topped with pistachio',
       },
       {
         name: "Haldiram's Rasgulla Tin",
@@ -1389,6 +1605,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 1,
         role: 'festive',
         life: 180,
+        desc: 'Soft, spongy rasgullas in light sugar syrup. Serve chilled.',
+        look: 'an open tin of white spongy rasgullas in clear sugar syrup',
       },
       {
         name: 'Bikano Kaju Katli',
@@ -1400,6 +1618,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 0.8,
         role: 'festive',
         life: 45,
+        desc: 'Diamond-shaped cashew fudge finished with edible silver leaf. Best eaten within 45 days.',
+        look: 'diamond-shaped kaju katli sweets with silver leaf in an open gift box',
       },
       {
         name: 'Medjool Dates',
@@ -1410,6 +1630,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['dates', 'khajur', 'iron', 'healthy snack'],
         pop: 0.5,
         life: 270,
+        desc: 'Large, soft and naturally sweet Medjool dates. A healthy sweet snack, or a natural sweetener for smoothies.',
+        look: 'large soft brown dates in an open box',
       },
     ],
   },
@@ -1429,7 +1651,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 3,
         role: 'fever',
         life: 730,
-        desc: 'Fast-acting paracetamol tablets for relief from fever, headache and mild body pain.',
+        desc: 'Fast-acting paracetamol tablets for relief from fever, headache and mild body pain. Read the label before use.',
+        look: 'a blister strip of white tablets beside a small medicine carton',
       },
       {
         name: 'Dolo 650 Tablets',
@@ -1441,7 +1664,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 3,
         role: 'fever',
         life: 730,
-        desc: 'Paracetamol 650 mg for fever and body pain, including viral fever.',
+        desc: 'Paracetamol 650 mg for fever and body pain, including viral fever. Use as directed by a doctor.',
+        look: 'a blister strip of white oval tablets',
       },
       {
         name: 'Vicks VapoRub',
@@ -1453,7 +1677,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 2,
         role: 'fever',
         life: 730,
-        desc: 'Mentholated balm that eases blocked nose, cough and cold symptoms.',
+        desc: 'Mentholated balm that eases a blocked nose, cough and cold. Rub it on the chest, throat and back.',
+        look: 'a small dark blue glass jar of mentholated balm with the lid off',
       },
       {
         name: 'Vicks Action 500 Advanced',
@@ -1465,7 +1690,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 1.5,
         role: 'fever',
         life: 730,
-        desc: 'Relief from common cold and flu symptoms: headache, sneezing and runny nose.',
+        desc: 'Relief from common cold and flu symptoms: headache, sneezing and a runny nose. Read the label before use.',
+        look: 'a blister strip of orange tablets beside a small carton',
       },
       {
         name: 'Electral ORS Powder',
@@ -1476,7 +1702,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['ors', 'dehydration', 'loose motions', 'diarrhoea', 'electrolytes', 'heat'],
         pop: 2,
         life: 730,
-        desc: 'WHO-formula oral rehydration salts to replace fluids lost to diarrhoea, vomiting or heat.',
+        desc: 'WHO-formula oral rehydration salts to replace fluids lost to diarrhoea, vomiting or heat. Mix one sachet in a litre of clean water.',
+        look: 'five oral rehydration powder sachets beside a glass of water',
       },
       {
         name: 'Eno Fruit Salt Lemon',
@@ -1487,7 +1714,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['acidity', 'gas', 'indigestion', 'heartburn'],
         pop: 1.5,
         life: 730,
-        desc: 'Fast relief from acidity, gas and indigestion in about six seconds.',
+        desc: 'Fizzy antacid that relieves acidity, gas and indigestion within minutes. Stir one teaspoon into a glass of water.',
+        look: 'a 100 g plastic bottle of white antacid powder beside a fizzing glass of water',
       },
       {
         name: 'Dabur Hajmola Regular',
@@ -1498,6 +1726,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['digestion', 'after meals', 'ayurvedic', 'tangy'],
         pop: 2,
         life: 730,
+        desc: 'Tangy ayurvedic digestive tablets to chew after a heavy meal.',
+        look: 'a small plastic bottle of small round brown digestive tablets, some spilled out',
       },
       {
         name: 'Dettol Antiseptic Liquid',
@@ -1509,10 +1739,12 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 1.5,
         role: 'firstaid',
         life: 1095,
+        desc: 'Antiseptic liquid for first aid on cuts and grazes, personal hygiene and laundry. Always dilute before use.',
+        look: 'a 250 ml bottle of amber antiseptic liquid',
       },
       {
         name: 'Band-Aid Washproof Strips',
-        brand: 'Johnson & Johnson',
+        brand: 'Band-Aid',
         unit: '20 strips',
         mrp: 65,
         gst: 5,
@@ -1520,6 +1752,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 1,
         role: 'firstaid',
         life: 1095,
+        desc: 'Waterproof adhesive bandages that stay on through hand-washing. Twenty strips for minor cuts and blisters.',
+        look: 'adhesive bandage strips fanned out beside a small box',
       },
       {
         name: 'Dabur Chyawanprash',
@@ -1531,6 +1765,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['chyawanprash', 'immunity', 'ayurvedic', 'winter'],
         pop: 0.8,
         life: 730,
+        desc: 'An ayurvedic amla-based tonic traditionally taken in winter. Adults take a spoonful with warm milk once a day.',
+        look: 'a 1 kg jar of dark brown herbal jam with a spoonful lifted out',
       },
       {
         name: 'Himalaya Septilin Tablets',
@@ -1541,6 +1777,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['immunity', 'cough', 'cold', 'ayurvedic'],
         pop: 0.5,
         life: 730,
+        desc: 'Herbal tablets that support the body’s natural defences. Take as directed on the label.',
+        look: 'a small plastic bottle of herbal tablets with a few tablets beside it',
       },
       {
         name: 'Moov Pain Relief Cream',
@@ -1551,6 +1789,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['back pain', 'muscle pain', 'sprain', 'joint pain'],
         pop: 0.8,
         life: 730,
+        desc: 'Fast-acting ayurvedic cream for back pain, muscle pain and sprains. For external use only.',
+        look: 'a 50 g tube of pain relief cream with a dab of cream',
       },
       {
         name: 'Dettol Instant Hand Sanitizer',
@@ -1561,6 +1801,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['sanitizer', 'hand hygiene', 'germs'],
         pop: 1,
         life: 730,
+        desc: 'Alcohol-based hand sanitiser for when soap and water are not at hand. Rub in until dry.',
+        look: 'a 200 ml pump bottle of clear hand sanitiser gel',
       },
     ],
   },
@@ -1579,6 +1821,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['toothpaste', 'oral care', 'cavity protection'],
         pop: 4,
         life: 730,
+        desc: 'Calcium-boosted toothpaste for strong teeth and protection against cavities. Brush twice a day.',
+        look: 'a 200 g toothpaste tube beside a toothbrush with paste on it',
       },
       {
         name: 'Sensodyne Fresh Mint Toothpaste',
@@ -1589,6 +1833,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['sensitive teeth', 'toothpaste'],
         pop: 1.5,
         life: 730,
+        desc: 'Toothpaste for sensitive teeth with a fresh mint taste. Brush twice a day for lasting relief.',
+        look: 'a 75 g toothpaste tube',
       },
       {
         name: 'Dettol Original Soap',
@@ -1600,6 +1846,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['soap', 'bath', 'germ protection'],
         pop: 3,
         life: 1095,
+        desc: 'Antibacterial bathing soap with the classic pine fragrance. Pack of four 75 g bars.',
+        look: 'four green bars of soap, one unwrapped',
       },
       {
         name: 'Lux Soft Rose Soap',
@@ -1610,6 +1858,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['soap', 'beauty soap', 'fragrance'],
         pop: 2.5,
         life: 1095,
+        desc: 'Rose-scented beauty soap that leaves skin soft and fragrant. Pack of three.',
+        look: 'three pink soap bars with a few rose petals',
       },
       {
         name: 'Clinic Plus Strength & Shine Shampoo',
@@ -1620,6 +1870,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['shampoo', 'hair care', 'long hair'],
         pop: 1.5,
         life: 730,
+        desc: 'Milk-protein shampoo for long, strong hair. Gentle enough for daily use.',
+        look: 'a 355 ml bottle of shampoo with a flip cap',
       },
       {
         name: 'Head & Shoulders Anti-Dandruff Shampoo',
@@ -1630,6 +1882,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['anti-dandruff', 'shampoo', 'itchy scalp'],
         pop: 1.5,
         life: 730,
+        desc: 'Anti-dandruff shampoo that removes flakes and soothes an itchy scalp with regular use.',
+        look: 'a 180 ml bottle of anti-dandruff shampoo',
       },
       {
         name: 'Parachute Pure Coconut Oil',
@@ -1640,6 +1894,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['coconut oil', 'hair oil', 'massage'],
         pop: 2,
         life: 540,
+        desc: '100% pure coconut oil for hair oiling, massage and cooking. It solidifies in cold weather; warm it gently.',
+        look: 'a 500 ml plastic bottle of clear coconut oil beside a split coconut',
       },
       {
         name: 'Nivea Soft Light Moisturising Cream',
@@ -1650,6 +1906,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['moisturiser', 'dry skin', 'winter care'],
         pop: 1,
         life: 730,
+        desc: 'Light, non-greasy cream with jojoba oil and vitamin E for the face, hands and body.',
+        look: 'an open 100 ml jar of light white moisturising cream',
       },
       {
         name: 'Gillette Guard Razor',
@@ -1659,6 +1917,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         gst: 5,
         tags: ['razor', 'shaving', 'men grooming'],
         pop: 1,
+        desc: 'An affordable single-blade razor with a safety comb. Includes two cartridges.',
+        look: 'a simple single-blade razor beside two spare cartridges',
       },
       {
         name: 'Whisper Ultra Clean XL+ Pads',
@@ -1666,10 +1926,12 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         unit: '30 pads',
         mrp: 360,
         price: 339,
-        gst: 5,
+        gst: 0,
         tags: ['sanitary pads', 'periods', 'feminine hygiene'],
         pop: 1.2,
         life: 1095,
+        desc: 'Extra-long sanitary pads with wings for up to eight hours of protection. Pack of 30.',
+        look: 'a soft plastic pack of sanitary pads with one individually wrapped pad beside it',
       },
       {
         name: 'Himalaya Purifying Neem Face Wash',
@@ -1680,6 +1942,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['face wash', 'pimples', 'acne', 'neem'],
         pop: 1.2,
         life: 730,
+        desc: 'Soap-free face wash with neem and turmeric that helps prevent pimples. Gentle enough for daily use.',
+        look: 'a 150 ml green tube of face wash beside fresh neem leaves',
       },
     ],
   },
@@ -1700,6 +1964,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 0.8,
         role: 'diaper',
         life: 1095,
+        desc: 'Pant-style diapers for babies of 7 to 12 kg, with up to 12 hours of dryness. Size medium, 62 pants.',
+        look: 'a large soft pack of baby diaper pants with one diaper shown in front',
       },
       {
         name: 'MamyPoko Pants Extra Absorb (L)',
@@ -1712,6 +1978,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 0.7,
         role: 'diaper',
         life: 1095,
+        desc: 'Extra-absorbent pant-style diapers for babies of 9 to 14 kg. Size large, 42 pants.',
+        look: 'a soft pack of large baby diaper pants',
       },
       {
         name: 'Himalaya Gentle Baby Wipes',
@@ -1723,6 +1991,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 1,
         role: 'babycare',
         life: 730,
+        desc: 'Alcohol-free baby wipes with aloe vera, gentle on delicate skin. 72 wipes.',
+        look: 'a soft pack of baby wipes with one wipe pulled out',
       },
       {
         name: "Johnson's Baby Powder",
@@ -1730,10 +2000,12 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         unit: '200 g',
         mrp: 185,
         gst: 5,
-        tags: ['baby powder', 'rashes', 'talc free'],
+        tags: ['baby powder', 'rashes', 'after bath'],
         pop: 0.6,
         role: 'babycare',
         life: 1095,
+        desc: 'Mild baby powder that keeps skin dry and comfortable after a bath.',
+        look: 'a 200 g plastic bottle of baby powder with a little white powder sprinkled beside it',
       },
       {
         name: 'Nestle Cerelac Wheat Apple',
@@ -1745,6 +2017,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 0.6,
         role: 'babycare',
         life: 270,
+        desc: 'Fortified wheat and apple cereal for babies from six months. Mix with warm water as directed on the pack.',
+        look: 'a 300 g carton of baby cereal beside a small bowl of smooth apple porridge',
       },
     ],
   },
@@ -1764,6 +2038,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 4,
         role: 'detergent',
         life: 1095,
+        desc: 'Detergent powder that lifts tough stains in bucket washing and top-loading machines.',
+        look: 'a 1 kg pouch of blue-speckled detergent powder with a scoop of powder',
       },
       {
         name: 'Ariel Matic Front Load Detergent',
@@ -1775,6 +2051,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 1.5,
         role: 'detergent',
         life: 1095,
+        desc: 'Low-foam detergent made for front-loading washing machines.',
+        look: 'a 1 kg pack of washing machine detergent powder beside folded clean clothes',
       },
       {
         name: 'Comfort After Wash Fabric Conditioner',
@@ -1786,6 +2064,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 1,
         role: 'softener',
         life: 1095,
+        desc: 'Fabric conditioner that keeps clothes soft and fragrant. Add it to the final rinse.',
+        look: 'an 860 ml bottle of pink fabric conditioner beside soft folded towels',
       },
       {
         name: 'Vim Dishwash Bar',
@@ -1797,6 +2077,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 6,
         role: 'dish',
         life: 1095,
+        desc: 'Lemon dishwash bar that cuts through oil and grease on everyday utensils.',
+        look: 'a green dishwash bar in a plastic tray beside a scrub pad and a steel plate',
       },
       {
         name: 'Pril Lime Dishwash Liquid',
@@ -1808,6 +2090,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         pop: 2,
         role: 'dish',
         life: 1095,
+        desc: 'Concentrated lime dishwash liquid: a few drops in water clean a full sink of greasy dishes.',
+        look: 'a 750 ml bottle of bright green dishwashing liquid beside clean plates',
       },
       {
         name: 'Lizol Citrus Floor Cleaner',
@@ -1818,6 +2102,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['floor cleaner', 'disinfectant', 'mopping'],
         pop: 2,
         life: 1095,
+        desc: 'Disinfectant floor cleaner with a fresh citrus fragrance. Dilute in a bucket of water for mopping.',
+        look: 'a 975 ml bottle of yellow floor cleaner liquid',
       },
       {
         name: 'Harpic Power Plus Toilet Cleaner',
@@ -1828,6 +2114,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['toilet cleaner', 'bathroom', 'germs'],
         pop: 2,
         life: 1095,
+        desc: 'Thick toilet cleaner that removes tough stains and disinfects. The angled nozzle reaches under the rim.',
+        look: 'a 1 litre bottle of blue toilet cleaner with an angled neck',
       },
       {
         name: 'Good Knight Gold Flash Refill',
@@ -1838,6 +2126,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['mosquito repellent', 'dengue', 'monsoon', 'malaria'],
         pop: 2.5,
         life: 1095,
+        desc: 'Liquid vaporiser refills that keep mosquitoes away through the night. Two refills for the plug-in machine.',
+        look: 'two small liquid mosquito repellent refill bottles',
       },
       {
         name: 'HIT Cockroach Killer Spray',
@@ -1848,6 +2138,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['pest control', 'cockroach', 'insects'],
         pop: 0.8,
         life: 1095,
+        desc: 'Aerosol spray that kills cockroaches on contact. Keep away from food and children.',
+        look: 'a 400 ml aerosol spray can',
       },
       {
         name: 'Colin Glass & Surface Cleaner',
@@ -1858,14 +2150,16 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['glass cleaner', 'windows', 'shine'],
         pop: 0.1,
         life: 1095,
+        desc: 'Spray cleaner for glass, mirrors and shiny surfaces, for a streak-free shine.',
+        look: 'a 500 ml trigger spray bottle of blue glass cleaner',
       },
     ],
   },
-  'Kitchen Essentials': {
+  'Household Essentials': {
     department: 'Home & Kitchen',
     supplier: 'ganesh',
     costRatio: 0.78,
-    blurb: 'Wraps, bags and handy kitchen supplies.',
+    blurb: 'Bags, wraps, batteries and handy supplies.',
     items: [
       {
         name: 'Shalimar Garbage Bags (Medium)',
@@ -1875,6 +2169,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         gst: 18,
         tags: ['garbage bags', 'trash', 'dustbin'],
         pop: 1.5,
+        desc: 'Medium garbage bags for kitchen dustbins. A roll of 30.',
+        look: 'a roll of black garbage bags with one bag partly pulled out',
       },
       {
         name: 'Freshwrapp Aluminium Foil',
@@ -1884,6 +2180,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         gst: 18,
         tags: ['aluminium foil', 'tiffin', 'wrap'],
         pop: 1,
+        desc: 'Food-grade aluminium foil to keep rotis warm in tiffins and for baking.',
+        look: 'a roll of aluminium foil partly unrolled, wrapped around warm rotis',
       },
       {
         name: 'Scotch-Brite Scrub Pad',
@@ -1894,6 +2192,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         tags: ['scrubber', 'utensils', 'cleaning'],
         pop: 2,
         role: 'dish',
+        desc: 'Tough scrub pads for pots, kadhais and tawas.',
+        look: 'three green scouring scrub pads',
       },
       {
         name: 'Duracell AA Batteries',
@@ -1903,6 +2203,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         gst: 18,
         tags: ['batteries', 'remote', 'toys'],
         pop: 0.6,
+        desc: 'Long-lasting AA alkaline batteries for remotes, clocks and toys. Pack of four.',
+        look: 'four plain AA alkaline batteries standing in a row',
       },
       {
         name: 'Origami Kitchen Towels',
@@ -1912,6 +2214,8 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         gst: 18,
         tags: ['kitchen towel', 'tissue', 'cleaning'],
         pop: 0.08,
+        desc: 'Absorbent two-ply kitchen towels for spills, oily snacks and wiping counters.',
+        look: 'two rolls of white kitchen paper towels',
       },
     ],
   },
