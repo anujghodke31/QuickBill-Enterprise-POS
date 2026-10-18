@@ -1,99 +1,113 @@
-const BASE = '/api';
+import axios from 'axios';
 
-async function request(endpoint, options = {}) {
-    const { responseType = 'json', ...fetchOptions } = options;
-    const token = localStorage.getItem('quickbill_token');
-    
-    const headers = {
+// Create the axios instance
+const axiosInstance = axios.create({
+    baseURL: '/api',
+    withCredentials: true, // Crucial for sending cookies (refresh token)
+    headers: {
         'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...(fetchOptions.headers || {})
-    };
+    },
+});
 
-    const res = await fetch(`${BASE}${endpoint}`, {
-        headers,
-        ...fetchOptions,
-    });
-
-    const contentType = res.headers.get('content-type') || '';
-
-    if (!res.ok) {
-        let message = 'Request failed';
-        try {
-            if (contentType.includes('application/json')) {
-                const data = await res.json();
-                message = data.message || message;
-            } else {
-                const text = await res.text();
-                message = text || message;
-            }
-        } catch {
-            // Ignore parsing errors and keep fallback message
+// Attach access token to every outgoing request
+axiosInstance.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('quickbill_token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
         }
-        throw new Error(message);
-    }
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
 
-    if (responseType === 'blob') return res.blob();
-    if (responseType === 'text') return res.text();
-    if (responseType === 'none') return null;
-    if (contentType.includes('application/json')) return res.json();
-    return null;
-}
+// Response interceptor to handle 401 retry logic
+axiosInstance.interceptors.response.use(
+    (response) => response.data,
+    async (error) => {
+        const originalRequest = error.config;
+        
+        const message = error.response?.data?.message || error.message || 'Request failed';
+        error.message = message;
+
+        // If error is 401 and we haven't already retried this request
+        if (error.response?.status === 401 && !originalRequest._retry) {
+            // Prevent infinite loops on the refresh endpoint itself
+            if (originalRequest.url.includes('/auth/refresh') || originalRequest.url.includes('/auth/login')) {
+                return Promise.reject(error);
+            }
+
+            originalRequest._retry = true;
+
+            try {
+                // Request a new access token
+                const { token } = await api.refreshToken();
+                
+                // Save the new token
+                localStorage.setItem('quickbill_token', token);
+                
+                // Update the Authorization header and retry original request
+                originalRequest.headers.Authorization = `Bearer ${token}`;
+                return axiosInstance(originalRequest);
+            } catch (refreshError) {
+                // Wiping config out if completely unauthorized
+                localStorage.removeItem('quickbill_token');
+                window.location.href = '/auth'; // Adjusted to match generic React Router auth path
+                return Promise.reject(refreshError);
+            }
+        }
+
+        return Promise.reject(error);
+    }
+);
 
 export const api = {
-    // Products
-    getProducts: () => request('/products'),
-    createProduct: (body) => request('/products', { method: 'POST', body: JSON.stringify(body) }),
-    updateProduct: (id, body) => request(`/products/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
-    getAlerts: () => request('/products/alerts'),
+    getProducts: () => axiosInstance.get('/products'),
+    createProduct: (body) => axiosInstance.post('/products', body),
+    updateProduct: (id, body) => axiosInstance.put(`/products/${id}`, body),
+    getAlerts: () => axiosInstance.get('/products/alerts'),
 
-    // Invoices
-    getInvoices: () => request('/invoices'),
-    createInvoice: (body) => request('/invoices', { method: 'POST', body: JSON.stringify(body) }),
-    getLoyaltyStatus: (customerId) => request(`/invoices/loyalty/${customerId}`),
-    downloadInvoiceReceipt: (invoiceId) => request(`/invoices/${invoiceId}/receipt`, { responseType: 'blob' }),
+    getInvoices: () => axiosInstance.get('/invoices'),
+    createInvoice: (body) => axiosInstance.post('/invoices', body),
+    getLoyaltyStatus: (customerId) => axiosInstance.get(`/invoices/loyalty/${customerId}`),
+    downloadInvoiceReceipt: (invoiceId) => axiosInstance.get(`/invoices/${invoiceId}/receipt`, { responseType: 'blob' }),
 
-    // Auth
-    login: (body) => request('/auth/login', { method: 'POST', body: JSON.stringify(body) }),
-    register: (body) => request('/auth/register', { method: 'POST', body: JSON.stringify(body) }),
-    googleLogin: (body) => request('/auth/google', { method: 'POST', body: JSON.stringify(body) }),
+    login: (body) => axiosInstance.post('/auth/login', body),
+    register: (body) => axiosInstance.post('/auth/register', body),
+    googleLogin: (body) => axiosInstance.post('/auth/google', body),
+    refreshToken: () => axiosInstance.post('/auth/refresh'),
+    logout: () => axiosInstance.post('/auth/logout'),
 
-    // Customers
-    getCustomers: () => request('/customers'),
-    createCustomer: (body) => request('/customers', { method: 'POST', body: JSON.stringify(body) }),
-    updateCustomer: (id, body) => request(`/customers/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
-    deleteCustomer: (id) => request(`/customers/${id}`, { method: 'DELETE' }),
+    getCustomers: () => axiosInstance.get('/customers'),
+    createCustomer: (body) => axiosInstance.post('/customers', body),
+    updateCustomer: (id, body) => axiosInstance.put(`/customers/${id}`, body),
+    deleteCustomer: (id) => axiosInstance.delete(`/customers/${id}`),
 
-    // Employees
-    getEmployees: () => request('/employees'),
-    createEmployee: (body) => request('/employees', { method: 'POST', body: JSON.stringify(body) }),
-    updateEmployee: (id, body) => request(`/employees/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
-    deleteEmployee: (id) => request(`/employees/${id}`, { method: 'DELETE' }),
+    getEmployees: () => axiosInstance.get('/employees'),
+    createEmployee: (body) => axiosInstance.post('/employees', body),
+    updateEmployee: (id, body) => axiosInstance.put(`/employees/${id}`, body),
+    deleteEmployee: (id) => axiosInstance.delete(`/employees/${id}`),
 
-    // Suppliers
-    getSuppliers: () => request('/suppliers'),
-    createSupplier: (body) => request('/suppliers', { method: 'POST', body: JSON.stringify(body) }),
-    updateSupplier: (id, body) => request(`/suppliers/${id}`, { method: 'PUT', body: JSON.stringify(body) }),
-    deleteSupplier: (id) => request(`/suppliers/${id}`, { method: 'DELETE' }),
+    getSuppliers: () => axiosInstance.get('/suppliers'),
+    createSupplier: (body) => axiosInstance.post('/suppliers', body),
+    updateSupplier: (id, body) => axiosInstance.put(`/suppliers/${id}`, body),
+    deleteSupplier: (id) => axiosInstance.delete(`/suppliers/${id}`),
 
-    // Returns
-    getReturns: () => request('/returns'),
-    getReturnInvoice: (query) => request(`/returns/invoice/${encodeURIComponent(query)}`),
-    createReturn: (body) => request('/returns', { method: 'POST', body: JSON.stringify(body) }),
+    getReturns: () => axiosInstance.get('/returns'),
+    getReturnInvoice: (query) => axiosInstance.get(`/returns/invoice/${encodeURIComponent(query)}`),
+    createReturn: (body) => axiosInstance.post('/returns', body),
 
-    // Storefront
     getStorefrontProducts: (params = {}) => {
-        const q = new URLSearchParams(params).toString()
-        return request(`/products/storefront${q ? '?' + q : ''}`)
+        const q = new URLSearchParams(params).toString();
+        return axiosInstance.get(`/products/storefront${q ? '?' + q : ''}`);
     },
-    getCategories: () => request('/products/categories'),
-    getProductById: (id) => request(`/products/${id}`),
+    getCategories: () => axiosInstance.get('/products/categories'),
+    getProductById: (id) => axiosInstance.get(`/products/${id}`),
 
-    // Orders
-    createOrder: (body) => request('/orders', { method: 'POST', body: JSON.stringify(body) }),
-    getMyOrders: (email) => request(`/orders/my?email=${encodeURIComponent(email)}`),
-    getOrderById: (id) => request(`/orders/${id}`),
-    getOrders: () => request('/orders'),
-    updateOrderStatus: (id, body) => request(`/orders/${id}/status`, { method: 'PUT', body: JSON.stringify(body) }),
-    getOrderStats: () => request('/orders/stats'),
+    createOrder: (body) => axiosInstance.post('/orders', body),
+    getMyOrders: (email) => axiosInstance.get(`/orders/my?email=${encodeURIComponent(email)}`),
+    getOrderById: (id) => axiosInstance.get(`/orders/${id}`),
+    getOrders: () => axiosInstance.get('/orders'),
+    updateOrderStatus: (id, body) => axiosInstance.put(`/orders/${id}/status`, body),
+    getOrderStats: () => axiosInstance.get('/orders/stats'),
 };

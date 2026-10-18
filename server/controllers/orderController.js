@@ -1,5 +1,8 @@
 const Order = require('../models/Order');
 const Product = require('../models/Product');
+const Customer = require('../models/Customer');
+const { sendLowStockAlert } = require('../utils/mailer');
+const redisClient = require('../config/redis');
 
 // Create a new order (storefront)
 const createOrder = async (req, res) => {
@@ -39,6 +42,69 @@ const createOrder = async (req, res) => {
         });
 
         const savedOrder = await order.save();
+
+        // ── Phase 5.2 Emit Socket.io 'new_order' event ────────────
+        try {
+            const io = req.app.get('io');
+            if (io) {
+                io.emit('new_order', {
+                    orderId: savedOrder._id,
+                    total: savedOrder.totalAmount,
+                    customerName: typeof customer === 'object' ? customer.name : 'Walk-in',
+                    timestamp: savedOrder.createdAt
+                });
+            }
+        } catch(ioErr) {
+            // non-fatal
+        }
+
+        // ── Phase 5.3 + 5.2 Low Stock Email Alerts & Sockets ──────
+        try {
+            const io = req.app.get('io');
+            for (const item of items) {
+                const updatedProduct = await Product.findById(item.product);
+                if (updatedProduct && updatedProduct.stock <= updatedProduct.lowStockThreshold) {
+                    
+                    if (io) io.emit('stock_alert', { product: updatedProduct.name, stock: updatedProduct.stock });
+
+                    // 1 alert per 24 hours throttling
+                    const redisKey = `stock_alert:${updatedProduct._id}`;
+                    const hasAlerted = await redisClient.get(redisKey);
+                    
+                    if (!hasAlerted) {
+                        await sendLowStockAlert(updatedProduct);
+                        await redisClient.setex(redisKey, 86400, 'true'); // 24 hours
+                    }
+                }
+            }
+        } catch (stockErr) {
+            // non-fatal
+        }
+
+        // ── Phase 5.4 Points processing  ──────────────────
+        try {
+            if (customer && customer.email) {
+                const matchCust = await Customer.findOne({ email: customer.email });
+                if (matchCust) {
+                    // 1 point per 10 rupees logic (example default)
+                    const pointsPerRupee = 10;
+                    const pointsEarned = Math.floor(savedOrder.totalAmount / pointsPerRupee);
+                    matchCust.loyaltyPoints += pointsEarned;
+                    matchCust.totalPointsEarned += pointsEarned;
+                    matchCust.totalSpent += savedOrder.totalAmount;
+                    matchCust.pointsHistory.push({
+                        points: pointsEarned,
+                        reason: 'Purchase Reward',
+                        orderId: savedOrder._id
+                    });
+                    await matchCust.save();
+                    
+                    const io = req.app.get('io');
+                    if (io) io.emit('points_earned', { customer: matchCust.name, points: pointsEarned });
+                }
+            }
+        } catch (pointsErr) {}
+
         res.status(201).json(savedOrder);
     } catch (error) {
         res.status(500).json({ message: error.message });

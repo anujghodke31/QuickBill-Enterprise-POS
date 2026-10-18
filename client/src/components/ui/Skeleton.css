@@ -1,0 +1,44 @@
+.skeleton {
+    animation: shimmer 1.5s infinite linear;
+    background: linear-gradient(
+        90deg,
+        rgba(255, 255, 255, 0.05) 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        rgba(255, 255, 255, 0.05) 100%
+    );
+    background-size: 200% 100%;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+.skeleton.text {
+    border-radius: 4px;
+    margin-bottom: 6px;
+}
+
+.skeleton.circular {
+    border-radius: 50%;
+}
+
+.skeleton.rectangular {
+    border-radius: 8px;
+}
+
+/* Specific component skeletons */
+.skeleton-product-card {
+    background: var(--bg-card);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.product-info-skeleton {
+    padding: 16px;
+}
