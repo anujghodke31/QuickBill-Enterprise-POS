@@ -1292,7 +1292,7 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         role: 'teatime',
         life: 180,
         desc: "Light, crisp tea biscuits that aren't too sweet, for a snack between meals.",
-        look: 'a stack of round light-coloured marie biscuits',
+        look: 'a neat stack of plain round golden tea biscuits beside a cup of tea',
       },
       {
         name: 'Oreo Chocolate Cream Biscuits',
@@ -1965,7 +1965,7 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         role: 'diaper',
         life: 1095,
         desc: 'Pant-style diapers for babies of 7 to 12 kg, with up to 12 hours of dryness. Size medium, 62 pants.',
-        look: 'a large soft pack of baby diaper pants with one diaper shown in front',
+        look: 'a large soft plastic bag of disposable pull-up nappies with one folded white nappy in front',
       },
       {
         name: 'MamyPoko Pants Extra Absorb (L)',
@@ -2005,7 +2005,7 @@ export const CATALOG: Record<string, Omit<CategorySeed, 'supplier'> & { supplier
         role: 'babycare',
         life: 1095,
         desc: 'Mild baby powder that keeps skin dry and comfortable after a bath.',
-        look: 'a 200 g plastic bottle of baby powder with a little white powder sprinkled beside it',
+        look: 'a white plastic bottle of talcum powder with a little white powder sprinkled beside it',
       },
       {
         name: 'Nestle Cerelac Wheat Apple',
