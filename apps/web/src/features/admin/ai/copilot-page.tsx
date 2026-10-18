@@ -279,6 +279,13 @@ export default function CopilotPage() {
       const controller = new AbortController();
       const startId = id ?? null;
       current.start(question, startId, controller);
+      // The server discards a new conversation whose first turn fails or is
+      // stopped, so return to a blank one; asking again then starts afresh.
+      const leaveDiscarded = () => {
+        if (startId) return;
+        useLiveTurn.setState({ conversationId: null });
+        navigate('/admin/copilot', { replace: true });
+      };
       try {
         await streamEvents<CopilotEvent>(
           '/ai/copilot',
@@ -297,6 +304,7 @@ export default function CopilotPage() {
             'failed',
             after.error ?? 'The answer stopped before it finished. Ask again.',
           );
+          leaveDiscarded();
           void qc.invalidateQueries({ queryKey: ['copilot', 'conversations'] });
           return;
         }
@@ -317,6 +325,7 @@ export default function CopilotPage() {
               : 'Copilot could not be reached. Check that the API is running.';
           useLiveTurn.getState().finish('failed', message);
         }
+        leaveDiscarded();
         void qc.invalidateQueries({ queryKey: ['copilot', 'conversations'] });
       }
     },
