@@ -173,7 +173,14 @@ Optional AI maintenance scripts (in `apps/api`):
 ```bash
 npm run ai:embed            # embed products missing a vector (--all to rebuild)
 npm run ai:enrich           # Claude Message Batches: better search tags + descriptions (--dry-run)
+npm run ai:image-prompts -- --missing     # studio-photo prompts for products without a photo
+npm run ai:images-import -- <slug>=<url>  # save a generated photo as 720 px WebP and link it
 ```
+
+Product photos are generated as unbranded studio shots (plain packaging, no logos or text) from a
+short visual description kept with each catalogue item, using the CallMissed image API (`flux-2-pro`).
+They are stored in `apps/web/public/images/products/`; products without a photo fall back to a drawn
+packshot.
 
 ### The seed
 

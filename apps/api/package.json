@@ -18,7 +18,9 @@
     "db:reset": "prisma migrate reset --force",
     "ai:embed": "tsx scripts/embed-products.ts",
     "ai:enrich": "tsx scripts/enrich-catalog.ts",
-    "ai:sample-bill": "tsx scripts/make-sample-bill.ts"
+    "ai:sample-bill": "tsx scripts/make-sample-bill.ts",
+    "ai:image-prompts": "tsx scripts/product-image-prompts.ts",
+    "ai:images-import": "tsx scripts/import-product-images.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.135.0",
@@ -51,6 +53,7 @@
     "@types/pdfkit": "^0.17.6",
     "@types/supertest": "^7.2.1",
     "pino-pretty": "^13.2.0",
+    "sharp": "^0.35.5",
     "supertest": "^7.3.1",
     "tsup": "^8.5.1",
     "tsx": "^4.23.15",

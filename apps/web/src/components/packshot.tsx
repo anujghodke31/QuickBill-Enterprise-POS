@@ -44,11 +44,11 @@ const CATEGORY_ICONS: Record<string, LucideIcon> = {
   'Dairy & Eggs': Milk,
   Bakery: Croissant,
   'Fruits & Vegetables': Leaf,
-  'Atta, Rice & Grains': Wheat,
+  'Atta, Rice & Staples': Wheat,
   'Dals & Pulses': Bean,
   'Oils & Ghee': Droplet,
   'Spices & Masalas': Flame,
-  'Breakfast & Spreads': EggFried,
+  'Breakfast, Spreads & Sauces': EggFried,
   'Instant Food': Soup,
   'Snacks & Namkeen': Popcorn,
   'Biscuits & Chocolates': Cookie,
@@ -59,7 +59,7 @@ const CATEGORY_ICONS: Record<string, LucideIcon> = {
   'Personal Care': Sparkles,
   'Baby Care': Baby,
   'Home Care': SprayCan,
-  'Kitchen Essentials': CookingPot,
+  'Household Essentials': CookingPot,
 };
 
 export function departmentStyle(department: string): DepartmentStyle {
