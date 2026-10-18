@@ -1,0 +1,449 @@
+// QuickBill data model. Money is stored as integer paise (₹1 = 100).
+
+generator client {
+  provider        = "prisma-client"
+  output          = "../src/generated/prisma"
+  moduleFormat    = "esm"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [vector, pg_trgm]
+}
+
+// ── Identity ─────────────────────────────────────────────────────────────────
+
+enum Role {
+  ADMIN
+  MANAGER
+  CASHIER
+  CUSTOMER
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         Role     @default(CUSTOMER)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  refreshTokens   RefreshToken[]
+  customer        Customer?
+  sales           Sale[]
+  returns         Return[]
+  purchaseOrders  PurchaseOrder[]
+  stockMovements  StockMovement[]
+  billScans       BillScan[]
+  conversations   AiConversation[]
+}
+
+/// Refresh tokens are stored hashed and rotated on every use. All tokens issued
+/// from one login share a familyId so that reuse of a rotated token can revoke
+/// the whole family.
+model RefreshToken {
+  id        String    @id @default(cuid())
+  userId    String
+  tokenHash String    @unique
+  familyId  String
+  expiresAt DateTime
+  revokedAt DateTime?
+  userAgent String?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([familyId])
+}
+
+/// Monotonic counters for human-readable document numbers (sales, orders, ...).
+model Counter {
+  key   String @id
+  value Int    @default(0)
+}
+
+// ── Catalog ──────────────────────────────────────────────────────────────────
+
+model Category {
+  id         String    @id @default(cuid())
+  name       String    @unique
+  slug       String    @unique
+  department String
+  createdAt  DateTime  @default(now())
+  products   Product[]
+}
+
+model Supplier {
+  id           String   @id @default(cuid())
+  name         String   @unique
+  contactName  String?
+  email        String?
+  phone        String?
+  gstin        String?
+  address      String?
+  leadTimeDays Int      @default(3)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  products       Product[]
+  purchaseOrders PurchaseOrder[]
+}
+
+model Product {
+  id             String    @id @default(cuid())
+  sku            String    @unique
+  barcode        String?   @unique
+  name           String
+  slug           String    @unique
+  description    String    @default("")
+  brand          String?
+  unit           String    @default("1 pc")
+  categoryId     String
+  supplierId     String?
+  /// Selling price, GST-inclusive.
+  price          Int
+  costPrice      Int       @default(0)
+  compareAtPrice Int?
+  /// GST slab in percent.
+  taxRate        Int       @default(0)
+  stock          Int       @default(0)
+  reorderPoint   Int       @default(10)
+  imageUrl       String?
+  tags           String[]  @default([])
+  isPublished    Boolean   @default(true)
+  /// Soft delete: archived products keep their sales history.
+  isActive       Boolean   @default(true)
+  expiryDate     DateTime?
+  ratingAvg      Float     @default(0)
+  ratingCount    Int       @default(0)
+  /// all-MiniLM-L6-v2 sentence embedding used for semantic search.
+  embedding      Unsupported("vector(384)")?
+  embeddedAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  category           Category            @relation(fields: [categoryId], references: [id])
+  supplier           Supplier?           @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  saleItems          SaleItem[]
+  orderItems         OrderItem[]
+  purchaseOrderItems PurchaseOrderItem[]
+  stockMovements     StockMovement[]
+  returnItems        ReturnItem[]
+
+  @@index([categoryId])
+  @@index([supplierId])
+  @@index([isActive, isPublished])
+}
+
+enum StockReason {
+  INITIAL
+  SALE
+  RETURN
+  PURCHASE
+  ADJUSTMENT
+  ONLINE_ORDER
+  ORDER_CANCEL
+}
+
+/// Append-only stock ledger. Every change to Product.stock writes one row, which
+/// gives a full audit trail and the demand history used for forecasting.
+model StockMovement {
+  id              String      @id @default(cuid())
+  productId       String
+  delta           Int
+  reason          StockReason
+  balanceAfter    Int
+  note            String?
+  saleId          String?
+  orderId         String?
+  purchaseOrderId String?
+  returnId        String?
+  userId          String?
+  createdAt       DateTime    @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([productId, createdAt])
+  @@index([reason, createdAt])
+}
+
+// ── Customers ────────────────────────────────────────────────────────────────
+
+model Customer {
+  id            String    @id @default(cuid())
+  name          String
+  phone         String?   @unique
+  email         String?   @unique
+  loyaltyPoints Int       @default(0)
+  totalSpent    Int       @default(0)
+  visitCount    Int       @default(0)
+  lastVisitAt   DateTime?
+  userId        String?   @unique
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+  sales  Sale[]
+  orders Order[]
+}
+
+// ── Point of sale ────────────────────────────────────────────────────────────
+
+enum PaymentMethod {
+  CASH
+  CARD
+  UPI
+}
+
+model Sale {
+  id             String        @id @default(cuid())
+  number         String        @unique
+  idempotencyKey String?       @unique
+  customerId     String?
+  cashierId      String
+  subtotal       Int
+  discount       Int           @default(0)
+  taxTotal       Int
+  total          Int
+  paymentMethod  PaymentMethod
+  amountTendered Int?
+  changeDue      Int?
+  pointsEarned   Int           @default(0)
+  pointsRedeemed Int           @default(0)
+  createdAt      DateTime      @default(now())
+
+  customer Customer?  @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  cashier  User       @relation(fields: [cashierId], references: [id])
+  items    SaleItem[]
+  returns  Return[]
+
+  @@index([createdAt])
+  @@index([customerId])
+}
+
+model SaleItem {
+  id          String @id @default(cuid())
+  saleId      String
+  productId   String
+  name        String
+  unitPrice   Int
+  /// Cost snapshot at the time of sale, for margin reporting.
+  unitCost    Int
+  quantity    Int
+  taxRate     Int
+  lineTotal   Int
+  returnedQty Int    @default(0)
+
+  sale        Sale         @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  product     Product      @relation(fields: [productId], references: [id])
+  returnItems ReturnItem[]
+
+  @@index([saleId])
+  @@index([productId])
+}
+
+model Return {
+  id            String        @id @default(cuid())
+  number        String        @unique
+  saleId        String
+  processedById String
+  reason        String
+  refundAmount  Int
+  refundMethod  PaymentMethod
+  createdAt     DateTime      @default(now())
+
+  sale        Sale         @relation(fields: [saleId], references: [id])
+  processedBy User         @relation(fields: [processedById], references: [id])
+  items       ReturnItem[]
+
+  @@index([createdAt])
+}
+
+model ReturnItem {
+  id         String  @id @default(cuid())
+  returnId   String
+  saleItemId String
+  productId  String
+  quantity   Int
+  amount     Int
+  restock    Boolean @default(true)
+
+  return   Return   @relation(fields: [returnId], references: [id], onDelete: Cascade)
+  saleItem SaleItem @relation(fields: [saleItemId], references: [id])
+  product  Product  @relation(fields: [productId], references: [id])
+}
+
+// ── Online orders ────────────────────────────────────────────────────────────
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PACKED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum OrderPaymentMethod {
+  COD
+  ONLINE
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  REFUNDED
+  FAILED
+}
+
+model Order {
+  id              String             @id @default(cuid())
+  number          String             @unique
+  userId          String?
+  customerId      String?
+  contactName     String
+  contactEmail    String
+  contactPhone    String
+  /// { line1, line2?, city, state, pincode }
+  shippingAddress Json
+  status          OrderStatus        @default(PENDING)
+  paymentMethod   OrderPaymentMethod
+  paymentStatus   PaymentStatus      @default(PENDING)
+  subtotal        Int
+  shippingFee     Int                @default(0)
+  taxTotal        Int
+  total           Int
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  customer Customer?   @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  items    OrderItem[]
+
+  @@index([userId])
+  @@index([contactEmail])
+  @@index([status, createdAt])
+}
+
+model OrderItem {
+  id        String @id @default(cuid())
+  orderId   String
+  productId String
+  name      String
+  unitPrice Int
+  unitCost  Int
+  quantity  Int
+  taxRate   Int
+  lineTotal Int
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+// ── Purchasing ───────────────────────────────────────────────────────────────
+
+enum PurchaseOrderStatus {
+  DRAFT
+  ORDERED
+  RECEIVED
+  CANCELLED
+}
+
+enum PurchaseOrderSource {
+  MANUAL
+  FORECAST
+  BILL_SCAN
+}
+
+model PurchaseOrder {
+  id                String              @id @default(cuid())
+  number            String              @unique
+  supplierId        String
+  status            PurchaseOrderStatus @default(DRAFT)
+  source            PurchaseOrderSource @default(MANUAL)
+  notes             String?
+  supplierInvoiceNo String?
+  invoiceDate       DateTime?
+  subtotal          Int
+  taxTotal          Int
+  total             Int
+  createdById       String
+  receivedAt        DateTime?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  supplier  Supplier            @relation(fields: [supplierId], references: [id])
+  createdBy User                @relation(fields: [createdById], references: [id])
+  items     PurchaseOrderItem[]
+  billScan  BillScan?
+
+  @@index([status, createdAt])
+}
+
+model PurchaseOrderItem {
+  id              String @id @default(cuid())
+  purchaseOrderId String
+  productId       String
+  quantity        Int
+  unitCost        Int
+  taxRate         Int
+  lineTotal       Int
+
+  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  product       Product       @relation(fields: [productId], references: [id])
+
+  @@index([purchaseOrderId])
+}
+
+// ── AI ───────────────────────────────────────────────────────────────────────
+
+enum BillScanStatus {
+  EXTRACTED
+  CONFIRMED
+  FAILED
+}
+
+/// A supplier bill read by Claude vision, kept for audit and review.
+model BillScan {
+  id              String         @id @default(cuid())
+  createdById     String
+  fileName        String
+  mimeType        String
+  status          BillScanStatus
+  /// The structured extraction plus product-match candidates.
+  result          Json?
+  error           String?
+  model           String?
+  inputTokens     Int?
+  outputTokens    Int?
+  purchaseOrderId String?        @unique
+  createdAt       DateTime       @default(now())
+
+  createdBy     User           @relation(fields: [createdById], references: [id])
+  purchaseOrder PurchaseOrder? @relation(fields: [purchaseOrderId], references: [id])
+
+  @@index([createdById, createdAt])
+}
+
+/// Copilot conversations. `messages` holds the raw Claude message history
+/// (including tool calls and thinking blocks), which is only ever appended to.
+model AiConversation {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  messages  Json     @default("[]")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, updatedAt])
+}
