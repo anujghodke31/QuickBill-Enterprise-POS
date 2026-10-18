@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch --clear-screen=false src/index.ts",
+    "dev": "node --watch-path=./src --watch-preserve-output --import tsx src/index.ts",
     "build": "prisma generate && tsup",
     "start": "node dist/index.js",
     "typecheck": "tsc -p tsconfig.json",
@@ -17,7 +17,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:reset": "prisma migrate reset --force",
     "ai:embed": "tsx scripts/embed-products.ts",
-    "ai:enrich": "tsx scripts/enrich-catalog.ts"
+    "ai:enrich": "tsx scripts/enrich-catalog.ts",
+    "ai:sample-bill": "tsx scripts/make-sample-bill.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.135.0",
@@ -37,6 +38,7 @@
     "pg": "^8.16.3",
     "pino": "^10.4.0",
     "pino-http": "^11.0.0",
+    "prisma": "7.10.1",
     "zod": "^4.6.7"
   },
   "devDependencies": {
@@ -49,7 +51,6 @@
     "@types/pdfkit": "^0.17.6",
     "@types/supertest": "^7.2.1",
     "pino-pretty": "^13.2.0",
-    "prisma": "7.10.1",
     "supertest": "^7.3.1",
     "tsup": "^8.5.1",
     "tsx": "^4.23.15",

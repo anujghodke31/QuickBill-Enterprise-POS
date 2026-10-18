@@ -67,21 +67,31 @@ export async function listMovements(query: {
 }
 
 export async function getAlerts() {
-  const [lowStock, expiring] = await Promise.all([
+  const lowWhere = { isActive: true, stock: { lte: prisma.product.fields.reorderPoint } };
+  const expiringWhere = {
+    isActive: true,
+    stock: { gt: 0 },
+    expiryDate: { not: null, lte: expiryCutoff() },
+  };
+  const [lowStock, expiring, lowStockTotal, expiringTotal] = await Promise.all([
     prisma.product.findMany({
-      where: { isActive: true, stock: { lte: prisma.product.fields.reorderPoint } },
+      where: lowWhere,
       orderBy: { stock: 'asc' },
       select: { id: true, name: true, sku: true, stock: true, reorderPoint: true },
       take: 50,
     }),
     prisma.product.findMany({
-      where: { isActive: true, stock: { gt: 0 }, expiryDate: { not: null, lte: expiryCutoff() } },
+      where: expiringWhere,
       orderBy: { expiryDate: 'asc' },
       select: { id: true, name: true, sku: true, stock: true, expiryDate: true },
       take: 50,
     }),
+    prisma.product.count({ where: lowWhere }),
+    prisma.product.count({ where: expiringWhere }),
   ]);
   return {
+    lowStockTotal,
+    expiringTotal,
     lowStock,
     expiring: expiring.map((p) => ({
       ...p,

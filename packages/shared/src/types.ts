@@ -215,6 +215,10 @@ export interface OrderItemDTO {
   name: string;
   slug: string | null;
   imageUrl: string | null;
+  brand: string | null;
+  unit: string;
+  category: string;
+  department: string;
   unitPrice: number;
   quantity: number;
   lineTotal: number;
@@ -285,7 +289,7 @@ export interface DashboardDTO {
   revenueSeries: { date: string; pos: number; online: number }[];
   hourly: { hour: number; revenue: number; transactions: number }[];
   topProducts: { productId: string; name: string; units: number; revenue: number }[];
-  categoryMix: { category: string; revenue: number }[];
+  categoryMix: { category: string; department: string; revenue: number }[];
   paymentMix: { method: string; revenue: number; count: number }[];
   lowStock: { id: string; name: string; stock: number; reorderPoint: number }[];
   lowStockCount: number;
@@ -396,6 +400,12 @@ export interface CopilotTurnDTO {
   text: string;
   charts: ChartSpec[];
   tools: { name: string; label: string }[];
+}
+
+export interface CopilotConversationSummaryDTO {
+  id: string;
+  title: string;
+  updatedAt: string;
 }
 
 export interface CopilotConversationDTO {

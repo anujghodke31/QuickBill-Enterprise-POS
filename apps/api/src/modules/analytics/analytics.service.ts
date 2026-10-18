@@ -414,7 +414,11 @@ export async function getDashboard(): Promise<DashboardDTO> {
       units: p.units,
       revenue: p.revenue,
     })),
-    categoryMix: categories.map((c) => ({ category: c.category, revenue: c.revenue })),
+    categoryMix: categories.map((c) => ({
+      category: c.category,
+      department: c.department,
+      revenue: c.revenue,
+    })),
     paymentMix: paymentMix.map((p) => ({
       method: p.method,
       revenue: round(p.revenue),

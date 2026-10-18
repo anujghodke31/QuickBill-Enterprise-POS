@@ -1,5 +1,10 @@
 import Anthropic from '@anthropic-ai/sdk';
-import type { CopilotConversationDTO, CopilotEvent, CopilotTurnDTO } from '@quickbill/shared';
+import type {
+  CopilotConversationDTO,
+  CopilotConversationSummaryDTO,
+  CopilotEvent,
+  CopilotTurnDTO,
+} from '@quickbill/shared';
 import { STORE } from '../../../config/store';
 import { localDate } from '../../../lib/dates';
 import { notFound } from '../../../lib/errors';
@@ -249,7 +254,7 @@ export function toTurns(messages: MessageParam[]): CopilotTurnDTO[] {
   return turns;
 }
 
-export async function listConversations(userId: string) {
+export async function listConversations(userId: string): Promise<CopilotConversationSummaryDTO[]> {
   const rows = await prisma.aiConversation.findMany({
     where: { userId },
     orderBy: { updatedAt: 'desc' },

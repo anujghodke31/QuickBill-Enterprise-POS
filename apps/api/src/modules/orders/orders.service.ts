@@ -20,7 +20,17 @@ type PlaceOrder = z.output<typeof placeOrderSchema>;
 const orderInclude = {
   items: {
     orderBy: { id: 'asc' },
-    include: { product: { select: { slug: true, imageUrl: true } } },
+    include: {
+      product: {
+        select: {
+          slug: true,
+          imageUrl: true,
+          brand: true,
+          unit: true,
+          category: { select: { name: true, department: true } },
+        },
+      },
+    },
   },
 } satisfies Prisma.OrderInclude;
 
@@ -40,6 +50,10 @@ function toOrderDTO(o: OrderWithItems): OrderDTO {
       name: i.name,
       slug: i.product.slug,
       imageUrl: i.product.imageUrl,
+      brand: i.product.brand,
+      unit: i.product.unit,
+      category: i.product.category.name,
+      department: i.product.category.department,
       unitPrice: i.unitPrice,
       quantity: i.quantity,
       lineTotal: i.lineTotal,

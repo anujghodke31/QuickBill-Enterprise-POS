@@ -1,9 +1,13 @@
 import { z } from 'zod';
 
-try {
-  process.loadEnvFile();
-} catch {
-  // No .env file: rely on the real environment (CI, Docker, hosting platform).
+// Tests get their environment from vitest.config.ts and must never pick up the
+// developer's .env (which points at the dev database).
+if (!process.env.VITEST) {
+  try {
+    process.loadEnvFile();
+  } catch {
+    // No .env file: rely on the real environment (CI, Docker, hosting platform).
+  }
 }
 
 const schema = z.object({

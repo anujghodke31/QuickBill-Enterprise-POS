@@ -19,7 +19,9 @@ const optionalText = (max: number) =>
     .trim()
     .max(max)
     .optional()
-    .transform((v) => (v === '' ? undefined : v));
+    .nullable()
+    // An empty field means 'clear this value'.
+    .transform((v) => (v === '' ? null : v));
 
 export const indianPhone = z
   .string()

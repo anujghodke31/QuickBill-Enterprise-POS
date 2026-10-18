@@ -32,7 +32,7 @@ function buildWhere(query: ProductListQuery): Prisma.ProductWhereInput {
     where.OR = [
       { name: { contains: query.q, mode: 'insensitive' } },
       { brand: { contains: query.q, mode: 'insensitive' } },
-      { sku: { equals: query.q, mode: 'insensitive' } },
+      { sku: { contains: query.q, mode: 'insensitive' } },
       { barcode: query.q },
     ];
   }

@@ -19,8 +19,8 @@ type PurchaseOrderInput = z.output<typeof purchaseOrderInputSchema>;
 export interface PurchaseOrderDraft {
   supplierId: string;
   items: { productId: string; quantity: number; unitCost: number; taxRate: number }[];
-  notes?: string;
-  supplierInvoiceNo?: string;
+  notes?: string | null;
+  supplierInvoiceNo?: string | null;
   invoiceDate?: Date;
 }
 
